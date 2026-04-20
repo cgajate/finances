@@ -1,6 +1,8 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { Income, Expense, Frequency } from '@/types/finance'
+import { getDb } from '@/lib/firebase'
+import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
 function generateId(): string {
   return crypto.randomUUID()
@@ -20,9 +22,18 @@ export const useFinancesStore = defineStore('finances', () => {
   const incomes = ref<Income[]>(loadFromStorage('finances:incomes', []))
   const expenses = ref<Expense[]>(loadFromStorage('finances:expenses', []))
 
-  // Auto-persist on any change (deep watch)
+  // Auto-persist to localStorage (offline fallback)
   watch(incomes, (val) => localStorage.setItem('finances:incomes', JSON.stringify(val)), { deep: true })
   watch(expenses, (val) => localStorage.setItem('finances:expenses', JSON.stringify(val)), { deep: true })
+
+  // --- Firestore sync ---
+  function enableSync(householdId: string) {
+    const db = getDb()
+    if (!db) return
+    const path = `households/${householdId}`
+    useFirestoreSync(db, path, 'incomes', incomes)
+    useFirestoreSync(db, path, 'expenses', expenses)
+  }
 
   // --- Income actions ---
   function addRecurringIncome(data: {
@@ -167,5 +178,6 @@ export const useFinancesStore = defineStore('finances', () => {
     totalMonthlyIncome,
     totalMonthlyExpenses,
     netMonthly,
+    enableSync,
   }
 })

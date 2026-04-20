@@ -1,7 +1,9 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
-import type { Expense, Income, Frequency } from '@/types/finance'
+import type { Frequency } from '@/types/finance'
+import { getDb } from '@/lib/firebase'
+import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
 export interface Notification {
   id: string
@@ -196,6 +198,15 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
   }
 
+  // --- Firestore sync ---
+  function enableSync(householdId: string) {
+    const db = getDb()
+    if (!db) return
+    const path = `households/${householdId}`
+    useFirestoreSync(db, path, 'dismissedIncomeIds', dismissedIncomeIds)
+    useFirestoreSync(db, path, 'mutedExpenses', mutedExpenses)
+  }
+
   return {
     expenseNotifications,
     incomeNotifications,
@@ -206,6 +217,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     unmuteExpense,
     dismissAll,
     isExpenseMuted,
+    enableSync,
   }
 })
 

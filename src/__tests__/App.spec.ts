@@ -1,8 +1,24 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from '../App.vue'
+
+// Mock PinGate to always show the slot (bypass PIN)
+vi.mock('@/components/PinGate.vue', () => ({
+  default: {
+    name: 'PinGate',
+    template: '<slot />',
+  },
+}))
+
+// Mock HouseholdSetup to avoid Firebase dependency
+vi.mock('@/components/HouseholdSetup.vue', () => ({
+  default: {
+    name: 'HouseholdSetup',
+    template: '<div class="household-mock" />',
+  },
+}))
 
 function makeRouter() {
   return createRouter({

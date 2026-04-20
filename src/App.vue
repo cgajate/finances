@@ -1,29 +1,34 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import NotificationPanel from '@/components/NotificationPanel.vue'
+import PinGate from '@/components/PinGate.vue'
+import HouseholdSetup from '@/components/HouseholdSetup.vue'
 
 const menuOpen = ref(false)
 </script>
 
 <template>
-  <div class="app-shell">
-    <header class="app-header">
-      <RouterLink to="/" class="logo">💰 Family Finances</RouterLink>
-      <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="Toggle menu">
-        <span :class="{ open: menuOpen }">☰</span>
-      </button>
-      <nav :class="{ open: menuOpen }">
-        <NotificationPanel />
-        <RouterLink to="/" @click="menuOpen = false">Dashboard</RouterLink>
-        <RouterLink to="/income" @click="menuOpen = false">Income</RouterLink>
-        <RouterLink to="/expenses" @click="menuOpen = false">Expenses</RouterLink>
-        <RouterLink to="/analytics" @click="menuOpen = false">Analytics</RouterLink>
-      </nav>
-    </header>
-    <main class="app-main">
-      <RouterView />
-    </main>
-  </div>
+  <PinGate>
+    <div class="app-shell">
+      <header class="app-header">
+        <RouterLink to="/" class="logo">💰 Family Finances</RouterLink>
+        <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="Toggle menu">
+          <span :class="{ open: menuOpen }">☰</span>
+        </button>
+        <nav :class="{ open: menuOpen }">
+          <NotificationPanel />
+          <RouterLink to="/" @click="menuOpen = false">Dashboard</RouterLink>
+          <RouterLink to="/income" @click="menuOpen = false">Income</RouterLink>
+          <RouterLink to="/expenses" @click="menuOpen = false">Expenses</RouterLink>
+          <RouterLink to="/analytics" @click="menuOpen = false">Analytics</RouterLink>
+        </nav>
+      </header>
+      <HouseholdSetup />
+      <main class="app-main">
+        <RouterView />
+      </main>
+    </div>
+  </PinGate>
 </template>
 
 <style scoped>
@@ -76,8 +81,7 @@ nav a {
   font-size: 0.95rem;
 }
 
-nav a:hover,
-nav a.router-link-exact-active {
+nav a:hover {
   background: rgba(255, 255, 255, 0.2);
   color: white;
 }
