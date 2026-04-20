@@ -21,6 +21,7 @@ const menuOpen = ref(false)
           <RouterLink to="/income" @click="menuOpen = false">Income</RouterLink>
           <RouterLink to="/expenses" @click="menuOpen = false">Expenses</RouterLink>
           <RouterLink to="/analytics" @click="menuOpen = false">Analytics</RouterLink>
+          <RouterLink to="/budgets" @click="menuOpen = false">Budgets</RouterLink>
         </nav>
       </header>
       <HouseholdSetup />

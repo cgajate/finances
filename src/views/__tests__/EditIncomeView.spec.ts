@@ -57,8 +57,8 @@ describe('EditIncomeView', () => {
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
     expect((wrapper.find('input[type="text"]').element as HTMLInputElement).value).toBe('Gift')
-    // No frequency select for adhoc
-    expect(wrapper.findAll('select')).toHaveLength(0)
+    // No frequency select for adhoc, but category select exists
+    expect(wrapper.findAll('select')).toHaveLength(1)
   })
 
   it('shows Save, Cancel, and Delete buttons', async () => {

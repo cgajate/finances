@@ -34,8 +34,13 @@ describe('router', () => {
     expect(route.name).toBe('analytics')
   })
 
-  it('has 6 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(6)
+  it('has a budgets route at /budgets', () => {
+    const route = router.resolve('/budgets')
+    expect(route.name).toBe('budgets')
+  })
+
+  it('has 7 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(7)
   })
 })
 

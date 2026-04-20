@@ -1,13 +1,14 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
+import { useBudgetsStore } from '@/stores/budgets'
 import type { Frequency } from '@/types/finance'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
 export interface Notification {
   id: string
-  kind: 'expense-due' | 'income-received'
+  kind: 'expense-due' | 'income-received' | 'budget-warning' | 'budget-over'
   sourceId: string
   description: string
   amount: number
@@ -151,9 +152,39 @@ export const useNotificationsStore = defineStore('notifications', () => {
     return results
   })
 
+  const budgetNotifications = computed<Notification[]>(() => {
+    const budgetsStore = useBudgetsStore()
+    const results: Notification[] = []
+    for (const bs of budgetsStore.budgetStatus) {
+      if (bs.status === 'over') {
+        results.push({
+          id: `budget-over-${bs.category}`,
+          kind: 'budget-over',
+          sourceId: bs.category,
+          description: `${bs.category} budget exceeded!`,
+          amount: bs.spent,
+          dueDate: null,
+          daysUntilDue: null,
+        })
+      } else if (bs.status === 'warning') {
+        results.push({
+          id: `budget-warn-${bs.category}`,
+          kind: 'budget-warning',
+          sourceId: bs.category,
+          description: `${bs.category} budget at ${Math.round(bs.percent)}%`,
+          amount: bs.spent,
+          dueDate: null,
+          daysUntilDue: null,
+        })
+      }
+    }
+    return results
+  })
+
   const allNotifications = computed(() => [
     ...expenseNotifications.value,
     ...incomeNotifications.value,
+    ...budgetNotifications.value,
   ])
 
   const unreadCount = computed(() => allNotifications.value.length)

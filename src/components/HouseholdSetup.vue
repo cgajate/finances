@@ -3,10 +3,12 @@ import { ref } from 'vue'
 import { useHousehold } from '@/composables/useHousehold'
 import { useFinancesStore } from '@/stores/finances'
 import { useNotificationsStore } from '@/stores/notifications'
+import { useBudgetsStore } from '@/stores/budgets'
 
 const { householdId, hasHousehold, firebaseReady, createHousehold, joinHousehold, leaveHousehold } = useHousehold()
 const financesStore = useFinancesStore()
 const notificationsStore = useNotificationsStore()
+const budgetsStore = useBudgetsStore()
 
 const mode = ref<'menu' | 'join'>('menu')
 const joinCode = ref('')
@@ -21,6 +23,7 @@ async function handleCreate() {
   if (code) {
     financesStore.enableSync(code)
     notificationsStore.enableSync(code)
+    budgetsStore.enableSync(code)
     showCode.value = true
   } else {
     error.value = 'Failed to create household. Check Firebase config.'
@@ -39,6 +42,7 @@ async function handleJoin() {
   if (ok) {
     financesStore.enableSync(householdId.value!)
     notificationsStore.enableSync(householdId.value!)
+    budgetsStore.enableSync(householdId.value!)
   } else {
     error.value = 'Household not found. Check the code and try again.'
   }
@@ -54,6 +58,7 @@ function handleLeave() {
 if (hasHousehold.value) {
   financesStore.enableSync(householdId.value!)
   notificationsStore.enableSync(householdId.value!)
+  budgetsStore.enableSync(householdId.value!)
 }
 </script>
 

@@ -43,3 +43,6 @@ __screenshots__/
 
 test-results/
 playwright-report/
+
+# Capacitor Android
+android/

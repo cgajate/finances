@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useFinancesStore } from '@/stores/finances'
+import { useBudgetsStore } from '@/stores/budgets'
 import { useSortFilter } from '@/composables/useSortFilter'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 
 const store = useFinancesStore()
+const budgetsStore = useBudgetsStore()
 
 const {
   sortBy: incomeSortBy,
@@ -138,6 +140,36 @@ function formatFrequency(freq: string): string {
         </div>
       </section>
     </div>
+
+    <!-- Budget Progress -->
+    <section v-if="budgetsStore.budgetStatus.length" class="budget-section">
+      <h2>Budget Progress</h2>
+      <div class="budget-bars">
+        <div
+          v-for="bs in budgetsStore.budgetStatus"
+          :key="bs.category"
+          class="budget-row"
+        >
+          <div class="budget-info">
+            <span class="budget-cat">{{ bs.category }}</span>
+            <span
+              class="budget-amt"
+              :class="{ 'budget-warning': bs.status === 'warning', 'budget-over': bs.status === 'over' }"
+            >
+              {{ formatCurrency(bs.spent) }} / {{ formatCurrency(bs.limit) }}
+            </span>
+          </div>
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              :class="{ 'fill-warning': bs.status === 'warning', 'fill-over': bs.status === 'over' }"
+              :style="{ width: Math.min(bs.percent, 100) + '%' }"
+            ></div>
+          </div>
+        </div>
+      </div>
+      <RouterLink to="/budgets" class="btn">Manage Budgets →</RouterLink>
+    </section>
   </div>
 </template>
 
@@ -213,4 +245,68 @@ li strong { flex: 1; min-width: 120px; }
   cursor: pointer; font-weight: 500;
 }
 .btn-toggle:hover { background: #e3f2fd; }
+
+.budget-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #f9f9f9;
+}
+
+.budget-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.budget-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.budget-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.budget-cat {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.budget-amt {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2e7d32;
+}
+.budget-warning { color: #e65100; }
+.budget-over { color: #c62828; }
+
+.progress-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #e0e0e0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: #4caf50;
+  transition: width 0.3s ease;
+}
+
+.fill-warning {
+  background: #ff9800;
+}
+
+.fill-over {
+  background: #f44336;
+}
+
+.budget-section .btn {
+  margin-top: 1rem;
+}
 </style>

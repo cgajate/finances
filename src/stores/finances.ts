@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import type { Income, Expense, Frequency } from '@/types/finance'
+import type { Income, Expense, Frequency, IncomeCategory, ExpenseCategory } from '@/types/finance'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
@@ -42,19 +42,22 @@ export const useFinancesStore = defineStore('finances', () => {
     description: string
     notes: string
     date: string | null
+    category?: IncomeCategory
   }) {
     incomes.value.push({
       id: generateId(),
       type: 'recurring',
+      category: data.category ?? 'Other',
       ...data,
       createdAt: new Date().toISOString(),
     })
   }
 
-  function addAdhocIncome(data: { amount: number; description: string; date: string }) {
+  function addAdhocIncome(data: { amount: number; description: string; date: string; category?: IncomeCategory }) {
     incomes.value.push({
       id: generateId(),
       type: 'adhoc',
+      category: data.category ?? 'Other',
       ...data,
       createdAt: new Date().toISOString(),
     })
@@ -85,10 +88,12 @@ export const useFinancesStore = defineStore('finances', () => {
     description: string
     notes: string
     dueDate: string | null
+    category?: ExpenseCategory
   }) {
     expenses.value.push({
       id: generateId(),
       type: 'recurring',
+      category: data.category ?? 'Other',
       ...data,
       createdAt: new Date().toISOString(),
     })
@@ -99,10 +104,12 @@ export const useFinancesStore = defineStore('finances', () => {
     description: string
     notes: string
     dueDate: string | null
+    category?: ExpenseCategory
   }) {
     expenses.value.push({
       id: generateId(),
       type: 'adhoc',
+      category: data.category ?? 'Other',
       ...data,
       createdAt: new Date().toISOString(),
     })
@@ -162,6 +169,26 @@ export const useFinancesStore = defineStore('finances', () => {
 
   const netMonthly = computed(() => totalMonthlyIncome.value - totalMonthlyExpenses.value)
 
+  /** Current-month spending aggregated by expense category */
+  const spendingByCategory = computed(() => {
+    const currentMonth = new Date().toISOString().slice(0, 7)
+    const map = new Map<ExpenseCategory, number>()
+    for (const e of expenses.value) {
+      const cat: ExpenseCategory = e.category ?? 'Other'
+      if (e.type === 'adhoc') {
+        // Include adhoc if dueDate is in current month or no dueDate
+        if (e.dueDate && !e.dueDate.startsWith(currentMonth)) continue
+      }
+      const prev = map.get(cat) ?? 0
+      if (e.type === 'recurring') {
+        map.set(cat, prev + monthlyEquivalent(e.amount, e.frequency))
+      } else {
+        map.set(cat, prev + e.amount)
+      }
+    }
+    return map
+  })
+
   return {
     incomes,
     expenses,
@@ -178,6 +205,7 @@ export const useFinancesStore = defineStore('finances', () => {
     totalMonthlyIncome,
     totalMonthlyExpenses,
     netMonthly,
+    spendingByCategory,
     enableSync,
   }
 })

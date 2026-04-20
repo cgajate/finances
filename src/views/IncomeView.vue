@@ -5,6 +5,7 @@ import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSortFilter } from '@/composables/useSortFilter'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import type { Frequency } from '@/types/finance'
+import { INCOME_CATEGORIES, type IncomeCategory } from '@/types/finance'
 
 const store = useFinancesStore()
 
@@ -20,12 +21,14 @@ const rFrequency = ref<Frequency>('monthly')
 const rDescription = ref('')
 const rNotes = ref('')
 const rDate = ref('')
+const rCategory = ref<IncomeCategory>('Other')
 
 // Adhoc form
 const aAmount = ref<number | null>(null)
 const aCurrency = useCurrencyInput(aAmount)
 const aDescription = ref('')
 const aDate = ref('')
+const aCategory = ref<IncomeCategory>('Other')
 
 function addRecurring() {
   if (!rAmount.value || !rDescription.value) return
@@ -36,12 +39,14 @@ function addRecurring() {
     description: rDescription.value,
     notes: rNotes.value,
     date: rDate.value || null,
+    category: rCategory.value,
   })
   rCurrency.reset()
   rDescription.value = ''
   rNotes.value = ''
   rDate.value = ''
   rFrequency.value = 'monthly'
+  rCategory.value = 'Other'
 }
 
 function addAdhoc() {
@@ -50,10 +55,12 @@ function addAdhoc() {
     amount: aAmount.value,
     description: aDescription.value,
     date: aDate.value,
+    category: aCategory.value,
   })
   aCurrency.reset()
   aDescription.value = ''
   aDate.value = ''
+  aCategory.value = 'Other'
 }
 
 function formatCurrency(value: number): string {
@@ -106,6 +113,12 @@ const frequencies: { value: Frequency; label: string }[] = [
         </select>
       </div>
       <div class="field">
+        <label>Category</label>
+        <select v-model="rCategory">
+          <option v-for="cat in INCOME_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+        </select>
+      </div>
+      <div class="field">
         <label>{{ rFrequency === 'yearly' ? 'Date *' : 'Date (optional)' }}</label>
         <input v-model="rDate" type="date" :required="rFrequency === 'yearly'" />
       </div>
@@ -136,6 +149,12 @@ const frequencies: { value: Frequency; label: string }[] = [
         />
       </div>
       <div class="field">
+        <label>Category</label>
+        <select v-model="aCategory">
+          <option v-for="cat in INCOME_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+        </select>
+      </div>
+      <div class="field">
         <label>Date *</label>
         <input v-model="aDate" type="date" required />
       </div>
@@ -163,6 +182,7 @@ const frequencies: { value: Frequency; label: string }[] = [
         </div>
         <div class="list-item-meta">
           <span class="badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
+          <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
           <span v-if="item.type === 'recurring' && item.date" class="meta">📅 {{ item.date }}</span>
           <span v-if="item.type === 'adhoc'" class="meta">📅 {{ item.date }}</span>
           <span v-if="item.type === 'recurring' && item.notes" class="meta">📝 {{ item.notes }}</span>
@@ -220,6 +240,7 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
   border-radius: 4px; text-transform: capitalize;
 }
 .meta { font-size: 0.8rem; color: #777; }
+.cat-badge { background: #e3f2fd; color: #1565c0; }
 .btn-edit {
   padding: 0.3rem 0.75rem; background: #1976d2; color: white;
   border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;

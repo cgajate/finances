@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import type { Frequency } from '@/types/finance'
+import { INCOME_CATEGORIES, type IncomeCategory } from '@/types/finance'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,6 +18,7 @@ const currency = useCurrencyInput(amount)
 const frequency = ref<Frequency>('monthly')
 const date = ref('')
 const notes = ref('')
+const category = ref<IncomeCategory>('Other')
 const notFound = ref(false)
 
 onMounted(() => {
@@ -29,6 +31,7 @@ onMounted(() => {
   description.value = item.description
   amount.value = item.amount
   currency.setFromValue(item.amount)
+  category.value = item.category ?? 'Other'
   if (item.type === 'recurring') {
     frequency.value = item.frequency
     date.value = item.date ?? ''
@@ -48,12 +51,14 @@ function save() {
       frequency: frequency.value,
       date: date.value || null,
       notes: notes.value,
+      category: category.value,
     })
   } else {
     store.updateIncome(id, {
       description: description.value,
       amount: amount.value,
       date: date.value,
+      category: category.value,
     })
   }
   router.push('/income')
@@ -108,6 +113,12 @@ const frequencies: { value: Frequency; label: string }[] = [
         <label>Frequency</label>
         <select v-model="frequency">
           <option v-for="f in frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select v-model="category">
+          <option v-for="cat in INCOME_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">

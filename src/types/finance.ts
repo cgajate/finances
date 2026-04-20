@@ -1,5 +1,29 @@
 export type Frequency = 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'yearly'
 
+export const EXPENSE_CATEGORIES = [
+  'Housing',
+  'Food',
+  'Transport',
+  'Utilities',
+  'Entertainment',
+  'Healthcare',
+  'Education',
+  'Savings',
+  'Other',
+] as const
+
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number]
+
+export const INCOME_CATEGORIES = [
+  'Salary',
+  'Freelance',
+  'Investment',
+  'Gift',
+  'Other',
+] as const
+
+export type IncomeCategory = (typeof INCOME_CATEGORIES)[number]
+
 export interface RecurringIncome {
   id: string
   type: 'recurring'
@@ -8,6 +32,7 @@ export interface RecurringIncome {
   description: string
   notes: string
   date: string | null // optional scheduled date
+  category?: IncomeCategory
   createdAt: string
 }
 
@@ -17,6 +42,7 @@ export interface AdhocIncome {
   amount: number
   description: string
   date: string
+  category?: IncomeCategory
   createdAt: string
 }
 
@@ -30,6 +56,7 @@ export interface RecurringExpense {
   description: string
   notes: string
   dueDate: string | null
+  category?: ExpenseCategory
   createdAt: string
 }
 
@@ -40,6 +67,7 @@ export interface AdhocExpense {
   description: string
   notes: string
   dueDate: string | null
+  category?: ExpenseCategory
   createdAt: string
 }
 
@@ -65,3 +93,10 @@ export interface MonthlyBreakdown {
   cumulativeSavings: number
 }
 
+export interface Budget {
+  id: string
+  category: ExpenseCategory
+  limit: number
+  /** YYYY-MM format */
+  month: string
+}

@@ -10,6 +10,7 @@ const router = createRouter({
     { path: '/expenses', name: 'expenses', component: () => import('@/views/ExpensesView.vue') },
     { path: '/expenses/:id/edit', name: 'edit-expense', component: () => import('@/views/EditExpenseView.vue') },
     { path: '/analytics', name: 'analytics', component: () => import('@/views/AnalyticsView.vue') },
+    { path: '/budgets', name: 'budgets', component: () => import('@/views/BudgetView.vue') },
   ],
 })
 
