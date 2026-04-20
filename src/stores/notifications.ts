@@ -92,9 +92,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
     return mutedExpenses.value.some((m) => m.sourceId === sourceId && m.mutedUntil > today)
   }
 
+  // Clean up expired mutes once on store init
+  cleanExpiredMutes()
+
   // Expense notifications: due within 7 days
   const expenseNotifications = computed<Notification[]>(() => {
-    cleanExpiredMutes()
     const results: Notification[] = []
 
     for (const expense of financesStore.expenses) {
