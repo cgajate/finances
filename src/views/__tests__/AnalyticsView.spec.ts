@@ -30,12 +30,13 @@ describe('AnalyticsView', () => {
     expect(wrapper.find('h1').text()).toContain('Analytics & Forecasting')
   })
 
-  it('shows two tabs', () => {
+  it('shows three tabs', () => {
     const wrapper = mountView()
     const tabs = wrapper.findAll('.tabs button')
-    expect(tabs).toHaveLength(2)
+    expect(tabs).toHaveLength(3)
     expect(tabs[0]!.text()).toContain('Month-by-Month')
     expect(tabs[1]!.text()).toContain('12-Month Projection')
+    expect(tabs[2]!.text()).toContain('Spending Trends')
   })
 
   it('defaults to timeline tab', () => {

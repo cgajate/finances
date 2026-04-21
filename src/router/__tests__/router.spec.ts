@@ -39,8 +39,23 @@ describe('router', () => {
     expect(route.name).toBe('budgets')
   })
 
-  it('has 7 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(7)
+  it('has a savings route at /savings', () => {
+    const route = router.resolve('/savings')
+    expect(route.name).toBe('savings')
+  })
+
+  it('has a year-review route at /year-review', () => {
+    const route = router.resolve('/year-review')
+    expect(route.name).toBe('year-review')
+  })
+
+  it('has a calendar route at /calendar', () => {
+    const route = router.resolve('/calendar')
+    expect(route.name).toBe('calendar')
+  })
+
+  it('has 11 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(11)
   })
 })
 

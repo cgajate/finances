@@ -103,5 +103,13 @@ describe('EditExpenseView', () => {
     const { wrapper } = await mountView(id)
     expect(wrapper.find('textarea').exists()).toBe(true)
   })
+
+  it('shows Assigned To field', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'T', notes: '', dueDate: null, assignedTo: 'Mom' })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    expect(wrapper.text()).toContain('Assigned To')
+  })
 })
 

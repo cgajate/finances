@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useBudgetsStore } from '@/stores/budgets'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
+import { useSnackbar } from '@/composables/useSnackbar'
 import type { ExpenseCategory } from '@/types/finance'
 
 const budgetsStore = useBudgetsStore()
+const snackbar = useSnackbar()
 
 const selectedCategory = ref<ExpenseCategory | ''>('')
 const limitAmount = ref<number | null>(null)
@@ -22,19 +24,26 @@ function addBudget() {
 }
 
 function removeBudget(category: ExpenseCategory) {
+  const budget = budgetsStore.getBudgetForCategory(category)
+  const limit = budget?.limit ?? 0
   budgetsStore.removeBudget(category)
+  snackbar.show(`Removed ${category} budget`, () => {
+    budgetsStore.setBudget(category, limit)
+  })
 }
 
 function statusColor(status: string): string {
-  if (status === 'over') return '#c62828'
-  if (status === 'warning') return '#e65100'
-  return '#2e7d32'
+  const style = getComputedStyle(document.documentElement)
+  if (status === 'over') return style.getPropertyValue('--color-expense').trim()
+  if (status === 'warning') return style.getPropertyValue('--color-warning').trim()
+  return style.getPropertyValue('--color-income').trim()
 }
 
 function barColor(status: string): string {
-  if (status === 'over') return '#ef5350'
-  if (status === 'warning') return '#ff9800'
-  return '#4caf50'
+  const style = getComputedStyle(document.documentElement)
+  if (status === 'over') return style.getPropertyValue('--color-progress-over').trim()
+  if (status === 'warning') return style.getPropertyValue('--color-progress-warning').trim()
+  return style.getPropertyValue('--color-progress-fill').trim()
 }
 </script>
 
@@ -116,52 +125,43 @@ function barColor(status: string): string {
 <style scoped>
 .page { max-width: 600px; margin: 0 auto; }
 h1 { margin-bottom: 0.25rem; }
-.subtitle { color: #777; font-size: 0.9rem; margin-bottom: 1.5rem; }
+.subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
 .form { margin-bottom: 2rem; }
-.form-row {
-  display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;
-}
+.form-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
 .field { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 140px; }
-.field label { font-size: 0.85rem; font-weight: 600; color: #555; }
+.field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
 .field input, .field select {
-  padding: 0.6rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem;
+  padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
+  background: var(--color-input-bg); color: var(--color-input-text);
 }
 .btn-add {
-  padding: 0.6rem 1.25rem; background: #1976d2; color: white; border: none;
+  padding: 0.6rem 1.25rem; background: var(--color-primary); color: white; border: none;
   border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;
   white-space: nowrap; align-self: flex-end;
 }
-.all-set { color: #2e7d32; font-weight: 500; margin-bottom: 1.5rem; }
+.all-set { color: var(--color-income); font-weight: 500; margin-bottom: 1.5rem; }
 
 .budget-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .budget-card {
-  padding: 1rem; border: 1px solid #e0e0e0; border-radius: 12px;
-  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1rem; border: 1px solid var(--color-border); border-radius: 12px;
+  display: flex; flex-direction: column; gap: 0.5rem; background: var(--color-surface);
 }
-.budget-header {
-  display: flex; justify-content: space-between; align-items: center;
-}
+.budget-header { display: flex; justify-content: space-between; align-items: center; }
 .budget-category { font-weight: 700; font-size: 1rem; }
 .budget-values { font-weight: 600; font-size: 0.9rem; }
 
-.progress-bar {
-  height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;
-}
-.progress-fill {
-  height: 100%; border-radius: 5px; transition: width 0.3s ease;
-}
+.progress-bar { height: 10px; background: var(--color-progress-track); border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 5px; transition: width 0.3s ease; }
 
-.budget-footer {
-  display: flex; justify-content: space-between; align-items: center;
-}
+.budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }
 .status-label { font-weight: 500; }
 .btn-remove {
-  padding: 0.25rem 0.6rem; background: none; color: #ef5350; border: 1px solid #ef5350;
+  padding: 0.25rem 0.6rem; background: none; color: var(--color-btn-delete); border: 1px solid var(--color-btn-delete);
   border-radius: 6px; font-size: 0.8rem; cursor: pointer;
 }
-.btn-remove:hover { background: #fce4ec; }
-.empty { color: #999; font-style: italic; }
+.btn-remove:hover { background: var(--color-expense-bg); }
+.empty { color: var(--color-text-muted); font-style: italic; }
 </style>
 

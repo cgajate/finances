@@ -107,7 +107,7 @@ async function handleVerify() {
 .pin-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #1565c0, #1976d2, #42a5f5);
+  background: linear-gradient(135deg, var(--color-header-bg), var(--color-primary));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,12 +116,12 @@ async function handleVerify() {
 }
 
 .pin-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 2rem;
   width: 100%;
   max-width: 360px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 40px var(--color-card-shadow);
   text-align: center;
 }
 
@@ -132,12 +132,12 @@ async function handleVerify() {
 
 h1 {
   font-size: 1.3rem;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 0.5rem;
 }
 
 .pin-subtitle {
-  color: #777;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   margin-bottom: 1.25rem;
 }
@@ -151,24 +151,26 @@ h1 {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #555;
+  color: var(--color-text-secondary);
   margin-bottom: 0.25rem;
 }
 
 .pin-field input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border);
   border-radius: 10px;
   font-size: 1.2rem;
   text-align: center;
   letter-spacing: 0.3em;
   box-sizing: border-box;
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
 }
 
 .pin-field input:focus {
   outline: none;
-  border-color: #1976d2;
+  border-color: var(--color-primary);
 }
 
 .remember-check {
@@ -176,18 +178,18 @@ h1 {
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0.75rem 0;
   cursor: pointer;
   justify-content: center;
 }
 
 .remember-check input[type="checkbox"] {
-  accent-color: #1976d2;
+  accent-color: var(--color-primary);
 }
 
 .pin-error {
-  color: #c62828;
+  color: var(--color-expense);
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -196,7 +198,7 @@ h1 {
 .pin-btn {
   width: 100%;
   padding: 0.75rem;
-  background: #1976d2;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 10px;
@@ -207,7 +209,7 @@ h1 {
 }
 
 .pin-btn:hover {
-  background: #1565c0;
+  filter: brightness(0.9);
 }
 </style>
 

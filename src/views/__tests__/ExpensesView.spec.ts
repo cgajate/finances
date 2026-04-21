@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import ExpensesView from '@/views/ExpensesView.vue'
 import { useFinancesStore } from '@/stores/finances'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 function makeRouter() {
   return createRouter({
@@ -23,6 +24,7 @@ describe('ExpensesView', () => {
     localStorage.clear()
     pinia = createPinia()
     setActivePinia(pinia)
+    useSnackbar().dismissAll()
   })
 
   function mountView() {
@@ -120,6 +122,102 @@ describe('ExpensesView', () => {
     store.addAdhocExpense({ amount: 50, description: 'T', notes: '', dueDate: null })
     const wrapper = mountView()
     expect(wrapper.findComponent({ name: 'FilterSortBar' }).exists()).toBe(true)
+  })
+
+  it('shows assigned-to badge when expense has assignedTo', () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null, assignedTo: 'Dad' })
+    const wrapper = mountView()
+    expect(wrapper.find('.assigned-badge').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Dad')
+  })
+
+  it('does not show assigned-to badge when assignedTo is empty', () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    const wrapper = mountView()
+    expect(wrapper.find('.assigned-badge').exists()).toBe(false)
+  })
+
+  it('shows Assigned To input in recurring form', () => {
+    const wrapper = mountView()
+    expect(wrapper.text()).toContain('Assigned To')
+  })
+
+  it('shows search input when items exist', () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'T', notes: '', dueDate: null })
+    const wrapper = mountView()
+    expect(wrapper.find('.search-input').exists()).toBe(true)
+  })
+
+  it('does not show search input when no items', () => {
+    const wrapper = mountView()
+    expect(wrapper.find('.search-input').exists()).toBe(false)
+  })
+
+  it('filters expense list by search query', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 1500, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    store.addAdhocExpense({ amount: 75, description: 'Grocery', notes: '', dueDate: null })
+    const wrapper = mountView()
+    expect(wrapper.findAll('.list-item')).toHaveLength(2)
+    await wrapper.find('.search-input').setValue('Rent')
+    expect(wrapper.findAll('.list-item')).toHaveLength(1)
+    expect(wrapper.text()).toContain('Rent')
+    expect(wrapper.text()).not.toContain('Grocery')
+  })
+
+  it('shows no-match message when search has no results', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('zzzznotfound')
+    expect(wrapper.text()).toContain('No expenses match "zzzznotfound"')
+  })
+
+  it('clears search on clear button click', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
+    store.addAdhocExpense({ amount: 100, description: 'Other', notes: '', dueDate: null })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('Test')
+    expect(wrapper.findAll('.list-item')).toHaveLength(1)
+    await wrapper.find('.search-clear').trigger('click')
+    expect(wrapper.findAll('.list-item')).toHaveLength(2)
+  })
+
+  it('searches by assignedTo field', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Electric', notes: '', dueDate: null, assignedTo: 'Dad' })
+    store.addRecurringExpense({ amount: 200, frequency: 'monthly', description: 'Water', notes: '', dueDate: null, assignedTo: 'Mom' })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('Dad')
+    expect(wrapper.findAll('.list-item')).toHaveLength(1)
+    expect(wrapper.text()).toContain('Electric')
+  })
+
+  it('shows snackbar with undo after removing expense', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Groceries', notes: '', dueDate: null })
+    const wrapper = mountView()
+    await wrapper.find('.btn-delete').trigger('click')
+    expect(store.expenses).toHaveLength(0)
+    const snackbar = useSnackbar()
+    expect(snackbar.items.value.length).toBeGreaterThan(0)
+    expect(snackbar.items.value[0]!.message).toContain('Groceries')
+  })
+
+  it('undo restores the deleted expense', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Groceries', notes: '', dueDate: null })
+    const wrapper = mountView()
+    await wrapper.find('.btn-delete').trigger('click')
+    const snackbar = useSnackbar()
+    snackbar.undo(snackbar.items.value[0]!.id)
+    expect(store.expenses).toHaveLength(1)
+    expect(store.expenses[0]!.description).toBe('Groceries')
+    expect(store.expenses[0]!.amount).toBe(50)
   })
 })
 

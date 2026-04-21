@@ -2,11 +2,17 @@
 import { ref, computed } from 'vue'
 import { useFinancesStore } from '@/stores/finances'
 import { useBudgetsStore } from '@/stores/budgets'
+import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 import { useSortFilter } from '@/composables/useSortFilter'
+import { useSearch } from '@/composables/useSearch'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 
 const store = useFinancesStore()
 const budgetsStore = useBudgetsStore()
+const savingsStore = useSavingsGoalsStore()
+
+// Global search
+const { query: searchQuery, results: searchResults, resultCount, clearSearch } = useSearch()
 
 const {
   sortBy: incomeSortBy,
@@ -52,6 +58,36 @@ function formatFrequency(freq: string): string {
   <div class="dashboard">
     <h1>Family Finances</h1>
 
+    <!-- Global Search -->
+    <div class="search-bar">
+      <input
+        v-model="searchQuery"
+        type="text"
+        class="search-input"
+        placeholder="🔍 Search all income & expenses..."
+      />
+      <button v-if="searchQuery" class="search-clear" @click="clearSearch()">✕</button>
+    </div>
+
+    <!-- Search Results -->
+    <div v-if="searchQuery.trim()" class="search-results">
+      <h2>Search Results ({{ resultCount }})</h2>
+      <div v-if="searchResults.length" class="search-list">
+        <div v-for="r in searchResults" :key="r.id" class="search-item">
+          <div class="search-item-main">
+            <span class="badge" :class="r.kind === 'income' ? 'badge-income' : 'badge-expense'">{{ r.kind }}</span>
+            <strong>{{ r.description }}</strong>
+            <span class="amount" :class="r.kind === 'income' ? '' : 'expense'">{{ formatCurrency(r.amount) }}</span>
+          </div>
+          <div class="search-item-meta">
+            <span class="badge cat-badge">{{ r.category }}</span>
+          </div>
+        </div>
+      </div>
+      <p v-else class="empty">No results for "{{ searchQuery }}".</p>
+    </div>
+
+    <template v-if="!searchQuery.trim()">
     <div class="summary-cards">
       <div class="card income-card">
         <span class="card-label">Monthly Income</span>
@@ -170,6 +206,29 @@ function formatFrequency(freq: string): string {
       </div>
       <RouterLink to="/budgets" class="btn">Manage Budgets →</RouterLink>
     </section>
+
+    <!-- Savings Goals -->
+    <section v-if="savingsStore.activeGoals.length" class="savings-section">
+      <h2>🎯 Savings Goals</h2>
+      <div class="savings-goals">
+        <div v-for="goal in savingsStore.activeGoals" :key="goal.id" class="savings-goal-row">
+          <div class="savings-goal-info">
+            <span class="savings-goal-name">{{ goal.name }}</span>
+            <span class="savings-goal-amt">
+              {{ formatCurrency(goal.savedAmount) }} / {{ formatCurrency(goal.targetAmount) }}
+            </span>
+          </div>
+          <div class="savings-meter-track">
+            <div
+              class="savings-meter-fill"
+              :style="{ width: Math.min(Math.round((goal.savedAmount / goal.targetAmount) * 100), 100) + '%' }"
+            ></div>
+          </div>
+        </div>
+      </div>
+      <RouterLink to="/savings" class="btn">Manage Goals →</RouterLink>
+    </section>
+    </template>
   </div>
 </template>
 
@@ -210,10 +269,10 @@ h1 {
   font-weight: 700;
 }
 
-.income-card { background: #e8f5e9; color: #2e7d32; }
-.expense-card { background: #fce4ec; color: #c62828; }
-.net-card { background: #e3f2fd; color: #1565c0; }
-.net-card.negative { background: #fff3e0; color: #e65100; }
+.income-card { background: var(--color-income-bg); color: var(--color-income); }
+.expense-card { background: var(--color-expense-bg); color: var(--color-expense); }
+.net-card { background: var(--color-primary-light); color: var(--color-primary-text); }
+.net-card.negative { background: var(--color-warning-bg); color: var(--color-warning); }
 
 .quick-lists section { margin-bottom: 2rem; }
 h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }
@@ -221,92 +280,89 @@ h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }
 ul { list-style: none; padding: 0; margin: 0 0 1rem 0; }
 li {
   display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem; border-bottom: 1px solid #eee; flex-wrap: wrap;
+  padding: 0.75rem; border-bottom: 1px solid var(--color-border-light); flex-wrap: wrap;
 }
 li strong { flex: 1; min-width: 120px; }
-.amount { font-weight: 600; color: #2e7d32; }
-.amount.expense { color: #c62828; }
+.amount { font-weight: 600; color: var(--color-income); }
+.amount.expense { color: var(--color-expense); }
 .badge {
-  font-size: 0.75rem; background: #f0f0f0; padding: 0.2rem 0.5rem;
-  border-radius: 4px; text-transform: capitalize;
+  font-size: 0.75rem; background: var(--color-badge-bg); padding: 0.2rem 0.5rem;
+  border-radius: 4px; text-transform: capitalize; color: var(--color-badge-text);
 }
-.empty { color: #999; font-style: italic; }
+.empty { color: var(--color-text-muted); font-style: italic; }
 
 .section-actions {
   display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
 }
 .btn {
-  display: inline-block; padding: 0.5rem 1rem; background: #1976d2;
+  display: inline-block; padding: 0.5rem 1rem; background: var(--color-primary);
   color: white; border-radius: 8px; text-decoration: none; font-size: 0.9rem;
 }
 .btn-toggle {
-  padding: 0.5rem 1rem; background: none; color: #1976d2;
-  border: 1px solid #1976d2; border-radius: 8px; font-size: 0.9rem;
+  padding: 0.5rem 1rem; background: none; color: var(--color-primary);
+  border: 1px solid var(--color-primary); border-radius: 8px; font-size: 0.9rem;
   cursor: pointer; font-weight: 500;
 }
-.btn-toggle:hover { background: #e3f2fd; }
+.btn-toggle:hover { background: var(--color-primary-light); }
 
 .budget-section {
   margin-top: 2rem;
   padding: 1.5rem;
   border-radius: 12px;
-  background: #f9f9f9;
+  background: var(--color-bg-secondary);
 }
 
-.budget-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+.budget-bars { display: flex; flex-direction: column; gap: 0.75rem; }
+.budget-row { display: flex; flex-direction: column; gap: 0.25rem; }
+.budget-info { display: flex; justify-content: space-between; align-items: center; }
+.budget-cat { font-weight: 500; font-size: 0.9rem; }
+.budget-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-income); }
+.budget-warning { color: var(--color-warning); }
+.budget-over { color: var(--color-expense); }
+.progress-track { height: 8px; border-radius: 4px; background: var(--color-progress-track); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; background: var(--color-progress-fill); transition: width 0.3s ease; }
+.fill-warning { background: var(--color-progress-warning); }
+.fill-over { background: var(--color-progress-over); }
+.budget-section .btn { margin-top: 1rem; }
 
-.budget-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.savings-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--color-bg-secondary);
 }
+.savings-goals { display: flex; flex-direction: column; gap: 0.75rem; }
+.savings-goal-row { display: flex; flex-direction: column; gap: 0.25rem; }
+.savings-goal-info { display: flex; justify-content: space-between; align-items: center; }
+.savings-goal-name { font-weight: 500; font-size: 0.9rem; }
+.savings-goal-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
+.savings-meter-track { height: 8px; background: var(--color-progress-track); border-radius: 4px; overflow: hidden; }
+.savings-meter-fill { height: 100%; background: var(--color-primary); border-radius: 4px; transition: width 0.3s ease; }
+.savings-section .btn { margin-top: 1rem; }
 
-.budget-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.search-bar { position: relative; margin-bottom: 1.5rem; }
+.search-input {
+  width: 100%; padding: 0.7rem 2.2rem 0.7rem 0.75rem;
+  border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
+  box-sizing: border-box; background: var(--color-input-bg); color: var(--color-input-text);
 }
+.search-clear {
+  position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; font-size: 1rem; color: var(--color-text-muted);
+  cursor: pointer; padding: 0.2rem;
+}
+.search-clear:hover { color: var(--color-text); }
 
-.budget-cat {
-  font-weight: 500;
-  font-size: 0.9rem;
+.search-results { margin-bottom: 2rem; }
+.search-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.search-item {
+  padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px;
+  display: flex; flex-direction: column; gap: 0.4rem; background: var(--color-surface);
 }
-
-.budget-amt {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #2e7d32;
-}
-.budget-warning { color: #e65100; }
-.budget-over { color: #c62828; }
-
-.progress-track {
-  height: 8px;
-  border-radius: 4px;
-  background: #e0e0e0;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 4px;
-  background: #4caf50;
-  transition: width 0.3s ease;
-}
-
-.fill-warning {
-  background: #ff9800;
-}
-
-.fill-over {
-  background: #f44336;
-}
-
-.budget-section .btn {
-  margin-top: 1rem;
-}
+.search-item-main { display: flex; align-items: center; gap: 0.5rem; }
+.search-item-main strong { flex: 1; }
+.search-item-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.badge-income { background: var(--color-income-bg); color: var(--color-income); }
+.badge-expense { background: var(--color-expense-bg); color: var(--color-expense); }
+.cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
 </style>

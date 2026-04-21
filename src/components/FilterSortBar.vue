@@ -142,7 +142,7 @@ function setSort(s: SortOption) {
 .bar-label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #888;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   min-width: 40px;
@@ -153,7 +153,7 @@ function setSort(s: SortOption) {
 }
 
 .filter-count {
-  background: #1976d2;
+  background: var(--color-primary);
   color: white;
   font-size: 0.65rem;
   min-width: 16px;
@@ -179,18 +179,18 @@ function setSort(s: SortOption) {
   gap: 0.25rem;
   padding: 0.3rem 0.65rem;
   border-radius: 20px;
-  border: 1.5px solid #ddd;
-  background: white;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 .bubble:hover {
-  border-color: #aaa;
-  background: #fafafa;
+  border-color: var(--color-text-muted);
+  background: var(--color-bg-secondary);
 }
 
 .bubble-icon {
@@ -204,23 +204,23 @@ function setSort(s: SortOption) {
 
 /* Sort active */
 .sort-bubble.active {
-  background: #1976d2;
+  background: var(--color-primary);
   color: white;
-  border-color: #1976d2;
+  border-color: var(--color-primary);
 }
 
 /* Filter toggle */
 .filter-toggle-btn.active {
-  background: #e3f2fd;
-  border-color: #1976d2;
-  color: #1976d2;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* Active chip */
 .active-chip {
-  background: #e8f5e9;
-  border-color: #4caf50;
-  color: #2e7d32;
+  background: var(--color-income-bg);
+  border-color: var(--color-income);
+  color: var(--color-income);
 }
 
 .chip-x {
@@ -230,9 +230,9 @@ function setSort(s: SortOption) {
 }
 
 .active-chip:hover {
-  background: #fce4ec;
-  border-color: #ef5350;
-  color: #c62828;
+  background: var(--color-expense-bg);
+  border-color: var(--color-btn-delete);
+  color: var(--color-expense);
 }
 
 .active-chip:hover .chip-x {
@@ -240,20 +240,20 @@ function setSort(s: SortOption) {
 }
 
 .clear-btn {
-  border-color: #ef5350;
-  color: #ef5350;
+  border-color: var(--color-btn-delete);
+  color: var(--color-btn-delete);
   font-weight: 600;
   font-size: 0.75rem;
 }
 
 .clear-btn:hover {
-  background: #fce4ec;
+  background: var(--color-expense-bg);
 }
 
 /* Filter panel */
 .filter-panel {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 0.75rem;
   margin-left: 40px;
@@ -271,9 +271,9 @@ function setSort(s: SortOption) {
 }
 
 .filter-bubble.selected {
-  background: #1976d2;
+  background: var(--color-primary);
   color: white;
-  border-color: #1976d2;
+  border-color: var(--color-primary);
 }
 
 .check {
@@ -296,18 +296,18 @@ function setSort(s: SortOption) {
 }
 
 .action-btn.apply {
-  background: #1976d2;
+  background: var(--color-primary);
   color: white;
 }
 
 .action-btn.clear {
   background: none;
-  color: #757575;
-  border: 1px solid #ccc;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-input-border);
 }
 
 .action-btn.clear:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-secondary);
 }
 
 /* Transition */

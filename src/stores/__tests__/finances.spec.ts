@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
 
@@ -252,6 +252,95 @@ describe('finances store', () => {
       setActivePinia(createPinia())
       const store = useFinancesStore()
       expect(store.incomes).toEqual([])
+    })
+  })
+
+  describe('assignedTo', () => {
+    it('stores assignedTo on recurring expense', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'R', notes: '', dueDate: null, assignedTo: 'Dad' })
+      expect(store.expenses[0]!.assignedTo).toBe('Dad')
+    })
+
+    it('stores assignedTo on adhoc expense', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 50, description: 'A', notes: '', dueDate: null, assignedTo: 'Mom' })
+      expect(store.expenses[0]!.assignedTo).toBe('Mom')
+    })
+
+    it('defaults assignedTo to empty string', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'R', notes: '', dueDate: null })
+      expect(store.expenses[0]!.assignedTo).toBe('')
+    })
+
+    it('auto-registers assignedTo as a family member', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'R', notes: '', dueDate: null, assignedTo: 'Dad' })
+      expect(store.familyMembers).toContain('Dad')
+    })
+
+    it('does not duplicate family members', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'R', notes: '', dueDate: null, assignedTo: 'Dad' })
+      store.addAdhocExpense({ amount: 50, description: 'A', notes: '', dueDate: null, assignedTo: 'Dad' })
+      expect(store.familyMembers.filter((m) => m === 'Dad')).toHaveLength(1)
+    })
+
+    it('updates assignedTo via updateExpense', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'R', notes: '', dueDate: null, assignedTo: 'Dad' })
+      const id = store.expenses[0]!.id
+      store.updateExpense(id, { assignedTo: 'Mom' })
+      expect(store.expenses[0]!.assignedTo).toBe('Mom')
+    })
+  })
+
+  describe('family members', () => {
+    it('starts with empty family members', () => {
+      const store = useFinancesStore()
+      expect(store.familyMembers).toHaveLength(0)
+    })
+
+    it('addFamilyMember adds a member', () => {
+      const store = useFinancesStore()
+      store.addFamilyMember('Alice')
+      expect(store.familyMembers).toContain('Alice')
+    })
+
+    it('addFamilyMember trims whitespace', () => {
+      const store = useFinancesStore()
+      store.addFamilyMember('  Bob  ')
+      expect(store.familyMembers).toContain('Bob')
+    })
+
+    it('addFamilyMember ignores duplicates', () => {
+      const store = useFinancesStore()
+      store.addFamilyMember('Alice')
+      store.addFamilyMember('Alice')
+      expect(store.familyMembers).toHaveLength(1)
+    })
+
+    it('addFamilyMember ignores empty string', () => {
+      const store = useFinancesStore()
+      store.addFamilyMember('')
+      store.addFamilyMember('  ')
+      expect(store.familyMembers).toHaveLength(0)
+    })
+
+    it('removeFamilyMember removes a member', () => {
+      const store = useFinancesStore()
+      store.addFamilyMember('Alice')
+      store.addFamilyMember('Bob')
+      store.removeFamilyMember('Alice')
+      expect(store.familyMembers).toEqual(['Bob'])
+    })
+
+    it('loads family members from localStorage', () => {
+      localStorage.setItem('finances:familyMembers', JSON.stringify(['Mom', 'Dad']))
+      setActivePinia(createPinia())
+      const store = useFinancesStore()
+      expect(store.familyMembers).toEqual(['Mom', 'Dad'])
     })
   })
 })

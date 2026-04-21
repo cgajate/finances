@@ -3,12 +3,14 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
+import { useSnackbar } from '@/composables/useSnackbar'
 import type { Frequency } from '@/types/finance'
 import { INCOME_CATEGORIES, type IncomeCategory } from '@/types/finance'
 
 const route = useRoute()
 const router = useRouter()
 const store = useFinancesStore()
+const snackbar = useSnackbar()
 
 const id = route.params.id as string
 const itemType = ref<'recurring' | 'adhoc'>('recurring')
@@ -69,7 +71,29 @@ function cancel() {
 }
 
 function remove() {
+  const item = store.getIncomeById(id)
+  if (!item) return
+  const snapshot = { ...item }
   store.removeIncome(id)
+  snackbar.show(`Deleted "${snapshot.description}"`, () => {
+    if (snapshot.type === 'recurring') {
+      store.addRecurringIncome({
+        amount: snapshot.amount,
+        frequency: snapshot.frequency,
+        description: snapshot.description,
+        notes: snapshot.notes,
+        date: snapshot.date,
+        category: snapshot.category,
+      })
+    } else {
+      store.addAdhocIncome({
+        amount: snapshot.amount,
+        description: snapshot.description,
+        date: snapshot.date,
+        category: snapshot.category,
+      })
+    }
+  })
   router.push('/income')
 }
 
@@ -146,31 +170,31 @@ h1 { margin-bottom: 1.5rem; }
 
 .form { display: flex; flex-direction: column; gap: 1rem; }
 .field { display: flex; flex-direction: column; gap: 0.25rem; }
-.field label { font-size: 0.85rem; font-weight: 600; color: #555; }
+.field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
 .field input, .field select, .field textarea {
-  padding: 0.6rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem;
+  padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
+  background: var(--color-input-bg); color: var(--color-input-text);
 }
 .field textarea { resize: vertical; }
 
 .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
 .btn-save {
-  flex: 1; padding: 0.75rem; background: #2e7d32; color: white; border: none; border-radius: 8px;
+  flex: 1; padding: 0.75rem; background: var(--color-income); color: white; border: none; border-radius: 8px;
   font-size: 1rem; font-weight: 600; cursor: pointer;
 }
 .btn-cancel {
-  flex: 1; padding: 0.75rem; background: #757575; color: white; border: none; border-radius: 8px;
+  flex: 1; padding: 0.75rem; background: var(--color-text-muted); color: white; border: none; border-radius: 8px;
   font-size: 1rem; font-weight: 600; cursor: pointer;
 }
 .btn-delete {
-  margin-top: 1.5rem; padding: 0.6rem; background: none; color: #ef5350; border: 1px solid #ef5350;
+  margin-top: 1.5rem; padding: 0.6rem; background: none; color: var(--color-btn-delete); border: 1px solid var(--color-btn-delete);
   border-radius: 8px; font-size: 0.9rem; cursor: pointer; width: 100%;
 }
-.btn-delete:hover { background: #fce4ec; }
+.btn-delete:hover { background: var(--color-expense-bg); }
 .btn-back {
-  padding: 0.5rem 1rem; background: #1976d2; color: white; border: none; border-radius: 8px;
+  padding: 0.5rem 1rem; background: var(--color-primary); color: white; border: none; border-radius: 8px;
   font-size: 0.9rem; cursor: pointer;
 }
 .not-found { text-align: center; padding: 2rem 0; }
-.not-found p { margin-bottom: 1rem; color: #999; }
+.not-found p { margin-bottom: 1rem; color: var(--color-text-muted); }
 </style>
-

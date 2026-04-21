@@ -14,7 +14,11 @@
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "cap:sync": "npm run build-only && cap sync android",
+    "cap:open": "cap open android",
+    "cap:run": "npm run build-only && cap sync android && cap run android",
+    "cap:build": "npm run build-only && cap sync android && cd android && ./gradlew assembleDebug && echo '\n✅ APK ready at: android/app/build/outputs/apk/debug/app-debug.apk'"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",

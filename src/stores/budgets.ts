@@ -5,6 +5,7 @@ import { EXPENSE_CATEGORIES } from '@/types/finance'
 import { useFinancesStore } from '@/stores/finances'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
+import { useActivityFeedStore } from '@/stores/activityFeed'
 
 function generateId(): string {
   return crypto.randomUUID()
@@ -86,7 +87,7 @@ export const useBudgetsStore = defineStore('budgets', () => {
     })
   })
 
-  function setBudget(category: ExpenseCategory, limit: number) {
+  function setBudget(category: ExpenseCategory, limit: number, userId = 'anonymous') {
     const month = currentMonth()
     const existing = budgets.value.findIndex(
       (b) => b.category === category && b.month === month,
@@ -95,17 +96,26 @@ export const useBudgetsStore = defineStore('budgets', () => {
       const item = budgets.value[existing]
       if (item) {
         budgets.value.splice(existing, 1, { ...item, limit })
+        useActivityFeedStore().logActivity(userId, 'edit', 'budget', item.id, `Updated ${category} budget to $${limit}`)
       }
     } else {
-      budgets.value.push({ id: generateId(), category, limit, month })
+      const id = generateId()
+      budgets.value.push({ id, category, limit, month })
+      useActivityFeedStore().logActivity(userId, 'add', 'budget', id, `Set ${category} budget to $${limit}`)
     }
   }
 
-  function removeBudget(category: ExpenseCategory) {
+  function removeBudget(category: ExpenseCategory, userId = 'anonymous') {
     const month = currentMonth()
+    const item = budgets.value.find(
+      (b) => b.category === category && b.month === month,
+    )
     budgets.value = budgets.value.filter(
       (b) => !(b.category === category && b.month === month),
     )
+    if (item) {
+      useActivityFeedStore().logActivity(userId, 'delete', 'budget', item.id, `Removed ${category} budget`)
+    }
   }
 
   function getBudgetForCategory(category: ExpenseCategory): Budget | undefined {

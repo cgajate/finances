@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '@/views/DashboardView.vue'
@@ -139,6 +139,61 @@ describe('DashboardView', () => {
   it('does not show FilterSortBar when no items', () => {
     const wrapper = mountView()
     expect(wrapper.findComponent({ name: 'FilterSortBar' }).exists()).toBe(false)
+  })
+
+  it('shows global search input', () => {
+    const wrapper = mountView()
+    expect(wrapper.find('.search-input').exists()).toBe(true)
+  })
+
+  it('shows search results when query is entered', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 5000, frequency: 'monthly', description: 'Salary', notes: '', date: null })
+    store.addAdhocExpense({ amount: 75, description: 'Grocery', notes: '', dueDate: null })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('Salary')
+    expect(wrapper.text()).toContain('Search Results')
+    expect(wrapper.text()).toContain('Salary')
+    expect(wrapper.text()).not.toContain('Grocery')
+  })
+
+  it('hides dashboard content when searching', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 5000, frequency: 'monthly', description: 'Salary', notes: '', date: null })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('Salary')
+    expect(wrapper.find('.summary-cards').exists()).toBe(false)
+  })
+
+  it('shows dashboard content when search is empty', () => {
+    const wrapper = mountView()
+    expect(wrapper.find('.summary-cards').exists()).toBe(true)
+  })
+
+  it('shows no results message for unmatched search', async () => {
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('zzzznotfound')
+    expect(wrapper.text()).toContain('No results for "zzzznotfound"')
+  })
+
+  it('shows clear button and clears search on click', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'Test', notes: '', date: null })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('Test')
+    expect(wrapper.find('.search-clear').exists()).toBe(true)
+    await wrapper.find('.search-clear').trigger('click')
+    expect(wrapper.find('.summary-cards').exists()).toBe(true)
+  })
+
+  it('search results show income and expense badges', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'Monthly pay', notes: '', date: null })
+    store.addRecurringExpense({ amount: 50, frequency: 'monthly', description: 'Monthly sub', notes: '', dueDate: null })
+    const wrapper = mountView()
+    await wrapper.find('.search-input').setValue('Monthly')
+    expect(wrapper.find('.badge-income').exists()).toBe(true)
+    expect(wrapper.find('.badge-expense').exists()).toBe(true)
   })
 })
 

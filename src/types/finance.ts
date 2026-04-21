@@ -57,6 +57,7 @@ export interface RecurringExpense {
   notes: string
   dueDate: string | null
   category?: ExpenseCategory
+  assignedTo?: string
   createdAt: string
 }
 
@@ -68,6 +69,7 @@ export interface AdhocExpense {
   notes: string
   dueDate: string | null
   category?: ExpenseCategory
+  assignedTo?: string
   createdAt: string
 }
 
@@ -99,4 +101,41 @@ export interface Budget {
   limit: number
   /** YYYY-MM format */
   month: string
+}
+
+export interface SavingsGoal {
+  id: string
+  name: string
+  targetAmount: number
+  savedAmount: number
+  /** ISO date string — deadline */
+  deadline: string
+  createdAt: string
+}
+
+export type ActivityAction = 'add' | 'edit' | 'delete'
+export type ActivityEntity = 'income' | 'expense' | 'budget' | 'savings-goal'
+
+export interface ActivityEntry {
+  id: string
+  userId: string
+  action: ActivityAction
+  entity: ActivityEntity
+  entityId: string
+  description: string
+  timestamp: string
+}
+
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
+
+export interface ApprovalRequest {
+  id: string
+  expenseId: string
+  amount: number
+  description: string
+  requestedBy: string
+  reviewedBy: string | null
+  status: ApprovalStatus
+  createdAt: string
+  resolvedAt: string | null
 }

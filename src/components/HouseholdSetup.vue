@@ -4,11 +4,13 @@ import { useHousehold } from '@/composables/useHousehold'
 import { useFinancesStore } from '@/stores/finances'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useBudgetsStore } from '@/stores/budgets'
+import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 
 const { householdId, hasHousehold, firebaseReady, createHousehold, joinHousehold, leaveHousehold } = useHousehold()
 const financesStore = useFinancesStore()
 const notificationsStore = useNotificationsStore()
 const budgetsStore = useBudgetsStore()
+const savingsGoalsStore = useSavingsGoalsStore()
 
 const mode = ref<'menu' | 'join'>('menu')
 const joinCode = ref('')
@@ -24,6 +26,7 @@ async function handleCreate() {
     financesStore.enableSync(code)
     notificationsStore.enableSync(code)
     budgetsStore.enableSync(code)
+    savingsGoalsStore.enableSync(code)
     showCode.value = true
   } else {
     error.value = 'Failed to create household. Check Firebase config.'
@@ -43,6 +46,7 @@ async function handleJoin() {
     financesStore.enableSync(householdId.value!)
     notificationsStore.enableSync(householdId.value!)
     budgetsStore.enableSync(householdId.value!)
+    savingsGoalsStore.enableSync(householdId.value!)
   } else {
     error.value = 'Household not found. Check the code and try again.'
   }
@@ -59,6 +63,7 @@ if (hasHousehold.value) {
   financesStore.enableSync(householdId.value!)
   notificationsStore.enableSync(householdId.value!)
   budgetsStore.enableSync(householdId.value!)
+  savingsGoalsStore.enableSync(householdId.value!)
 }
 </script>
 
@@ -133,14 +138,14 @@ if (hasHousehold.value) {
   flex-wrap: wrap;
 }
 
-.household-banner.offline { background: #f5f5f5; color: #999; }
-.household-banner.connected { background: #e8f5e9; color: #2e7d32; }
-.household-banner.created { background: #e3f2fd; color: #1565c0; }
+.household-banner.offline { background: var(--color-bg-secondary); color: var(--color-text-muted); }
+.household-banner.connected { background: var(--color-income-bg); color: var(--color-income); }
+.household-banner.created { background: var(--color-primary-light); color: var(--color-primary-text); }
 
 .code-display {
   display: inline-block;
   margin-left: 0.5rem;
-  background: white;
+  background: var(--color-surface);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
   font-size: 1.1rem;
@@ -155,8 +160,8 @@ if (hasHousehold.value) {
   cursor: pointer;
   border: none;
 }
-.leave-btn { background: #ffcdd2; color: #c62828; }
-.done-btn { background: #bbdefb; color: #1565c0; }
+.leave-btn { background: var(--color-expense-bg); color: var(--color-expense); }
+.done-btn { background: var(--color-primary-light); color: var(--color-primary-text); }
 
 .household-setup {
   display: flex;
@@ -165,8 +170,8 @@ if (hasHousehold.value) {
 }
 
 .setup-card {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 360px;
@@ -175,7 +180,7 @@ if (hasHousehold.value) {
 }
 
 .setup-card h2 { font-size: 1.15rem; margin-bottom: 0.25rem; }
-.setup-desc { color: #777; font-size: 0.9rem; margin-bottom: 1.25rem; }
+.setup-desc { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
 
 .setup-actions {
   display: flex;
@@ -191,15 +196,15 @@ if (hasHousehold.value) {
   font-weight: 600;
   cursor: pointer;
 }
-.setup-btn.create { background: #1976d2; color: white; }
-.setup-btn.join { background: #4caf50; color: white; }
-.setup-btn.back { background: #e0e0e0; color: #555; }
+.setup-btn.create { background: var(--color-primary); color: white; }
+.setup-btn.join { background: var(--color-progress-fill); color: white; }
+.setup-btn.back { background: var(--color-border); color: var(--color-text-secondary); }
 .setup-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .setup-skip {
   margin-top: 0.5rem;
   font-size: 0.8rem;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .join-form {
@@ -210,18 +215,20 @@ if (hasHousehold.value) {
 
 .code-input {
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border);
   border-radius: 10px;
   font-size: 1.1rem;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.2em;
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
 }
-.code-input:focus { outline: none; border-color: #4caf50; }
+.code-input:focus { outline: none; border-color: var(--color-progress-fill); }
 
 .join-actions { display: flex; gap: 0.5rem; }
 .join-actions .setup-btn { flex: 1; }
 
-.setup-error { color: #c62828; font-size: 0.85rem; margin-top: 0.75rem; }
+.setup-error { color: var(--color-expense); font-size: 0.85rem; margin-top: 0.75rem; }
 </style>
 

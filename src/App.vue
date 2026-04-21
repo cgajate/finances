@@ -3,8 +3,11 @@ import { ref } from 'vue'
 import NotificationPanel from '@/components/NotificationPanel.vue'
 import PinGate from '@/components/PinGate.vue'
 import HouseholdSetup from '@/components/HouseholdSetup.vue'
+import SnackbarNotification from '@/components/SnackbarNotification.vue'
+import { useTheme } from '@/composables/useTheme'
 
 const menuOpen = ref(false)
+const { mode, isDark, highContrast, setMode, toggleDark, toggleHighContrast } = useTheme()
 </script>
 
 <template>
@@ -22,6 +25,37 @@ const menuOpen = ref(false)
           <RouterLink to="/expenses" @click="menuOpen = false">Expenses</RouterLink>
           <RouterLink to="/analytics" @click="menuOpen = false">Analytics</RouterLink>
           <RouterLink to="/budgets" @click="menuOpen = false">Budgets</RouterLink>
+          <RouterLink to="/savings" @click="menuOpen = false">Savings</RouterLink>
+          <RouterLink to="/year-review" @click="menuOpen = false">Year Review</RouterLink>
+          <RouterLink to="/calendar" @click="menuOpen = false">Calendar</RouterLink>
+          <div class="theme-controls">
+            <button
+              class="theme-btn"
+              :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+              aria-label="Toggle dark mode"
+              @click="toggleDark"
+            >
+              {{ isDark ? '☀️' : '🌙' }}
+            </button>
+            <button
+              class="theme-btn"
+              :class="{ active: mode === 'system' }"
+              title="Use system preference"
+              aria-label="Use system theme"
+              @click="setMode('system')"
+            >
+              💻
+            </button>
+            <button
+              class="theme-btn"
+              :class="{ active: highContrast }"
+              title="Toggle high contrast"
+              aria-label="Toggle high contrast mode"
+              @click="toggleHighContrast"
+            >
+              🔲
+            </button>
+          </div>
         </nav>
       </header>
       <HouseholdSetup />
@@ -30,6 +64,7 @@ const menuOpen = ref(false)
       </main>
     </div>
   </PinGate>
+  <SnackbarNotification />
 </template>
 
 <style scoped>
@@ -44,18 +79,19 @@ const menuOpen = ref(false)
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #1976d2;
-  color: white;
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
   position: sticky;
   top: 0;
   z-index: 100;
   flex-wrap: wrap;
+  transition: background-color 0.2s ease;
 }
 
 .logo {
   font-size: 1.15rem;
   font-weight: 700;
-  color: white;
+  color: var(--color-header-text);
   text-decoration: none;
 }
 
@@ -63,7 +99,7 @@ const menuOpen = ref(false)
   display: none;
   background: none;
   border: none;
-  color: white;
+  color: var(--color-header-text);
   font-size: 1.5rem;
   cursor: pointer;
 }
@@ -71,10 +107,11 @@ const menuOpen = ref(false)
 nav {
   display: flex;
   gap: 0.25rem;
+  align-items: center;
 }
 
 nav a {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-header-link);
   text-decoration: none;
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
@@ -83,8 +120,36 @@ nav a {
 }
 
 nav a:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--color-header-hover);
+  color: var(--color-header-text);
+}
+
+.theme-controls {
+  display: flex;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+  border-left: 1px solid var(--color-header-hover);
+  padding-left: 0.5rem;
+}
+
+.theme-btn {
+  background: none;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.4rem;
+  line-height: 1;
+  transition: all 0.15s;
+}
+
+.theme-btn:hover {
+  background: var(--color-header-hover);
+}
+
+.theme-btn.active {
+  background: var(--color-header-hover);
+  border-color: var(--color-header-text);
 }
 
 .app-main {
@@ -110,6 +175,14 @@ nav a:hover {
 
   nav a {
     padding: 0.6rem 0.5rem;
+  }
+
+  .theme-controls {
+    margin-left: 0;
+    border-left: none;
+    padding-left: 0;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-header-hover);
   }
 }
 </style>

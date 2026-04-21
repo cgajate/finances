@@ -6,13 +6,225 @@
   padding: 0;
 }
 
+/* ─── Light Theme (default) ─── */
+:root,
+html.light {
+  --color-bg: #fafafa;
+  --color-bg-secondary: #f9f9f9;
+  --color-surface: #ffffff;
+  --color-text: #333333;
+  --color-text-secondary: #555555;
+  --color-text-muted: #999999;
+  --color-border: #e0e0e0;
+  --color-border-light: #eee;
+
+  --color-primary: #1976d2;
+  --color-primary-light: #e3f2fd;
+  --color-primary-text: #1565c0;
+
+  --color-income: #2e7d32;
+  --color-income-bg: #e8f5e9;
+  --color-expense: #c62828;
+  --color-expense-bg: #fce4ec;
+  --color-warning: #e65100;
+  --color-warning-bg: #fff3e0;
+
+  --color-badge-bg: #f0f0f0;
+  --color-badge-text: #555;
+  --color-cat-bg: #e3f2fd;
+  --color-cat-text: #1565c0;
+  --color-assigned-bg: #f3e5f5;
+  --color-assigned-text: #7b1fa2;
+
+  --color-header-bg: #1976d2;
+  --color-header-text: #ffffff;
+  --color-header-link: rgba(255, 255, 255, 0.85);
+  --color-header-hover: rgba(255, 255, 255, 0.2);
+
+  --color-input-bg: #ffffff;
+  --color-input-border: #cccccc;
+  --color-input-text: #333333;
+
+  --color-progress-track: #e0e0e0;
+  --color-progress-fill: #4caf50;
+  --color-progress-warning: #ff9800;
+  --color-progress-over: #f44336;
+
+  --color-card-shadow: rgba(0, 0, 0, 0.05);
+
+  --color-btn-delete: #ef5350;
+}
+
+/* ─── Dark Theme ─── */
+html.dark {
+  --color-bg: #121212;
+  --color-bg-secondary: #1e1e1e;
+  --color-surface: #1e1e1e;
+  --color-text: #e0e0e0;
+  --color-text-secondary: #b0b0b0;
+  --color-text-muted: #777777;
+  --color-border: #333333;
+  --color-border-light: #2a2a2a;
+
+  --color-primary: #64b5f6;
+  --color-primary-light: #1a2733;
+  --color-primary-text: #90caf9;
+
+  --color-income: #66bb6a;
+  --color-income-bg: #1b3a1b;
+  --color-expense: #ef5350;
+  --color-expense-bg: #3a1b1b;
+  --color-warning: #ffb74d;
+  --color-warning-bg: #332200;
+
+  --color-badge-bg: #2a2a2a;
+  --color-badge-text: #ccc;
+  --color-cat-bg: #1a2733;
+  --color-cat-text: #90caf9;
+  --color-assigned-bg: #2a1a33;
+  --color-assigned-text: #ce93d8;
+
+  --color-header-bg: #1565c0;
+  --color-header-text: #ffffff;
+  --color-header-link: rgba(255, 255, 255, 0.8);
+  --color-header-hover: rgba(255, 255, 255, 0.15);
+
+  --color-input-bg: #2a2a2a;
+  --color-input-border: #444444;
+  --color-input-text: #e0e0e0;
+
+  --color-progress-track: #333333;
+  --color-progress-fill: #66bb6a;
+  --color-progress-warning: #ffb74d;
+  --color-progress-over: #ef5350;
+
+  --color-card-shadow: rgba(0, 0, 0, 0.3);
+
+  --color-btn-delete: #ef5350;
+}
+
+/* ─── High Contrast (dark base) ─── */
+html.high-contrast {
+  --color-bg: #000000;
+  --color-bg-secondary: #0a0a0a;
+  --color-surface: #000000;
+  --color-text: #ffffff;
+  --color-text-secondary: #ffffff;
+  --color-text-muted: #cccccc;
+  --color-border: #ffffff;
+  --color-border-light: #cccccc;
+
+  --color-primary: #5cb8ff;
+  --color-primary-light: #001833;
+  --color-primary-text: #5cb8ff;
+
+  --color-income: #00ff41;
+  --color-income-bg: #002200;
+  --color-expense: #ff4444;
+  --color-expense-bg: #330000;
+  --color-warning: #ffaa00;
+  --color-warning-bg: #332200;
+
+  --color-badge-bg: #222222;
+  --color-badge-text: #ffffff;
+  --color-cat-bg: #001833;
+  --color-cat-text: #5cb8ff;
+  --color-assigned-bg: #1a001a;
+  --color-assigned-text: #ff88ff;
+
+  --color-header-bg: #000000;
+  --color-header-text: #ffffff;
+  --color-header-link: #ffffff;
+  --color-header-hover: rgba(255, 255, 255, 0.3);
+
+  --color-input-bg: #000000;
+  --color-input-border: #ffffff;
+  --color-input-text: #ffffff;
+
+  --color-progress-track: #333333;
+  --color-progress-fill: #00ff41;
+  --color-progress-warning: #ffaa00;
+  --color-progress-over: #ff4444;
+
+  --color-card-shadow: none;
+
+  --color-btn-delete: #ff4444;
+}
+
+/* ─── High Contrast (light base) ─── */
+html.high-contrast.light {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f0f0f0;
+  --color-surface: #ffffff;
+  --color-text: #000000;
+  --color-text-secondary: #000000;
+  --color-text-muted: #333333;
+  --color-border: #000000;
+  --color-border-light: #000000;
+
+  --color-primary: #0033cc;
+  --color-primary-light: #d0e0ff;
+  --color-primary-text: #0033cc;
+
+  --color-income: #006600;
+  --color-income-bg: #ccffcc;
+  --color-expense: #cc0000;
+  --color-expense-bg: #ffcccc;
+  --color-warning: #cc6600;
+  --color-warning-bg: #ffeecc;
+
+  --color-badge-bg: #eeeeee;
+  --color-badge-text: #000000;
+  --color-cat-bg: #d0e0ff;
+  --color-cat-text: #0033cc;
+  --color-assigned-bg: #f0d0ff;
+  --color-assigned-text: #660066;
+
+  --color-header-bg: #0033cc;
+  --color-header-text: #ffffff;
+  --color-header-link: #ffffff;
+  --color-header-hover: rgba(255, 255, 255, 0.4);
+
+  --color-input-bg: #ffffff;
+  --color-input-border: #000000;
+  --color-input-text: #000000;
+
+  --color-progress-track: #cccccc;
+  --color-progress-fill: #006600;
+  --color-progress-warning: #cc6600;
+  --color-progress-over: #cc0000;
+
+  --color-card-shadow: rgba(0, 0, 0, 0.15);
+
+  --color-btn-delete: #cc0000;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
-  color: #333;
-  background: #fafafa;
+  color: var(--color-text);
+  background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Global form element theming */
+input, select, textarea {
+  background: var(--color-input-bg);
+  border-color: var(--color-input-border);
+  color: var(--color-input-text);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+html.high-contrast input:focus,
+html.high-contrast select:focus,
+html.high-contrast textarea:focus {
+  box-shadow: 0 0 0 3px var(--color-primary);
+}
