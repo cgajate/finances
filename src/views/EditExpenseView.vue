@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency } from '@/types/finance'
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/types/finance'
+import type { ExpenseCategory } from '@/types/finance'
 
 const route = useRoute()
 const router = useRouter()
 const store = useFinancesStore()
 const snackbar = useSnackbar()
+const categoriesStore = useCategoriesStore()
+const { activeExpenseCategories } = storeToRefs(categoriesStore)
 
 const id = route.params.id as string
 const itemType = ref<'recurring' | 'adhoc'>('recurring')
@@ -148,7 +152,7 @@ const frequencies: { value: Frequency; label: string }[] = [
       <div class="field">
         <label>Category</label>
         <select v-model="category">
-          <option v-for="cat in EXPENSE_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+          <option v-for="cat in activeExpenseCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">

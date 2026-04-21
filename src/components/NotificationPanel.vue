@@ -29,7 +29,7 @@ function dueLabel(days: number | null): string {
 <template>
   <div class="notification-wrapper">
     <button class="bell-btn" @click="toggle" aria-label="Notifications">
-      🔔
+      <font-awesome-icon :icon="['fas', 'bell']" />
       <span v-if="store.unreadCount > 0" class="badge">{{ store.unreadCount }}</span>
     </button>
 
@@ -113,7 +113,8 @@ function dueLabel(days: number | null): string {
 <style scoped>
 .notification-wrapper { position: relative; }
 
-.bell-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; position: relative; padding: 0.25rem; line-height: 1; }
+.bell-btn { background: var(--color-icon-bg); border: none; font-size: 1.15rem; cursor: pointer; position: relative; padding: 0.4rem; line-height: 1; color: var(--color-text-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s; backdrop-filter: blur(4px); }
+.bell-btn:hover { background: var(--color-primary-light); color: var(--color-primary-text); transform: translateY(-1px); box-shadow: 0 2px 8px var(--color-card-shadow); }
 .badge { position: absolute; top: -4px; right: -6px; background: var(--color-btn-delete); color: white; font-size: 0.65rem; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
 
 .backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 199; }

@@ -1,4 +1,4 @@
-import { ref, computed, type Ref, toRef, isRef } from 'vue'
+import { ref, computed, type Ref, isRef } from 'vue'
 import type { Frequency } from '@/types/finance'
 
 export type SortOption = 'newest' | 'amount-asc' | 'amount-desc' | 'alpha-asc' | 'alpha-desc'
@@ -12,11 +12,15 @@ interface HasSortFields {
   frequency?: Frequency
 }
 
-export function useSortFilter<T extends HasSortFields>(items: Ref<T[]> | T[]) {
+export function useSortFilter<T extends HasSortFields>(items: Ref<T[]> | T[] | (() => T[])) {
   const sortBy = ref<SortOption>('newest')
   const activeFilters = ref<FrequencyFilter[]>([])
 
-  const itemsRef = isRef(items) ? items : toRef(() => items)
+  const itemsRef: Ref<T[]> | { readonly value: T[] } = isRef(items)
+    ? items
+    : typeof items === 'function'
+      ? computed(items)
+      : computed(() => items)
 
   const filtered = computed<T[]>(() => {
     let result = [...itemsRef.value]

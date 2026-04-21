@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSortFilter } from '@/composables/useSortFilter'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useCategoriesStore } from '@/stores/categories'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import type { Frequency } from '@/types/finance'
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/types/finance'
+import type { ExpenseCategory } from '@/types/finance'
 
 const store = useFinancesStore()
 const snackbar = useSnackbar()
+const categoriesStore = useCategoriesStore()
+const { activeExpenseCategories } = storeToRefs(categoriesStore)
 
 function deleteExpense(id: string) {
   const item = store.getExpenseById(id)
@@ -43,7 +47,7 @@ function deleteExpense(id: string) {
 const tab = ref<'recurring' | 'adhoc'>('recurring')
 
 // Sort & filter
-const { sortBy, activeFilters, filtered: sortedExpenses, toggleFilter, clearFilters, hasFilter } = useSortFilter(store.expenses)
+const { sortBy, activeFilters, filtered: sortedExpenses, toggleFilter, clearFilters, hasFilter } = useSortFilter(() => store.expenses)
 
 // Search
 const searchQuery = ref('')
@@ -80,40 +84,50 @@ const aAssignedTo = ref('')
 function addRecurring() {
   if (!rAmount.value || !rDescription.value) return
   if (rFrequency.value === 'yearly' && !rDueDate.value) return
-  store.addRecurringExpense({
-    amount: rAmount.value,
-    frequency: rFrequency.value,
-    description: rDescription.value,
-    notes: rNotes.value,
-    dueDate: rDueDate.value || null,
-    category: rCategory.value,
-    assignedTo: rAssignedTo.value,
-  })
-  rCurrency.reset()
-  rDescription.value = ''
-  rNotes.value = ''
-  rDueDate.value = ''
-  rFrequency.value = 'monthly'
-  rCategory.value = 'Other'
-  rAssignedTo.value = ''
+  try {
+    store.addRecurringExpense({
+      amount: rAmount.value,
+      frequency: rFrequency.value,
+      description: rDescription.value,
+      notes: rNotes.value,
+      dueDate: rDueDate.value || null,
+      category: rCategory.value,
+      assignedTo: rAssignedTo.value,
+    })
+    snackbar.show(`Added recurring expense "${rDescription.value}"`, { duration: 8000 })
+    rCurrency.reset()
+    rDescription.value = ''
+    rNotes.value = ''
+    rDueDate.value = ''
+    rFrequency.value = 'monthly'
+    rCategory.value = 'Other'
+    rAssignedTo.value = ''
+  } catch {
+    snackbar.show('Failed to add recurring expense. Please try again.', { duration: 8000 })
+  }
 }
 
 function addAdhoc() {
   if (!aAmount.value || !aDescription.value) return
-  store.addAdhocExpense({
-    amount: aAmount.value,
-    description: aDescription.value,
-    notes: aNotes.value,
-    dueDate: aDueDate.value || null,
-    category: aCategory.value,
-    assignedTo: aAssignedTo.value,
-  })
-  aCurrency.reset()
-  aDescription.value = ''
-  aNotes.value = ''
-  aDueDate.value = ''
-  aCategory.value = 'Other'
-  aAssignedTo.value = ''
+  try {
+    store.addAdhocExpense({
+      amount: aAmount.value,
+      description: aDescription.value,
+      notes: aNotes.value,
+      dueDate: aDueDate.value || null,
+      category: aCategory.value,
+      assignedTo: aAssignedTo.value,
+    })
+    snackbar.show(`Added expense "${aDescription.value}"`, { duration: 8000 })
+    aCurrency.reset()
+    aDescription.value = ''
+    aNotes.value = ''
+    aDueDate.value = ''
+    aCategory.value = 'Other'
+    aAssignedTo.value = ''
+  } catch {
+    snackbar.show('Failed to add expense. Please try again.', { duration: 8000 })
+  }
 }
 
 function formatCurrency(value: number): string {
@@ -168,7 +182,7 @@ const frequencies: { value: Frequency; label: string }[] = [
       <div class="field">
         <label>Category</label>
         <select v-model="rCategory">
-          <option v-for="cat in EXPENSE_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+          <option v-for="cat in activeExpenseCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
@@ -211,7 +225,7 @@ const frequencies: { value: Frequency; label: string }[] = [
       <div class="field">
         <label>Category</label>
         <select v-model="aCategory">
-          <option v-for="cat in EXPENSE_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+          <option v-for="cat in activeExpenseCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">

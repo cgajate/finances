@@ -21,7 +21,7 @@ const {
   toggleFilter: incomeToggleFilter,
   clearFilters: incomeClearFilters,
   hasFilter: incomeHasFilter,
-} = useSortFilter(store.incomes)
+} = useSortFilter(() => store.incomes)
 
 const {
   sortBy: expenseSortBy,
@@ -30,7 +30,7 @@ const {
   toggleFilter: expenseToggleFilter,
   clearFilters: expenseClearFilters,
   hasFilter: expenseHasFilter,
-} = useSortFilter(store.expenses)
+} = useSortFilter(() => store.expenses)
 
 const incomeExpanded = ref(false)
 const expenseExpanded = ref(false)

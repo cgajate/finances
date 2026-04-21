@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { Expense, Frequency, ExpenseCategory } from '@/types/finance'
-import { EXPENSE_CATEGORIES } from '@/types/finance'
+import { useCategoriesStore } from '@/stores/categories'
 
 function monthlyEquivalent(amount: number, frequency: Frequency): number {
   switch (frequency) {
@@ -73,9 +73,11 @@ export function useSpendingTrends(
     const months = generatePastMonths(monthCount.value)
     const monthLabels = months.map(getMonthLabel)
 
+    const allCats = useCategoriesStore().activeExpenseCategories as ExpenseCategory[]
+
     // Build a map: category -> month -> amount
     const catMap = new Map<ExpenseCategory, Map<string, number>>()
-    for (const cat of EXPENSE_CATEGORIES) {
+    for (const cat of allCats) {
       catMap.set(cat, new Map(months.map((m) => [m, 0])))
     }
 
@@ -103,7 +105,7 @@ export function useSpendingTrends(
 
     // Build category trends
     const categories: CategoryTrend[] = []
-    for (const cat of EXPENSE_CATEGORIES) {
+    for (const cat of allCats) {
       const monthMap = catMap.get(cat)!
       const monthData: CategoryMonthData[] = months.map((m, i) => ({
         month: m,

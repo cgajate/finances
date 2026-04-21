@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSortFilter } from '@/composables/useSortFilter'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useCategoriesStore } from '@/stores/categories'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import type { Frequency } from '@/types/finance'
-import { INCOME_CATEGORIES, type IncomeCategory } from '@/types/finance'
+import type { IncomeCategory } from '@/types/finance'
 
 const store = useFinancesStore()
 const snackbar = useSnackbar()
+const categoriesStore = useCategoriesStore()
+const { activeIncomeCategories } = storeToRefs(categoriesStore)
 
 function deleteIncome(id: string) {
   const item = store.getIncomeById(id)
@@ -40,7 +44,7 @@ function deleteIncome(id: string) {
 const tab = ref<'recurring' | 'adhoc'>('recurring')
 
 // Sort & filter
-const { sortBy, activeFilters, filtered: sortedIncomes, toggleFilter, clearFilters, hasFilter } = useSortFilter(store.incomes)
+const { sortBy, activeFilters, filtered: sortedIncomes, toggleFilter, clearFilters, hasFilter } = useSortFilter(() => store.incomes)
 
 // Search
 const searchQuery = ref('')
@@ -76,34 +80,44 @@ const aCategory = ref<IncomeCategory>('Other')
 function addRecurring() {
   if (!rAmount.value || !rDescription.value) return
   if (rFrequency.value === 'yearly' && !rDate.value) return
-  store.addRecurringIncome({
-    amount: rAmount.value,
-    frequency: rFrequency.value,
-    description: rDescription.value,
-    notes: rNotes.value,
-    date: rDate.value || null,
-    category: rCategory.value,
-  })
-  rCurrency.reset()
-  rDescription.value = ''
-  rNotes.value = ''
-  rDate.value = ''
-  rFrequency.value = 'monthly'
-  rCategory.value = 'Other'
+  try {
+    store.addRecurringIncome({
+      amount: rAmount.value,
+      frequency: rFrequency.value,
+      description: rDescription.value,
+      notes: rNotes.value,
+      date: rDate.value || null,
+      category: rCategory.value,
+    })
+    snackbar.show(`Added recurring income "${rDescription.value}"`, { duration: 8000 })
+    rCurrency.reset()
+    rDescription.value = ''
+    rNotes.value = ''
+    rDate.value = ''
+    rFrequency.value = 'monthly'
+    rCategory.value = 'Other'
+  } catch {
+    snackbar.show('Failed to add recurring income. Please try again.', { duration: 8000 })
+  }
 }
 
 function addAdhoc() {
   if (!aAmount.value || !aDescription.value || !aDate.value) return
-  store.addAdhocIncome({
-    amount: aAmount.value,
-    description: aDescription.value,
-    date: aDate.value,
-    category: aCategory.value,
-  })
-  aCurrency.reset()
-  aDescription.value = ''
-  aDate.value = ''
-  aCategory.value = 'Other'
+  try {
+    store.addAdhocIncome({
+      amount: aAmount.value,
+      description: aDescription.value,
+      date: aDate.value,
+      category: aCategory.value,
+    })
+    snackbar.show(`Added income "${aDescription.value}"`, { duration: 8000 })
+    aCurrency.reset()
+    aDescription.value = ''
+    aDate.value = ''
+    aCategory.value = 'Other'
+  } catch {
+    snackbar.show('Failed to add income. Please try again.', { duration: 8000 })
+  }
 }
 
 function formatCurrency(value: number): string {
@@ -158,7 +172,7 @@ const frequencies: { value: Frequency; label: string }[] = [
       <div class="field">
         <label>Category</label>
         <select v-model="rCategory">
-          <option v-for="cat in INCOME_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+          <option v-for="cat in activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
@@ -194,7 +208,7 @@ const frequencies: { value: Frequency; label: string }[] = [
       <div class="field">
         <label>Category</label>
         <select v-model="aCategory">
-          <option v-for="cat in INCOME_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+          <option v-for="cat in activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">

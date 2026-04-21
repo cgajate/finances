@@ -15,6 +15,7 @@ const router = createRouter({
     { path: '/year-review', name: 'year-review', component: () => import('@/views/YearReviewView.vue') },
     { path: '/calendar', name: 'calendar', component: () => import('@/views/BillCalendarView.vue') },
     { path: '/activity', name: 'activity', component: () => import('@/views/ActivityFeedView.vue') },
+    { path: '/categories', name: 'categories', component: () => import('@/views/CategoriesView.vue') },
   ],
 })
 

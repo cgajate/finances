@@ -1,8 +1,8 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { Budget, ExpenseCategory } from '@/types/finance'
-import { EXPENSE_CATEGORIES } from '@/types/finance'
 import { useFinancesStore } from '@/stores/finances'
+import { useCategoriesStore } from '@/stores/categories'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 import { useActivityFeedStore } from '@/stores/activityFeed'
@@ -125,11 +125,12 @@ export const useBudgetsStore = defineStore('budgets', () => {
 
   /** Categories that don't have a budget set for the current month */
   const availableCategories = computed(() => {
+    const catStore = useCategoriesStore()
     const month = currentMonth()
     const used = new Set(
       budgets.value.filter((b) => b.month === month).map((b) => b.category),
     )
-    return EXPENSE_CATEGORIES.filter((c) => !used.has(c))
+    return catStore.activeExpenseCategories.filter((c) => !used.has(c as ExpenseCategory))
   })
 
   return {
