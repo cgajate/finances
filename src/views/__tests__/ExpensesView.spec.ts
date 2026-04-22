@@ -12,6 +12,7 @@ function makeRouter() {
     routes: [
       { path: '/', component: { template: '<div />' } },
       { path: '/expenses', component: ExpensesView },
+      { path: '/expenses/add', component: { template: '<div />' } },
       { path: '/expenses/:id/edit', component: { template: '<div />' } },
     ],
   })
@@ -39,26 +40,12 @@ describe('ExpensesView', () => {
     expect(wrapper.find('h1').text()).toBe('Expenses')
   })
 
-  it('shows recurring tab active by default', () => {
+  it('renders Add Expense button linking to /expenses/add', () => {
     const wrapper = mountView()
-    const tabs = wrapper.findAll('.tabs button')
-    expect(tabs[0]!.classes()).toContain('active')
-  })
-
-  it('switches to adhoc tab', async () => {
-    const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
-    expect(wrapper.text()).toContain('Add Ad-hoc Expense')
-  })
-
-  it('shows recurring form fields', () => {
-    const wrapper = mountView()
-    expect(wrapper.text()).toContain('Description')
-    expect(wrapper.text()).toContain('Amount')
-    expect(wrapper.text()).toContain('Frequency')
-    expect(wrapper.text()).toContain('Due Date')
-    expect(wrapper.text()).toContain('Notes')
-    expect(wrapper.find('.btn-submit').text()).toContain('Add Recurring Expense')
+    const addBtn = wrapper.find('.btn')
+    expect(addBtn.exists()).toBe(true)
+    expect(addBtn.text()).toContain('Add Expense')
+    expect(addBtn.attributes('href')).toBe('/expenses/add')
   })
 
   it('shows empty message when no expenses', () => {
@@ -68,7 +55,13 @@ describe('ExpensesView', () => {
 
   it('shows expense items in list', () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 1500, frequency: 'monthly', description: 'Rent', notes: 'Apt', dueDate: '2026-01-01' })
+    store.addRecurringExpense({
+      amount: 1500,
+      frequency: 'monthly',
+      description: 'Rent',
+      notes: 'Apt',
+      dueDate: '2026-01-01',
+    })
     const wrapper = mountView()
     expect(wrapper.text()).toContain('Rent')
     expect(wrapper.text()).toContain('$1,500.00')
@@ -84,7 +77,13 @@ describe('ExpensesView', () => {
 
   it('shows due date and notes metadata', () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'X', notes: 'A note', dueDate: '2026-05-01' })
+    store.addRecurringExpense({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'X',
+      notes: 'A note',
+      dueDate: '2026-05-01',
+    })
     const wrapper = mountView()
     expect(wrapper.text()).toContain('2026-05-01')
     expect(wrapper.text()).toContain('A note')
@@ -106,17 +105,6 @@ describe('ExpensesView', () => {
     expect(store.expenses).toHaveLength(0)
   })
 
-  it('shows "Due Date *" when yearly selected', async () => {
-    const wrapper = mountView()
-    await wrapper.find('select').setValue('yearly')
-    expect(wrapper.text()).toContain('Due Date *')
-  })
-
-  it('shows "Due Date (optional)" normally', () => {
-    const wrapper = mountView()
-    expect(wrapper.text()).toContain('Due Date (optional)')
-  })
-
   it('shows FilterSortBar when items exist', () => {
     const store = useFinancesStore()
     store.addAdhocExpense({ amount: 50, description: 'T', notes: '', dueDate: null })
@@ -126,7 +114,14 @@ describe('ExpensesView', () => {
 
   it('shows assigned-to badge when expense has assignedTo', () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null, assignedTo: 'Dad' })
+    store.addRecurringExpense({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'Rent',
+      notes: '',
+      dueDate: null,
+      assignedTo: 'Dad',
+    })
     const wrapper = mountView()
     expect(wrapper.find('.assigned-badge').exists()).toBe(true)
     expect(wrapper.text()).toContain('Dad')
@@ -134,14 +129,15 @@ describe('ExpensesView', () => {
 
   it('does not show assigned-to badge when assignedTo is empty', () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    store.addRecurringExpense({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'Rent',
+      notes: '',
+      dueDate: null,
+    })
     const wrapper = mountView()
     expect(wrapper.find('.assigned-badge').exists()).toBe(false)
-  })
-
-  it('shows Assigned To input in recurring form', () => {
-    const wrapper = mountView()
-    expect(wrapper.text()).toContain('Assigned To')
   })
 
   it('shows search input when items exist', () => {
@@ -158,7 +154,13 @@ describe('ExpensesView', () => {
 
   it('filters expense list by search query', async () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 1500, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    store.addRecurringExpense({
+      amount: 1500,
+      frequency: 'monthly',
+      description: 'Rent',
+      notes: '',
+      dueDate: null,
+    })
     store.addAdhocExpense({ amount: 75, description: 'Grocery', notes: '', dueDate: null })
     const wrapper = mountView()
     expect(wrapper.findAll('.list-item')).toHaveLength(2)
@@ -189,8 +191,22 @@ describe('ExpensesView', () => {
 
   it('searches by assignedTo field', async () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Electric', notes: '', dueDate: null, assignedTo: 'Dad' })
-    store.addRecurringExpense({ amount: 200, frequency: 'monthly', description: 'Water', notes: '', dueDate: null, assignedTo: 'Mom' })
+    store.addRecurringExpense({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'Electric',
+      notes: '',
+      dueDate: null,
+      assignedTo: 'Dad',
+    })
+    store.addRecurringExpense({
+      amount: 200,
+      frequency: 'monthly',
+      description: 'Water',
+      notes: '',
+      dueDate: null,
+      assignedTo: 'Mom',
+    })
     const wrapper = mountView()
     await wrapper.find('.search-input').setValue('Dad')
     expect(wrapper.findAll('.list-item')).toHaveLength(1)
@@ -222,7 +238,14 @@ describe('ExpensesView', () => {
 
   it('undo restores a deleted recurring expense', async () => {
     const store = useFinancesStore()
-    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Internet', notes: 'ISP', dueDate: '2026-05-01', assignedTo: 'Dad' })
+    store.addRecurringExpense({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'Internet',
+      notes: 'ISP',
+      dueDate: '2026-05-01',
+      assignedTo: 'Dad',
+    })
     const wrapper = mountView()
     await wrapper.find('.btn-delete').trigger('click')
     expect(store.expenses).toHaveLength(0)
@@ -232,149 +255,23 @@ describe('ExpensesView', () => {
     expect(store.expenses[0]!.description).toBe('Internet')
   })
 
-  it('deleteExpense does nothing for non-existent id', async () => {
+  it('deleteExpense does nothing for non-existent id', () => {
     const store = useFinancesStore()
     store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
-    // Manually remove the expense first to make the ID invalid
     const id = store.expenses[0]!.id
     store.removeExpense(id)
-    // Should not crash - the view's delete function guards against missing items
     expect(store.expenses).toHaveLength(0)
-  })
-
-  it('submits recurring expense form successfully', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    // Fill in description
-    const inputs = wrapper.findAll('input[type="text"]')
-    await inputs[0]!.setValue('Rent')
-    // Set amount via the store directly since currency input is complex
-    // Instead, trigger form submit with required fields
-    // We need to simulate the form values
-    const vm = wrapper.vm as any
-    vm.rDescription = 'Rent'
-    vm.rAmount = 1500
-    vm.rFrequency = 'monthly'
-    vm.rCategory = 'Housing'
-    vm.rNotes = 'Apartment'
-    vm.rDueDate = '2026-06-01'
-    vm.rAssignedTo = 'Dad'
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(1)
-    expect(store.expenses[0]!.description).toBe('Rent')
-  })
-
-  it('does not submit recurring form without description', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    const vm = wrapper.vm as any
-    vm.rAmount = 100
-    vm.rDescription = ''
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(0)
-  })
-
-  it('does not submit recurring form without amount', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    const vm = wrapper.vm as any
-    vm.rDescription = 'Test'
-    vm.rAmount = null
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(0)
-  })
-
-  it('does not submit recurring yearly without dueDate', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    const vm = wrapper.vm as any
-    vm.rDescription = 'Annual'
-    vm.rAmount = 100
-    vm.rFrequency = 'yearly'
-    vm.rDueDate = ''
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(0)
-  })
-
-  it('submits adhoc expense form successfully', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    // Switch to adhoc tab
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
-    const vm = wrapper.vm as any
-    vm.aDescription = 'Car repair'
-    vm.aAmount = 300
-    vm.aCategory = 'Transport'
-    vm.aNotes = 'Brakes'
-    vm.aDueDate = '2026-05-15'
-    vm.aAssignedTo = 'Mom'
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(1)
-    expect(store.expenses[0]!.description).toBe('Car repair')
-  })
-
-  it('does not submit adhoc form without description', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
-    const vm = wrapper.vm as any
-    vm.aAmount = 100
-    vm.aDescription = ''
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(0)
-  })
-
-  it('does not submit adhoc form without amount', async () => {
-    const store = useFinancesStore()
-    const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
-    const vm = wrapper.vm as any
-    vm.aDescription = 'Test'
-    vm.aAmount = null
-    await wrapper.find('form').trigger('submit')
-    expect(store.expenses).toHaveLength(0)
-  })
-
-  it('resets form fields after successful recurring submit', async () => {
-    const wrapper = mountView()
-    const vm = wrapper.vm as any
-    vm.rDescription = 'Rent'
-    vm.rAmount = 1500
-    vm.rFrequency = 'quarterly'
-    vm.rNotes = 'note'
-    vm.rDueDate = '2026-06-01'
-    vm.rCategory = 'Housing'
-    vm.rAssignedTo = 'Dad'
-    await wrapper.find('form').trigger('submit')
-    expect(vm.rDescription).toBe('')
-    expect(vm.rNotes).toBe('')
-    expect(vm.rDueDate).toBe('')
-    expect(vm.rFrequency).toBe('monthly')
-    expect(vm.rCategory).toBe('Other')
-    expect(vm.rAssignedTo).toBe('')
-  })
-
-  it('resets form fields after successful adhoc submit', async () => {
-    const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
-    const vm = wrapper.vm as any
-    vm.aDescription = 'Fix'
-    vm.aAmount = 200
-    vm.aNotes = 'note'
-    vm.aDueDate = '2026-05-01'
-    vm.aCategory = 'Housing'
-    vm.aAssignedTo = 'Mom'
-    await wrapper.find('form').trigger('submit')
-    expect(vm.aDescription).toBe('')
-    expect(vm.aNotes).toBe('')
-    expect(vm.aDueDate).toBe('')
-    expect(vm.aCategory).toBe('Other')
-    expect(vm.aAssignedTo).toBe('')
   })
 
   it('shows category badge for expenses', () => {
     const store = useFinancesStore()
-    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null, category: 'Food' })
+    store.addAdhocExpense({
+      amount: 50,
+      description: 'Test',
+      notes: '',
+      dueDate: null,
+      category: 'Food',
+    })
     const wrapper = mountView()
     expect(wrapper.find('.cat-badge').text()).toBe('Food')
   })
@@ -390,10 +287,8 @@ describe('ExpensesView', () => {
     const store = useFinancesStore()
     store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
     const wrapper = mountView()
-    // Activate a frequency filter that won't match
     const vm = wrapper.vm as any
     vm.searchQuery = ''
-    // Toggle filter to 'weekly' which won't match the adhoc item
     vm.toggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No expenses match the current filter')

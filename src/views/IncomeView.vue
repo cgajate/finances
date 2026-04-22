@@ -1,20 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
-import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSortFilter } from '@/composables/useSortFilter'
 import { useSnackbar } from '@/composables/useSnackbar'
-import { useCategoriesStore } from '@/stores/categories'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import SearchBar from '@/components/SearchBar.vue'
-import type { Frequency } from '@/types/finance'
-import type { IncomeCategory } from '@/types/finance'
 
 const store = useFinancesStore()
 const snackbar = useSnackbar()
-const categoriesStore = useCategoriesStore()
-const { activeIncomeCategories } = storeToRefs(categoriesStore)
 
 function deleteIncome(id: string) {
   const item = store.getIncomeById(id)
@@ -42,10 +35,20 @@ function deleteIncome(id: string) {
   })
 }
 
-const tab = ref<'recurring' | 'adhoc'>('recurring')
-
 // Sort & filter
-const { sortBy, sortField, sortDirection, activeFilters, activeCategoryFilters, filtered: sortedIncomes, toggleFilter, toggleCategoryFilter, clearFilters, hasFilter, hasCategoryFilter } = useSortFilter(() => store.incomes)
+const {
+  sortBy,
+  sortField,
+  sortDirection,
+  activeFilters,
+  activeCategoryFilters,
+  filtered: sortedIncomes,
+  toggleFilter,
+  toggleCategoryFilter,
+  clearFilters,
+  hasFilter,
+  hasCategoryFilter,
+} = useSortFilter(() => store.incomes)
 
 // Search
 const searchQuery = ref('')
@@ -62,162 +65,19 @@ const filteredIncomes = computed(() => {
   })
 })
 
-// Recurring form
-const rAmount = ref<number | null>(null)
-const rCurrency = useCurrencyInput(rAmount)
-const rFrequency = ref<Frequency>('monthly')
-const rDescription = ref('')
-const rNotes = ref('')
-const rDate = ref('')
-const rCategory = ref<IncomeCategory>('Other')
-
-// Adhoc form
-const aAmount = ref<number | null>(null)
-const aCurrency = useCurrencyInput(aAmount)
-const aDescription = ref('')
-const aDate = ref('')
-const aCategory = ref<IncomeCategory>('Other')
-
-function addRecurring() {
-  if (!rAmount.value || !rDescription.value) return
-  if (rFrequency.value === 'yearly' && !rDate.value) return
-  try {
-    store.addRecurringIncome({
-      amount: rAmount.value,
-      frequency: rFrequency.value,
-      description: rDescription.value,
-      notes: rNotes.value,
-      date: rDate.value || null,
-      category: rCategory.value,
-    })
-    snackbar.show(`Added recurring income "${rDescription.value}"`, { duration: 8000 })
-    rCurrency.reset()
-    rDescription.value = ''
-    rNotes.value = ''
-    rDate.value = ''
-    rFrequency.value = 'monthly'
-    rCategory.value = 'Other'
-  } catch {
-    snackbar.show('Failed to add recurring income. Please try again.', { duration: 8000 })
-  }
-}
-
-function addAdhoc() {
-  if (!aAmount.value || !aDescription.value || !aDate.value) return
-  try {
-    store.addAdhocIncome({
-      amount: aAmount.value,
-      description: aDescription.value,
-      date: aDate.value,
-      category: aCategory.value,
-    })
-    snackbar.show(`Added income "${aDescription.value}"`, { duration: 8000 })
-    aCurrency.reset()
-    aDescription.value = ''
-    aDate.value = ''
-    aCategory.value = 'Other'
-  } catch {
-    snackbar.show('Failed to add income. Please try again.', { duration: 8000 })
-  }
-}
-
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 }
-
-const frequencies: { value: Frequency; label: string }[] = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'bi-weekly', label: 'Bi-Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'yearly', label: 'Yearly' },
-]
 </script>
 
 <template>
   <div class="page">
-    <h1>Income</h1>
-
-    <div class="tabs">
-      <button :class="{ active: tab === 'recurring' }" @click="tab = 'recurring'">
-        Recurring
-      </button>
-      <button :class="{ active: tab === 'adhoc' }" @click="tab = 'adhoc'">Ad-hoc</button>
+    <div class="page-header">
+      <h1>Income</h1>
+      <RouterLink to="/income/add" class="btn">
+        <font-awesome-icon :icon="['fas', 'plus']" /> Add Income
+      </RouterLink>
     </div>
-
-    <!-- Recurring Income Form -->
-    <form v-if="tab === 'recurring'" class="form" @submit.prevent="addRecurring">
-      <div class="field">
-        <label>Description *</label>
-        <input v-model="rDescription" type="text" placeholder="e.g. Salary" required />
-      </div>
-      <div class="field">
-        <label>Amount *</label>
-        <input
-          type="text"
-          inputmode="decimal"
-          placeholder="$0.00"
-          :value="rCurrency.display.value"
-          @input="rCurrency.onInput"
-          @blur="rCurrency.onBlur"
-          @focus="rCurrency.onFocus"
-          required
-        />
-      </div>
-      <div class="field">
-        <label>Frequency *</label>
-        <select v-model="rFrequency">
-          <option v-for="f in frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Category</label>
-        <select v-model="rCategory">
-          <option v-for="cat in activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>{{ rFrequency === 'yearly' ? 'Date *' : 'Date (optional)' }}</label>
-        <input v-model="rDate" type="date" :required="rFrequency === 'yearly'" />
-      </div>
-      <div class="field">
-        <label>Notes</label>
-        <textarea v-model="rNotes" rows="2" placeholder="Additional details..."></textarea>
-      </div>
-      <button type="submit" class="btn-submit">Add Recurring Income</button>
-    </form>
-
-    <!-- Adhoc Income Form -->
-    <form v-if="tab === 'adhoc'" class="form" @submit.prevent="addAdhoc">
-      <div class="field">
-        <label>Description *</label>
-        <input v-model="aDescription" type="text" placeholder="e.g. Freelance gig" required />
-      </div>
-      <div class="field">
-        <label>Amount *</label>
-        <input
-          type="text"
-          inputmode="decimal"
-          placeholder="$0.00"
-          :value="aCurrency.display.value"
-          @input="aCurrency.onInput"
-          @blur="aCurrency.onBlur"
-          @focus="aCurrency.onFocus"
-          required
-        />
-      </div>
-      <div class="field">
-        <label>Category</label>
-        <select v-model="aCategory">
-          <option v-for="cat in activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Date *</label>
-        <input v-model="aDate" type="date" required />
-      </div>
-      <button type="submit" class="btn-submit">Add Ad-hoc Income</button>
-    </form>
 
     <!-- Income List -->
     <h2>All Income</h2>
@@ -261,7 +121,9 @@ const frequencies: { value: Frequency; label: string }[] = [
         </div>
       </div>
     </div>
-    <p v-else-if="store.incomes.length && searchQuery" class="empty">No income matches "{{ searchQuery }}".</p>
+    <p v-else-if="store.incomes.length && searchQuery" class="empty">
+      No income matches "{{ searchQuery }}".
+    </p>
     <p v-else-if="store.incomes.length" class="empty">No income matches the current filter.</p>
     <p v-else class="empty">No income entries yet.</p>
   </div>
@@ -269,27 +131,15 @@ const frequencies: { value: Frequency; label: string }[] = [
 
 <style scoped>
 .page { max-width: 600px; margin: 0 auto; }
-h1 { margin-bottom: 1rem; }
+h1 { margin: 0; }
 h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 
-.tabs { display: flex; gap: 0; margin-bottom: 1.5rem; }
-.tabs button {
-  flex: 1; padding: 0.6rem; border: 2px solid var(--color-primary); background: var(--color-surface); color: var(--color-primary);
-  font-weight: 600; cursor: pointer; font-size: 0.95rem;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
-.tabs button:first-child { border-radius: 8px 0 0 8px; }
-.tabs button:last-child { border-radius: 0 8px 8px 0; }
-.tabs button.active { background: var(--color-primary); color: var(--color-header-text); }
-
-.form { display: flex; flex-direction: column; gap: 1rem; }
-.field { display: flex; flex-direction: column; gap: 0.25rem; }
-.field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
-.field input, .field select, .field textarea {
-  padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
-  background: var(--color-input-bg); color: var(--color-input-text);
-}
-.field textarea { resize: vertical; }
-
 
 .list { display: flex; flex-direction: column; gap: 0.5rem; }
 .list-item {

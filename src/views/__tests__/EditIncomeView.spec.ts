@@ -70,7 +70,7 @@ describe('EditIncomeView', () => {
     const { wrapper } = await mountView(id)
     expect(wrapper.find('.btn-save').text()).toContain('Save')
     expect(wrapper.find('.btn-cancel').text()).toContain('Cancel')
-    expect(wrapper.find('.btn-delete').text()).toContain('Delete')
+    expect(wrapper.find('.btn-delete--outline').text()).toContain('Delete')
   })
 
   it('deletes income and navigates on Delete click', async () => {
@@ -78,7 +78,7 @@ describe('EditIncomeView', () => {
     store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'Del', notes: '', date: null })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete').trigger('click')
+    await wrapper.find('.btn-delete--outline').trigger('click')
     expect(store.incomes).toHaveLength(0)
   })
 
@@ -194,7 +194,7 @@ describe('EditIncomeView', () => {
     store.addRecurringIncome({ amount: 3000, frequency: 'monthly', description: 'Salary', notes: 'Main', date: '2026-06-01' })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete').trigger('click')
+    await wrapper.find('.btn-delete--outline').trigger('click')
     expect(store.incomes).toHaveLength(0)
     const snackbar = useSnackbar()
     snackbar.undo(snackbar.items.value[0]!.id)
@@ -207,7 +207,7 @@ describe('EditIncomeView', () => {
     store.addAdhocIncome({ amount: 200, description: 'Freelance', date: '2026-03-15' })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete').trigger('click')
+    await wrapper.find('.btn-delete--outline').trigger('click')
     expect(store.incomes).toHaveLength(0)
     const snackbar2 = useSnackbar()
     snackbar2.undo(snackbar2.items.value[0]!.id)
@@ -222,7 +222,7 @@ describe('EditIncomeView', () => {
     // Remove the item first
     store.removeIncome(id)
     // Now trigger delete on the view - should not crash
-    await wrapper.find('.btn-delete').trigger('click')
+    await wrapper.find('.btn-delete--outline').trigger('click')
     expect(store.incomes).toHaveLength(0)
   })
 })

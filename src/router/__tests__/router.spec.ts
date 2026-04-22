@@ -12,6 +12,11 @@ describe('router', () => {
     expect(route.name).toBe('income')
   })
 
+  it('has an add-income route at /income/add', () => {
+    const route = router.resolve('/income/add')
+    expect(route.name).toBe('add-income')
+  })
+
   it('has an edit-income route at /income/:id/edit', () => {
     const route = router.resolve('/income/abc123/edit')
     expect(route.name).toBe('edit-income')
@@ -21,6 +26,11 @@ describe('router', () => {
   it('has an expenses route at /expenses', () => {
     const route = router.resolve('/expenses')
     expect(route.name).toBe('expenses')
+  })
+
+  it('has an add-expense route at /expenses/add', () => {
+    const route = router.resolve('/expenses/add')
+    expect(route.name).toBe('add-expense')
   })
 
   it('has an edit-expense route at /expenses/:id/edit', () => {
@@ -64,7 +74,7 @@ describe('router', () => {
     expect(route.name).toBe('categories')
   })
 
-  it('has 12 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(12)
+  it('has 14 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(14)
   })
 })
