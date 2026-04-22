@@ -5,6 +5,8 @@ import { useSortFilter } from '@/composables/useSortFilter'
 import { useSnackbar } from '@/composables/useSnackbar'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import SearchBar from '@/components/SearchBar.vue'
+import { formatDate, formatDateTime } from '@/lib/formatDate'
+import type { Frequency } from '@/types/finance'
 
 const store = useFinancesStore()
 const snackbar = useSnackbar()
@@ -78,6 +80,38 @@ const filteredExpenses = computed(() => {
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 }
+
+function advanceDate(dateStr: string, frequency: Frequency): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  switch (frequency) {
+    case 'weekly':
+      d.setDate(d.getDate() + 7)
+      break
+    case 'bi-weekly':
+      d.setDate(d.getDate() + 14)
+      break
+    case 'monthly':
+      d.setMonth(d.getMonth() + 1)
+      break
+    case 'quarterly':
+      d.setMonth(d.getMonth() + 3)
+      break
+    case 'yearly':
+      d.setFullYear(d.getFullYear() + 1)
+      break
+  }
+  return d.toISOString().split('T')[0] ?? dateStr
+}
+
+function getNextDueDate(dateStr: string, frequency: Frequency): string {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  let current = dateStr
+  while (new Date(current + 'T00:00:00') < today) {
+    current = advanceDate(current, frequency)
+  }
+  return current
+}
 </script>
 
 <template>
@@ -130,8 +164,17 @@ function formatCurrency(value: number): string {
           >
           <span v-if="item.notes" class="meta">📝 {{ item.notes }}</span>
         </div>
-        <div v-if="item.dueDate" class="list-item-date">
-          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon" /> Due: {{ item.dueDate }}
+        <div v-if="item.type === 'recurring' && item.dueDate" class="list-item-date">
+          <font-awesome-icon :icon="['fas', 'calendar-day']" class="date-icon" />
+          Next due: {{ formatDate(getNextDueDate(item.dueDate, item.frequency)) }}
+        </div>
+        <div v-else-if="item.dueDate" class="list-item-date">
+          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon" />
+          Due: {{ formatDate(item.dueDate) }}
+        </div>
+        <div class="list-item-created">
+          Created {{ formatDateTime(item.createdAt) }}
+          <span v-if="item.assignedTo" class="created-by">by {{ item.assignedTo }}</span>
         </div>
         <div class="list-item-actions">
           <RouterLink :to="`/expenses/${item.id}/edit`" class="btn-edit">Edit</RouterLink>
@@ -177,6 +220,8 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 .meta { font-size: 0.8rem; color: var(--color-text-muted); }
 .list-item-date { font-size: 0.85rem; color: var(--color-text); display: flex; align-items: center; gap: 0.4rem; }
 .date-icon { color: var(--color-expense); font-size: 0.85rem; }
+.list-item-created { font-size: 0.75rem; color: var(--color-text-muted); }
+.created-by { margin-left: 0.25rem; }
 .cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
 .assigned-badge { background: var(--color-assigned-bg); color: var(--color-assigned-text); }
 .empty { color: var(--color-text-muted); font-style: italic; }

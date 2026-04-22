@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import IncomeView from '@/views/IncomeView.vue'
 import { useFinancesStore } from '@/stores/finances'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { formatDate } from '@/lib/formatDate'
 
 function makeRouter() {
   return createRouter({
@@ -115,7 +116,7 @@ describe('IncomeView', () => {
     })
     const wrapper = mountView()
     expect(wrapper.text()).toContain('Some note')
-    expect(wrapper.text()).toContain('2026-06-01')
+    expect(wrapper.text()).toContain(formatDate('2026-06-01'))
   })
 
   it('shows FilterSortBar when items exist', () => {
@@ -296,7 +297,7 @@ describe('IncomeView', () => {
     const store = useFinancesStore()
     store.addAdhocIncome({ amount: 200, description: 'Gift', date: '2026-05-10' })
     const wrapper = mountView()
-    expect(wrapper.text()).toContain('2026-05-10')
+    expect(wrapper.text()).toContain(formatDate('2026-05-10'))
   })
 
   it('shows filter message when no matches with active filter', async () => {
@@ -307,5 +308,42 @@ describe('IncomeView', () => {
     vm.toggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No income matches the current filter')
+  })
+
+  it('shows next due date for recurring income with a past date', () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({
+      amount: 3000,
+      frequency: 'monthly',
+      description: 'Salary',
+      notes: '',
+      date: '2025-01-15',
+    })
+    const wrapper = mountView()
+    // Should show "Next:" with a future date, not the original 2025-01-15
+    expect(wrapper.text()).toContain('Next:')
+    expect(wrapper.text()).not.toContain(formatDate('2025-01-15'))
+  })
+
+  it('shows original date for adhoc income', () => {
+    const store = useFinancesStore()
+    store.addAdhocIncome({ amount: 200, description: 'Gift', date: '2026-05-10' })
+    const wrapper = mountView()
+    expect(wrapper.text()).toContain(formatDate('2026-05-10'))
+    expect(wrapper.text()).not.toContain('Next:')
+  })
+
+  it('shows createdAt for each item', () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'Test',
+      notes: '',
+      date: null,
+    })
+    const wrapper = mountView()
+    expect(wrapper.find('.list-item-created').exists()).toBe(true)
+    expect(wrapper.find('.list-item-created').text()).toContain('Created')
   })
 })

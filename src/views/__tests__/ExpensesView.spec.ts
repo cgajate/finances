@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ExpensesView from '@/views/ExpensesView.vue'
 import { useFinancesStore } from '@/stores/finances'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { formatDate } from '@/lib/formatDate'
 
 function makeRouter() {
   return createRouter({
@@ -85,7 +86,7 @@ describe('ExpensesView', () => {
       dueDate: '2026-05-01',
     })
     const wrapper = mountView()
-    expect(wrapper.text()).toContain('2026-05-01')
+    expect(wrapper.text()).toContain(formatDate('2026-05-01'))
     expect(wrapper.text()).toContain('A note')
   })
 
@@ -292,5 +293,54 @@ describe('ExpensesView', () => {
     vm.toggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No expenses match the current filter')
+  })
+
+  it('shows next due date for recurring expense with a past date', () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({
+      amount: 1500,
+      frequency: 'monthly',
+      description: 'Rent',
+      notes: '',
+      dueDate: '2025-01-01',
+    })
+    const wrapper = mountView()
+    expect(wrapper.text()).toContain('Next due:')
+    expect(wrapper.text()).not.toContain(formatDate('2025-01-01'))
+  })
+
+  it('shows original due date for adhoc expense', () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({
+      amount: 300,
+      description: 'Car fix',
+      notes: '',
+      dueDate: '2026-06-15',
+    })
+    const wrapper = mountView()
+    expect(wrapper.text()).toContain('Due: ' + formatDate('2026-06-15'))
+    expect(wrapper.text()).not.toContain('Next due:')
+  })
+
+  it('shows createdAt for each item', () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
+    const wrapper = mountView()
+    expect(wrapper.find('.list-item-created').exists()).toBe(true)
+    expect(wrapper.find('.list-item-created').text()).toContain('Created')
+  })
+
+  it('shows assignedTo in created line', () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({
+      amount: 100,
+      frequency: 'monthly',
+      description: 'Electric',
+      notes: '',
+      dueDate: null,
+      assignedTo: 'Dad',
+    })
+    const wrapper = mountView()
+    expect(wrapper.find('.list-item-created').text()).toContain('by Dad')
   })
 })
