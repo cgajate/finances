@@ -4,10 +4,10 @@ import { useActivityFeedStore } from '@/stores/activityFeed'
 
 const store = useActivityFeedStore()
 
-const actionEmoji: Record<string, string> = {
-  add: '➕',
-  edit: '✏️',
-  delete: '🗑️',
+const actionIcon: Record<string, string> = {
+  add: 'plus',
+  edit: 'pen-to-square',
+  delete: 'trash',
 }
 
 const entityLabel: Record<string, string> = {
@@ -47,7 +47,7 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
 
     <ul v-else class="feed-list">
       <li v-for="entry in store.sortedActivities" :key="entry.id" class="feed-item">
-        <span class="feed-emoji">{{ actionEmoji[entry.action] ?? '•' }}</span>
+        <span class="feed-icon"><font-awesome-icon :icon="['fas', actionIcon[entry.action] ?? 'circle']" /></span>
         <div class="feed-body">
           <div class="feed-description">{{ entry.description }}</div>
           <div class="feed-meta">
@@ -105,10 +105,11 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
   border-bottom: none;
 }
 
-.feed-emoji {
-  font-size: 1.2rem;
+.feed-icon {
+  font-size: 1rem;
   flex-shrink: 0;
   margin-top: 2px;
+  color: var(--color-text-secondary);
 }
 
 .feed-body {

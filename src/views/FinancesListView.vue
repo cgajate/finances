@@ -214,7 +214,7 @@ function getNextDueDate(dateStr: string, frequency: Frequency): string {
         <div class="list-item-meta">
           <span class="badge income-badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
           <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
-          <span v-if="item.type === 'recurring' && item.notes" class="meta">📝 {{ item.notes }}</span>
+          <span v-if="item.type === 'recurring' && item.notes" class="meta"><font-awesome-icon :icon="['fas', 'note-sticky']" /> {{ item.notes }}</span>
         </div>
         <div v-if="item.type === 'recurring' && item.date" class="list-item-date">
           <font-awesome-icon :icon="['fas', 'calendar-day']" class="date-icon income-date-icon" />
@@ -282,8 +282,8 @@ function getNextDueDate(dateStr: string, frequency: Frequency): string {
         <div class="list-item-meta">
           <span class="badge expense-badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
           <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
-          <span v-if="item.assignedTo" class="badge assigned-badge">👤 {{ item.assignedTo }}</span>
-          <span v-if="item.notes" class="meta">📝 {{ item.notes }}</span>
+          <span v-if="item.assignedTo" class="badge assigned-badge"><font-awesome-icon :icon="['fas', 'user']" /> {{ item.assignedTo }}</span>
+          <span v-if="item.notes" class="meta"><font-awesome-icon :icon="['fas', 'note-sticky']" /> {{ item.notes }}</span>
         </div>
         <div v-if="item.type === 'recurring' && item.dueDate" class="list-item-date">
           <font-awesome-icon :icon="['fas', 'calendar-day']" class="date-icon expense-date-icon" />

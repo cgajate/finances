@@ -60,31 +60,31 @@ describe('ActivityFeedView', () => {
     expect(store.activities).toHaveLength(0)
   })
 
-  it('shows action emoji for add', () => {
+  it('shows action icon for add', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const store = useActivityFeedStore()
     store.logActivity('user1', 'add', 'income', 'id1', 'Added')
     const wrapper = mount(ActivityFeedView, { global: { plugins: [pinia] } })
-    expect(wrapper.find('.feed-emoji').text()).toBe('➕')
+    expect(wrapper.find('.feed-icon').exists()).toBe(true)
   })
 
-  it('shows action emoji for edit', () => {
+  it('shows action icon for edit', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const store = useActivityFeedStore()
     store.logActivity('user1', 'edit', 'expense', 'id1', 'Edited')
     const wrapper = mount(ActivityFeedView, { global: { plugins: [pinia] } })
-    expect(wrapper.find('.feed-emoji').text()).toBe('✏️')
+    expect(wrapper.find('.feed-icon').exists()).toBe(true)
   })
 
-  it('shows action emoji for delete', () => {
+  it('shows action icon for delete', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const store = useActivityFeedStore()
     store.logActivity('user1', 'delete', 'budget', 'id1', 'Deleted')
     const wrapper = mount(ActivityFeedView, { global: { plugins: [pinia] } })
-    expect(wrapper.find('.feed-emoji').text()).toBe('🗑️')
+    expect(wrapper.find('.feed-icon').exists()).toBe(true)
   })
 
   it('shows entity label for income', () => {

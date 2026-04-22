@@ -230,7 +230,7 @@ function formatFrequency(freq: string): string {
 
     <!-- Savings Goals -->
     <section v-if="savingsStore.activeGoals.length" class="savings-section">
-      <h2>🎯 Savings Goals</h2>
+      <h2><font-awesome-icon :icon="['fas', 'bullseye']" /> Savings Goals</h2>
       <div class="savings-goals">
         <div v-for="goal in savingsStore.activeGoals" :key="goal.id" class="savings-goal-row">
           <div class="savings-goal-info">

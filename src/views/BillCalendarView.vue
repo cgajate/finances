@@ -52,16 +52,16 @@ function formatCurrency(value: number): string {
 
 <template>
   <div class="page">
-    <h1>📅 Bill Calendar</h1>
+    <h1>Bill Calendar</h1>
 
     <!-- Month navigation -->
     <div class="nav-row">
-      <button class="nav-btn" @click="prevMonth">← Prev</button>
+      <button class="nav-btn" @click="prevMonth"><font-awesome-icon :icon="['fas', 'chevron-left']" /> Prev</button>
       <div class="nav-center">
         <span class="nav-label">{{ calendar.label }}</span>
         <button class="today-btn" @click="goToday">Today</button>
       </div>
-      <button class="nav-btn" @click="nextMonth">Next →</button>
+      <button class="nav-btn" @click="nextMonth">Next <font-awesome-icon :icon="['fas', 'chevron-right']" /></button>
     </div>
 
     <!-- Month summary -->
@@ -143,6 +143,7 @@ h3 { margin: 0 0 0.5rem; font-size: 1rem; }
 .nav-btn {
   padding: 0.4rem 0.8rem; background: none; border: 1px solid var(--color-primary);
   color: var(--color-primary); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; gap: 0.3rem;
 }
 .nav-btn:hover { background: var(--color-primary-light); }
 .nav-center { display: flex; align-items: center; gap: 0.5rem; }

@@ -83,7 +83,7 @@ function barColor(status: string): string {
         <button type="submit" class="btn-add">+ Add</button>
       </div>
     </form>
-    <p v-else class="all-set">✅ All categories have budgets set!</p>
+    <p v-else class="all-set"><font-awesome-icon :icon="['fas', 'circle-check']" /> All categories have budgets set!</p>
 
     <!-- Budget status list -->
     <div v-if="budgetsStore.budgetStatus.length" class="budget-list">
@@ -110,8 +110,8 @@ function barColor(status: string): string {
         <div class="budget-footer">
           <span class="budget-percent" :style="{ color: statusColor(bs.status) }">
             {{ Math.round(bs.percent) }}%
-            <span v-if="bs.status === 'over'" class="status-label">⚠️ Over budget!</span>
-            <span v-else-if="bs.status === 'warning'" class="status-label">⚠️ Approaching limit</span>
+            <span v-if="bs.status === 'over'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Over budget!</span>
+            <span v-else-if="bs.status === 'warning'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Approaching limit</span>
           </span>
           <button class="btn-remove" @click="removeBudget(bs.category)">Remove</button>
         </div>

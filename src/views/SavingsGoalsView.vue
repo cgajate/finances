@@ -170,11 +170,11 @@ function meterColor(percent: number): string {
 
     <!-- Completed goals -->
     <template v-if="store.completedGoals.length">
-      <h2>🎉 Completed ({{ store.completedGoals.length }})</h2>
+      <h2><font-awesome-icon :icon="['fas', 'trophy']" /> Completed ({{ store.completedGoals.length }})</h2>
       <div class="goals-list">
         <div v-for="goal in store.completedGoals" :key="goal.id" class="goal-card completed">
           <div class="goal-header">
-            <span class="goal-name">✅ {{ goal.name }}</span>
+            <span class="goal-name"><font-awesome-icon :icon="['fas', 'circle-check']" /> {{ goal.name }}</span>
             <span class="goal-saved-final">{{ formatCurrency(goal.savedAmount) }}</span>
           </div>
           <div class="meter-track">

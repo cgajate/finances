@@ -66,7 +66,7 @@ const monthlySavingsAvg = computed(() => {
 
 <template>
   <div class="page">
-    <h1>📊 Analytics & Forecasting</h1>
+    <h1>Analytics & Forecasting</h1>
 
     <TabBar :tabs="analyticsTabs" v-model="activeTab" />
 
