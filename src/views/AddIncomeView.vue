@@ -172,23 +172,6 @@ const frequencies = FREQUENCY_OPTIONS
 </template>
 
 <style scoped>
-h2 { margin: 0; }
-
-.page-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-
-.form { display: flex; flex-direction: column; gap: 1rem; }
-.field { display: flex; flex-direction: column; gap: 0.25rem; }
-.field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
-.field input, .field select, .field textarea {
-  padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
-  background: var(--color-input-bg); color: var(--color-input-text);
-}
-.field textarea { resize: vertical; }
+/* View-specific styles only — form, layout, and page-header are global */
 </style>
 

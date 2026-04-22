@@ -1,0 +1,33 @@
+// ─── Shared layout styles ───
+// Page containers, empty states, page headers
+
+// ─── Page container (600px default) ───
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// ─── Wide page container (800px for analytics, calendar) ───
+.page--wide {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+// ─── Page header (back button + title row) ───
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+// ─── Empty state message ───
+.empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+

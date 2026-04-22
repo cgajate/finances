@@ -308,7 +308,6 @@ li strong { flex: 1; min-width: 120px; }
   font-size: 0.75rem; background: var(--color-badge-bg); padding: 0.2rem 0.5rem;
   border-radius: 4px; text-transform: capitalize; color: var(--color-badge-text);
 }
-.empty { color: var(--color-text-muted); font-style: italic; }
 
 .section-actions {
   display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;

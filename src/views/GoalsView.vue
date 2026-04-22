@@ -36,6 +36,5 @@ function switchTab(tab: string) {
 </template>
 
 <style scoped>
-.page { max-width: 600px; margin: 0 auto; }
 h1 { margin-bottom: 1.5rem; }
 </style>

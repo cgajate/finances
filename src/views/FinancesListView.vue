@@ -314,6 +314,5 @@ h2 { margin: 0; font-size: 1.1rem; }
 .created-by { margin-left: 0.25rem; }
 .cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
 .assigned-badge { background: var(--color-assigned-bg); color: var(--color-assigned-text); }
-.empty { color: var(--color-text-muted); font-style: italic; }
 </style>
 

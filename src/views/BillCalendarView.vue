@@ -49,7 +49,7 @@ function selectDay(day: CalendarDay) {
 </script>
 
 <template>
-  <div class="page">
+  <div class="page--wide">
     <h1>Bill Calendar</h1>
 
     <!-- Month navigation -->
@@ -133,7 +133,6 @@ function selectDay(day: CalendarDay) {
 </template>
 
 <style scoped>
-.page { max-width: 800px; margin: 0 auto; }
 h1 { margin-bottom: 1rem; }
 h3 { margin: 0 0 0.5rem; font-size: 1rem; }
 

@@ -228,6 +228,5 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
   width: 100px; padding: 0.4rem; border: 1px solid var(--color-input-border); border-radius: 6px;
   font-size: 0.9rem; background: var(--color-input-bg); color: var(--color-input-text);
 }
-.empty { color: var(--color-text-muted); font-style: italic; }
 </style>
 

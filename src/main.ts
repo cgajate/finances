@@ -8,6 +8,8 @@ import App from './App.vue'
 import router from './router'
 import './assets/main.css'
 import './assets/buttons.scss'
+import './assets/_layout.scss'
+import './assets/_forms.scss'
 
 library.add(fas)
 

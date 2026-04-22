@@ -147,6 +147,5 @@ function barColor(status: string): string {
 .budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }
 .status-label { font-weight: 500; }
-.empty { color: var(--color-text-muted); font-style: italic; }
 </style>
 

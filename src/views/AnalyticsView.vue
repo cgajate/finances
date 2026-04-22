@@ -63,7 +63,7 @@ const monthlySavingsAvg = computed(() => {
 </script>
 
 <template>
-  <div class="page">
+  <div class="page--wide">
     <h1>Analytics & Forecasting</h1>
 
     <TabBar :tabs="analyticsTabs" v-model="activeTab" />
@@ -406,7 +406,6 @@ const monthlySavingsAvg = computed(() => {
 </template>
 
 <style scoped>
-.page { max-width: 800px; margin: 0 auto; }
 h1 { margin-bottom: 1.5rem; }
 h2 { margin: 1.5rem 0 1rem; font-size: 1.1rem; }
 
@@ -585,7 +584,6 @@ h2 { margin: 1.5rem 0 1rem; font-size: 1.1rem; }
 }
 .trend-detail-amount { font-size: 0.8rem; font-weight: 600; color: var(--color-expense); min-width: 65px; text-align: right; }
 
-.empty { color: var(--color-text-muted); font-style: italic; }
 
 /* Year Review */
 .year-header { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
