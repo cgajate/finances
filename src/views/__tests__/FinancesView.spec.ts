@@ -56,21 +56,21 @@ describe('FinancesView', () => {
 
   it('shows income tab active by default', async () => {
     const wrapper = await mountView()
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     expect(tabs[0]!.classes()).toContain('active')
     expect(tabs[1]!.classes()).not.toContain('active')
   })
 
   it('shows expenses tab active when tab=expenses', async () => {
     const wrapper = await mountView('expenses')
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     expect(tabs[0]!.classes()).not.toContain('active')
     expect(tabs[1]!.classes()).toContain('active')
   })
 
   it('switches to expenses tab on click', async () => {
     const wrapper = await mountView()
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     await tabs[1]!.trigger('click')
     await flushPromises()
     expect(tabs[1]!.classes()).toContain('active')
@@ -79,7 +79,7 @@ describe('FinancesView', () => {
 
   it('switches to income tab on click', async () => {
     const wrapper = await mountView('expenses')
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     await tabs[0]!.trigger('click')
     await flushPromises()
     expect(tabs[0]!.classes()).toContain('active')

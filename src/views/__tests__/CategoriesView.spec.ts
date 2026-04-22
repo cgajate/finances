@@ -65,7 +65,7 @@ describe('CategoriesView', () => {
 
   it('switches to income tab', async () => {
     const wrapper = mountView()
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     await tabs[1]!.trigger('click')
     expect(wrapper.text()).toContain('Salary')
   })

@@ -47,14 +47,14 @@ describe('AddExpenseView', () => {
 
   it('shows recurring tab active by default', () => {
     const wrapper = mountView()
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     expect(tabs[0]!.classes()).toContain('active')
     expect(tabs[1]!.classes()).not.toContain('active')
   })
 
   it('switches to adhoc tab on click', async () => {
     const wrapper = mountView()
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     await tabs[1]!.trigger('click')
     expect(tabs[1]!.classes()).toContain('active')
     expect(wrapper.text()).toContain('Add Ad-hoc Expense')
@@ -73,7 +73,7 @@ describe('AddExpenseView', () => {
 
   it('shows adhoc form with correct submit button', async () => {
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     expect(wrapper.find('.btn-submit').text()).toContain('Add Ad-hoc Expense')
   })
 
@@ -170,7 +170,7 @@ describe('AddExpenseView', () => {
   it('submits adhoc expense form successfully', async () => {
     const store = useFinancesStore()
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     const vm = wrapper.vm as any
     vm.aDescription = 'Car repair'
     vm.aAmount = 300
@@ -185,7 +185,7 @@ describe('AddExpenseView', () => {
 
   it('shows snackbar after successful adhoc submit', async () => {
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     const vm = wrapper.vm as any
     vm.aDescription = 'Groceries'
     vm.aAmount = 50
@@ -198,7 +198,7 @@ describe('AddExpenseView', () => {
   it('does not submit adhoc form without description', async () => {
     const store = useFinancesStore()
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     const vm = wrapper.vm as any
     vm.aAmount = 100
     vm.aDescription = ''
@@ -209,7 +209,7 @@ describe('AddExpenseView', () => {
   it('does not submit adhoc form without amount', async () => {
     const store = useFinancesStore()
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     const vm = wrapper.vm as any
     vm.aDescription = 'Test'
     vm.aAmount = null
@@ -219,7 +219,7 @@ describe('AddExpenseView', () => {
 
   it('resets form fields after successful adhoc submit', async () => {
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     const vm = wrapper.vm as any
     vm.aDescription = 'Fix'
     vm.aAmount = 200

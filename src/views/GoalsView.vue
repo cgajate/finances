@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import TabBar from '@/components/TabBar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,7 +11,12 @@ const activeTab = computed(() => {
   return 'budgets'
 })
 
-function switchTab(tab: 'budgets' | 'savings') {
+const tabs = [
+  { value: 'budgets', label: 'Budgets' },
+  { value: 'savings', label: 'Savings' },
+]
+
+function switchTab(tab: string) {
   if (tab === 'savings') {
     router.replace('/goals/savings')
   } else {
@@ -23,15 +29,7 @@ function switchTab(tab: 'budgets' | 'savings') {
   <div class="page">
     <h1>Goals</h1>
 
-    <!-- Tab switcher -->
-    <div class="tabs">
-      <button :class="{ active: activeTab === 'budgets' }" @click="switchTab('budgets')">
-        Budgets
-      </button>
-      <button :class="{ active: activeTab === 'savings' }" @click="switchTab('savings')">
-        Savings
-      </button>
-    </div>
+    <TabBar :tabs="tabs" :model-value="activeTab" @update:model-value="switchTab" />
 
     <router-view />
   </div>
@@ -40,14 +38,4 @@ function switchTab(tab: 'budgets' | 'savings') {
 <style scoped>
 .page { max-width: 600px; margin: 0 auto; }
 h1 { margin-bottom: 1.5rem; }
-
-/* Tabs */
-.tabs { display: flex; gap: 0; margin-bottom: 1.5rem; }
-.tabs button {
-  flex: 1; padding: 0.6rem; border: 2px solid var(--color-primary); background: var(--color-surface); color: var(--color-primary);
-  font-weight: 600; cursor: pointer; font-size: 0.95rem;
-}
-.tabs button:first-child { border-radius: 8px 0 0 8px; }
-.tabs button:last-child { border-radius: 0 8px 8px 0; }
-.tabs button.active { background: var(--color-primary); color: white; }
 </style>

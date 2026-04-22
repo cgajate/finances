@@ -4,6 +4,7 @@ import { useFinancesStore } from '@/stores/finances'
 import { useForecasting } from '@/composables/useForecasting'
 import { useSpendingTrends } from '@/composables/useSpendingTrends'
 import { useYearReview } from '@/composables/useYearReview'
+import TabBar from '@/components/TabBar.vue'
 
 const store = useFinancesStore()
 
@@ -19,6 +20,13 @@ const { breakdown, currentMonthIndex, yearProjection } = useForecasting(
 
 const expandedMonth = ref<string | null>(null)
 const activeTab = ref<'timeline' | 'projection' | 'trends' | 'year-review'>('timeline')
+
+const analyticsTabs = [
+  { value: 'timeline', label: 'Month-by-Month' },
+  { value: 'projection', label: '12-Month Projection' },
+  { value: 'trends', label: 'Spending Trends' },
+  { value: 'year-review', label: 'Year Review' },
+]
 
 // Spending trends
 const trendMonths = ref(6)
@@ -60,21 +68,7 @@ const monthlySavingsAvg = computed(() => {
   <div class="page">
     <h1>📊 Analytics & Forecasting</h1>
 
-    <!-- Tab switcher -->
-    <div class="tabs">
-      <button :class="{ active: activeTab === 'timeline' }" @click="activeTab = 'timeline'">
-        Month-by-Month
-      </button>
-      <button :class="{ active: activeTab === 'projection' }" @click="activeTab = 'projection'">
-        12-Month Projection
-      </button>
-      <button :class="{ active: activeTab === 'trends' }" @click="activeTab = 'trends'">
-        Spending Trends
-      </button>
-      <button :class="{ active: activeTab === 'year-review' }" @click="activeTab = 'year-review'">
-        Year Review
-      </button>
-    </div>
+    <TabBar :tabs="analyticsTabs" v-model="activeTab" />
 
     <!-- 12-Month Projection Tab -->
     <div v-if="activeTab === 'projection'" class="projection">
@@ -418,16 +412,6 @@ const monthlySavingsAvg = computed(() => {
 h1 { margin-bottom: 1.5rem; }
 h2 { margin: 1.5rem 0 1rem; font-size: 1.1rem; }
 
-/* Tabs */
-.tabs { display: flex; gap: 0; margin-bottom: 1.5rem; }
-.tabs button {
-  flex: 1; padding: 0.6rem; border: 2px solid var(--color-primary); background: var(--color-surface); color: var(--color-primary);
-  font-weight: 600; cursor: pointer; font-size: 0.95rem;
-  border-left-width: 1px; border-right-width: 1px;
-}
-.tabs button:first-child { border-radius: 8px 0 0 8px; border-left-width: 2px; }
-.tabs button:last-child { border-radius: 0 8px 8px 0; border-right-width: 2px; }
-.tabs button.active { background: var(--color-primary); color: white; }
 
 /* Projection cards */
 .projection-cards {

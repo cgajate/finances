@@ -3,12 +3,17 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCategoriesStore } from '@/stores/categories'
 import { useSnackbar } from '@/composables/useSnackbar'
+import TabBar from '@/components/TabBar.vue'
 
 const store = useCategoriesStore()
 const { expenseCategories, incomeCategories } = storeToRefs(store)
 const snackbar = useSnackbar()
 
 const tab = ref<'expense' | 'income'>('expense')
+const categoryTabs = [
+  { value: 'expense', label: 'Expense', icon: ['fas', 'receipt'] },
+  { value: 'income', label: 'Income', icon: ['fas', 'money-bill-wave'] },
+]
 const newName = ref('')
 const editingId = ref<string | null>(null)
 const editingName = ref('')
@@ -62,16 +67,7 @@ function restore(id: string, name: string) {
       Manage Categories
     </h1>
 
-    <div class="tabs">
-      <button :class="{ active: tab === 'expense' }" @click="tab = 'expense'">
-        <font-awesome-icon :icon="['fas', 'receipt']" />
-        Expense
-      </button>
-      <button :class="{ active: tab === 'income' }" @click="tab = 'income'">
-        <font-awesome-icon :icon="['fas', 'money-bill-wave']" />
-        Income
-      </button>
-    </div>
+    <TabBar :tabs="categoryTabs" v-model="tab" />
 
     <!-- Add form -->
     <form class="add-form" @submit.prevent="addCategory">
@@ -194,40 +190,6 @@ h2 {
   color: var(--color-text-secondary);
 }
 
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 0;
-  margin-bottom: 1.5rem;
-}
-
-.tabs button {
-  flex: 1;
-  padding: 0.6rem;
-  border: 2px solid var(--color-primary);
-  background: var(--color-surface);
-  color: var(--color-primary);
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-}
-
-.tabs button:first-child {
-  border-radius: 8px 0 0 8px;
-}
-
-.tabs button:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.tabs button.active {
-  background: var(--color-primary);
-  color: white;
-}
 
 /* Add form */
 .add-form {

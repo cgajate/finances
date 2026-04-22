@@ -7,6 +7,7 @@ import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency, IncomeCategory } from '@/types/finance'
+import TabBar from '@/components/TabBar.vue'
 
 const router = useRouter()
 const store = useFinancesStore()
@@ -15,6 +16,10 @@ const categoriesStore = useCategoriesStore()
 const { activeIncomeCategories } = storeToRefs(categoriesStore)
 
 const tab = ref<'recurring' | 'adhoc'>('recurring')
+const formTabs = [
+  { value: 'recurring', label: 'Recurring' },
+  { value: 'adhoc', label: 'Ad-hoc' },
+]
 
 // Recurring form
 const rAmount = ref<number | null>(null)
@@ -93,12 +98,7 @@ const frequencies: { value: Frequency; label: string }[] = [
       <h2>Add Income</h2>
     </div>
 
-    <div class="tabs">
-      <button :class="{ active: tab === 'recurring' }" @click="tab = 'recurring'">
-        Recurring
-      </button>
-      <button :class="{ active: tab === 'adhoc' }" @click="tab = 'adhoc'">Ad-hoc</button>
-    </div>
+    <TabBar :tabs="formTabs" v-model="tab" />
 
     <!-- Recurring Income Form -->
     <form v-if="tab === 'recurring'" class="form" @submit.prevent="addRecurring">
@@ -186,14 +186,6 @@ h2 { margin: 0; }
   margin-bottom: 1rem;
 }
 
-.tabs { display: flex; gap: 0; margin-bottom: 1.5rem; }
-.tabs button {
-  flex: 1; padding: 0.6rem; border: 2px solid var(--color-primary); background: var(--color-surface); color: var(--color-primary);
-  font-weight: 600; cursor: pointer; font-size: 0.95rem;
-}
-.tabs button:first-child { border-radius: 8px 0 0 8px; }
-.tabs button:last-child { border-radius: 0 8px 8px 0; }
-.tabs button.active { background: var(--color-primary); color: var(--color-header-text); }
 
 .form { display: flex; flex-direction: column; gap: 1rem; }
 .field { display: flex; flex-direction: column; gap: 0.25rem; }

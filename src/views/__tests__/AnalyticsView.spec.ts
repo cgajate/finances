@@ -32,7 +32,7 @@ describe('AnalyticsView', () => {
 
   it('shows four tabs', () => {
     const wrapper = mountView()
-    const tabs = wrapper.findAll('.tabs button')
+    const tabs = wrapper.findAll('.tab-bar button')
     expect(tabs).toHaveLength(4)
     expect(tabs[0]!.text()).toContain('Month-by-Month')
     expect(tabs[1]!.text()).toContain('12-Month Projection')
@@ -42,13 +42,13 @@ describe('AnalyticsView', () => {
 
   it('defaults to timeline tab', () => {
     const wrapper = mountView()
-    expect(wrapper.findAll('.tabs button')[0]!.classes()).toContain('active')
+    expect(wrapper.findAll('.tab-bar button')[0]!.classes()).toContain('active')
     expect(wrapper.find('.timeline').exists()).toBe(true)
   })
 
   it('switches to projection tab', async () => {
     const wrapper = mountView()
-    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
     expect(wrapper.find('.projection').exists()).toBe(true)
     expect(wrapper.find('.timeline').exists()).toBe(false)
   })
@@ -112,7 +112,7 @@ describe('AnalyticsView', () => {
   describe('projection tab', () => {
     it('shows 4 projection cards', async () => {
       const wrapper = mountView()
-      await wrapper.findAll('.tabs button')[1]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
       expect(wrapper.findAll('.proj-card')).toHaveLength(4)
       expect(wrapper.text()).toContain('Projected Income')
       expect(wrapper.text()).toContain('Projected Expenses')
@@ -122,7 +122,7 @@ describe('AnalyticsView', () => {
 
     it('shows $0.00 when no data', async () => {
       const wrapper = mountView()
-      await wrapper.findAll('.tabs button')[1]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
       const values = wrapper.findAll('.proj-value')
       for (const v of values) {
         expect(v.text()).toBe('$0.00')
@@ -134,7 +134,7 @@ describe('AnalyticsView', () => {
       store.addRecurringIncome({ amount: 1000, frequency: 'monthly', description: 'Sal', notes: '', date: null })
       store.addRecurringExpense({ amount: 400, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
       const wrapper = mountView()
-      await wrapper.findAll('.tabs button')[1]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
       expect(wrapper.text()).toContain('$12,000.00') // 12 months income
       expect(wrapper.text()).toContain('$4,800.00')  // 12 months expenses
       expect(wrapper.text()).toContain('$7,200.00')  // net savings
@@ -144,13 +144,13 @@ describe('AnalyticsView', () => {
       const store = useFinancesStore()
       store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'S', notes: '', date: null })
       const wrapper = mountView()
-      await wrapper.findAll('.tabs button')[1]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
       expect(wrapper.findAll('.mini-bar')).toHaveLength(12)
     })
 
     it('shows legend', async () => {
       const wrapper = mountView()
-      await wrapper.findAll('.tabs button')[1]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
       expect(wrapper.text()).toContain('Income')
       expect(wrapper.text()).toContain('Expenses')
       expect(wrapper.find('.income-dot').exists()).toBe(true)
@@ -161,7 +161,7 @@ describe('AnalyticsView', () => {
       const store = useFinancesStore()
       store.addRecurringExpense({ amount: 5000, frequency: 'monthly', description: 'Big', notes: '', dueDate: null })
       const wrapper = mountView()
-      await wrapper.findAll('.tabs button')[1]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
       expect(wrapper.find('.proj-card.savings').classes()).toContain('negative')
     })
   })
@@ -185,7 +185,7 @@ describe('AnalyticsView', () => {
 
   describe('year review tab', () => {
     async function switchToYearReview(wrapper: ReturnType<typeof mountView>) {
-      await wrapper.findAll('.tabs button')[3]!.trigger('click')
+      await wrapper.findAll('.tab-bar button')[3]!.trigger('click')
     }
 
     it('switches to year review tab', async () => {
