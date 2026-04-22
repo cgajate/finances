@@ -48,8 +48,7 @@ function barColor(status: string): string {
 </script>
 
 <template>
-  <div class="page">
-    <h1>Budget Goals</h1>
+  <div>
     <p class="subtitle">Set monthly spending limits per category</p>
 
     <!-- Add budget form -->
@@ -123,8 +122,6 @@ function barColor(status: string): string {
 </template>
 
 <style scoped>
-.page { max-width: 600px; margin: 0 auto; }
-h1 { margin-bottom: 0.25rem; }
 .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
 .form { margin-bottom: 2rem; }

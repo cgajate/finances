@@ -78,8 +78,7 @@ function meterColor(percent: number): string {
 </script>
 
 <template>
-  <div class="page">
-    <h1>🎯 Savings Goals</h1>
+  <div>
 
     <!-- Add goal form -->
     <form class="form" @submit.prevent="addGoal">
@@ -191,8 +190,6 @@ function meterColor(percent: number): string {
 </template>
 
 <style scoped>
-.page { max-width: 600px; margin: 0 auto; }
-h1 { margin-bottom: 0.5rem; }
 h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 
 .form { margin-bottom: 1.5rem; }

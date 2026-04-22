@@ -25,12 +25,7 @@ describe('SavingsGoalsView', () => {
     })
   }
 
-  it('renders the title', () => {
-    const wrapper = mountView()
-    expect(wrapper.find('h1').text()).toContain('Savings Goals')
-  })
-
-  it('shows the add goal form', () => {
+  it('renders the add goal form', () => {
     const wrapper = mountView()
     expect(wrapper.find('form').exists()).toBe(true)
     expect(wrapper.text()).toContain('Goal Name')

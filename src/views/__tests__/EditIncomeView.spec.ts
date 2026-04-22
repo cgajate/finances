@@ -56,7 +56,7 @@ describe('EditIncomeView', () => {
     store.addRecurringIncome({ amount: 3000, frequency: 'bi-weekly', description: 'Pay', notes: 'Main', date: '2026-06-01' })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    expect(wrapper.find('h1').text()).toBe('Edit Income')
+    expect(wrapper.find('h2').text()).toBe('Edit Income')
     expect((wrapper.find('input[type="text"]').element as HTMLInputElement).value).toBe('Pay')
     expect((wrapper.find('select').element as HTMLSelectElement).value).toBe('bi-weekly')
   })

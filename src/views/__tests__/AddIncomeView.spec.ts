@@ -36,7 +36,7 @@ describe('AddIncomeView', () => {
 
   it('renders the title', () => {
     const wrapper = mountView()
-    expect(wrapper.find('h1').text()).toBe('Add Income')
+    expect(wrapper.find('h2').text()).toBe('Add Income')
   })
 
   it('renders a back button', () => {

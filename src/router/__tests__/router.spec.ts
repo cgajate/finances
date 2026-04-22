@@ -67,14 +67,28 @@ describe('router', () => {
     expect(route.name).toBe('analytics')
   })
 
-  it('has a budgets route at /budgets', () => {
-    const route = router.resolve('/budgets')
+  it('has a budgets route at /goals', () => {
+    const route = router.resolve('/goals')
     expect(route.name).toBe('budgets')
   })
 
-  it('has a savings route at /savings', () => {
-    const route = router.resolve('/savings')
+  it('has a savings route at /goals/savings', () => {
+    const route = router.resolve('/goals/savings')
     expect(route.name).toBe('savings')
+  })
+
+  it('has a redirect from /budgets to /goals', () => {
+    const routes = router.getRoutes()
+    const budgetsRedirect = routes.find(r => r.path === '/budgets')
+    expect(budgetsRedirect).toBeDefined()
+    expect(budgetsRedirect!.redirect).toBe('/goals')
+  })
+
+  it('has a redirect from /savings to /goals/savings', () => {
+    const routes = router.getRoutes()
+    const savingsRedirect = routes.find(r => r.path === '/savings')
+    expect(savingsRedirect).toBeDefined()
+    expect(savingsRedirect!.redirect).toBe('/goals/savings')
   })
 
   it('has a calendar route at /calendar', () => {
@@ -92,7 +106,7 @@ describe('router', () => {
     expect(route.name).toBe('categories')
   })
 
-  it('has 16 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(16)
+  it('has 20 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(20)
   })
 })

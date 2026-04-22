@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import FinancesView from '@/views/FinancesView.vue'
@@ -72,6 +72,7 @@ describe('FinancesView', () => {
     const wrapper = await mountView()
     const tabs = wrapper.findAll('.tabs button')
     await tabs[1]!.trigger('click')
+    await flushPromises()
     expect(tabs[1]!.classes()).toContain('active')
     expect(wrapper.text()).toContain('All Expenses')
   })
@@ -80,6 +81,7 @@ describe('FinancesView', () => {
     const wrapper = await mountView('expenses')
     const tabs = wrapper.findAll('.tabs button')
     await tabs[0]!.trigger('click')
+    await flushPromises()
     expect(tabs[0]!.classes()).toContain('active')
     expect(wrapper.text()).toContain('All Income')
   })
@@ -349,8 +351,8 @@ describe('FinancesView', () => {
     const store = useFinancesStore()
     store.addAdhocIncome({ amount: 100, description: 'Test', date: '2026-01-01' })
     const wrapper = await mountView()
-    const vm = wrapper.vm as any
-    vm.incomeToggleFilter('weekly')
+    const listVm = wrapper.findComponent(FinancesListView).vm as any
+    listVm.incomeToggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No income matches the current filter')
   })
@@ -632,9 +634,9 @@ describe('FinancesView', () => {
     const store = useFinancesStore()
     store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
     const wrapper = await mountView('expenses')
-    const vm = wrapper.vm as any
-    vm.expenseSearchQuery = ''
-    vm.expenseToggleFilter('weekly')
+    const listVm = wrapper.findComponent(FinancesListView).vm as any
+    listVm.expenseSearchQuery = ''
+    listVm.expenseToggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No expenses match the current filter')
   })
@@ -702,8 +704,8 @@ describe('FinancesView', () => {
     const id = store.incomes[0]!.id
     store.removeIncome(id)
     // Call deleteIncome with invalid id (via vm) - should not crash
-    const vm = wrapper.vm as any
-    vm.deleteIncome('nonexistent')
+    const listVm = wrapper.findComponent(FinancesListView).vm as any
+    listVm.deleteIncome('nonexistent')
     expect(store.incomes).toHaveLength(0)
   })
 
@@ -713,8 +715,8 @@ describe('FinancesView', () => {
     const id = store.expenses[0]!.id
     store.removeExpense(id)
     const wrapper = await mountView('expenses')
-    const vm = wrapper.vm as any
-    vm.deleteExpense('nonexistent')
+    const listVm = wrapper.findComponent(FinancesListView).vm as any
+    listVm.deleteExpense('nonexistent')
     expect(store.expenses).toHaveLength(0)
   })
 

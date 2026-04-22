@@ -40,9 +40,8 @@ describe('BudgetView', () => {
     return mount(BudgetView, { global: { plugins: [pinia] } })
   }
 
-  it('renders title', () => {
+  it('renders subtitle', () => {
     const wrapper = mountView()
-    expect(wrapper.text()).toContain('Budget Goals')
     expect(wrapper.text()).toContain('Set monthly spending limits per category')
   })
 
