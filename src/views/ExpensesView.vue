@@ -7,6 +7,7 @@ import { useSortFilter } from '@/composables/useSortFilter'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import FilterSortBar from '@/components/FilterSortBar.vue'
+import SearchBar from '@/components/SearchBar.vue'
 import type { Frequency } from '@/types/finance'
 import type { ExpenseCategory } from '@/types/finance'
 
@@ -47,7 +48,7 @@ function deleteExpense(id: string) {
 const tab = ref<'recurring' | 'adhoc'>('recurring')
 
 // Sort & filter
-const { sortBy, activeFilters, filtered: sortedExpenses, toggleFilter, clearFilters, hasFilter } = useSortFilter(() => store.expenses)
+const { sortBy, sortField, sortDirection, activeFilters, activeCategoryFilters, filtered: sortedExpenses, toggleFilter, toggleCategoryFilter, clearFilters, hasFilter, hasCategoryFilter } = useSortFilter(() => store.expenses)
 
 // Search
 const searchQuery = ref('')
@@ -246,23 +247,23 @@ const frequencies: { value: Frequency; label: string }[] = [
     <!-- Expense List -->
     <h2>All Expenses</h2>
 
-    <div v-if="store.expenses.length" class="search-bar">
-      <input
-        v-model="searchQuery"
-        type="text"
-        class="search-input"
-        placeholder="🔍 Search expenses..."
-      />
-      <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">✕</button>
-    </div>
+    <SearchBar v-if="store.expenses.length" v-model="searchQuery" placeholder="Search expenses..." />
 
     <FilterSortBar
       v-if="store.expenses.length"
       :sort-by="sortBy"
+      :sort-field="sortField"
+      :sort-direction="sortDirection"
       :active-filters="activeFilters"
+      :active-category-filters="activeCategoryFilters"
       :has-filter="hasFilter"
+      :has-category-filter="hasCategoryFilter"
+      type="expense"
       @update:sort-by="sortBy = $event"
+      @update:sort-field="sortField = $event"
+      @update:sort-direction="sortDirection = $event"
       @toggle-filter="toggleFilter"
+      @toggle-category-filter="toggleCategoryFilter"
       @clear-filters="clearFilters"
     />
 
@@ -345,33 +346,5 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
   border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
 }
 .empty { color: var(--color-text-muted); font-style: italic; }
-
-.search-bar {
-  position: relative;
-  margin-bottom: 0.75rem;
-}
-.search-input {
-  width: 100%;
-  padding: 0.6rem 2.2rem 0.6rem 0.75rem;
-  border: 1px solid var(--color-input-border);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  box-sizing: border-box;
-  background: var(--color-input-bg);
-  color: var(--color-input-text);
-}
-.search-clear {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 1rem;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: 0.2rem;
-}
-.search-clear:hover { color: var(--color-text); }
 </style>
 

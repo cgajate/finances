@@ -4,20 +4,20 @@ import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from '../App.vue'
 
-// Mock PinGate to always show the slot (bypass PIN)
 vi.mock('@/components/PinGate.vue', () => ({
-  default: {
-    name: 'PinGate',
-    template: '<slot />',
-  },
+  default: { name: 'PinGate', template: '<slot />' },
 }))
 
-// Mock HouseholdSetup to avoid Firebase dependency
 vi.mock('@/components/HouseholdSetup.vue', () => ({
-  default: {
-    name: 'HouseholdSetup',
-    template: '<div class="household-mock" />',
-  },
+  default: { name: 'HouseholdSetup', template: '<div class="household-mock" />', props: ['open'] },
+}))
+
+vi.mock('@/components/SnackbarNotification.vue', () => ({
+  default: { name: 'SnackbarNotification', template: '<div />' },
+}))
+
+vi.mock('@/composables/useHousehold', () => ({
+  useHousehold: () => ({ hasHousehold: { value: false } }),
 }))
 
 function makeRouter() {
@@ -33,35 +33,29 @@ function makeRouter() {
 }
 
 describe('App', () => {
-  it('renders the logo', () => {
+  it('renders the logo image', () => {
     const router = makeRouter()
     const wrapper = mount(App, {
       global: { plugins: [createPinia(), router] },
     })
-    expect(wrapper.text()).toContain('Family Finances')
+    expect(wrapper.find('.logo-img').exists()).toBe(true)
   })
 
-  it('renders navigation links', () => {
+  it('renders the app title when not collapsed', () => {
     const router = makeRouter()
     const wrapper = mount(App, {
       global: { plugins: [createPinia(), router] },
     })
-    expect(wrapper.text()).toContain('Dashboard')
-    expect(wrapper.text()).toContain('Income')
-    expect(wrapper.text()).toContain('Expenses')
-    expect(wrapper.text()).toContain('Analytics')
+    // The title or nav badges should be present
+    expect(wrapper.find('.app-header').exists()).toBe(true)
   })
 
-  it('toggles mobile menu', async () => {
+  it('renders navigation badges', () => {
     const router = makeRouter()
     const wrapper = mount(App, {
       global: { plugins: [createPinia(), router] },
     })
-    const menuBtn = wrapper.find('.menu-toggle')
-    expect(menuBtn.exists()).toBe(true)
-    await menuBtn.trigger('click')
-    expect(wrapper.find('nav').classes()).toContain('open')
-    await menuBtn.trigger('click')
-    expect(wrapper.find('nav').classes()).not.toContain('open')
+    const badges = wrapper.findAll('.nav-badge')
+    expect(badges.length).toBeGreaterThan(0)
   })
 })

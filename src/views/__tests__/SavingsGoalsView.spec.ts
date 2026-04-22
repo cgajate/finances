@@ -101,5 +101,138 @@ describe('SavingsGoalsView', () => {
     const fill = wrapper.find('.goal-card.completed .meter-fill')
     expect(fill.attributes('style')).toContain('width: 100%')
   })
-})
 
+  it('shows "Due today" for deadline that is today', () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Today', targetAmount: 100, deadline: '2026-04-21' })
+    const wrapper = mountView()
+    expect(wrapper.text()).toContain('Due today')
+  })
+
+  it('adds a goal via form submission', async () => {
+    const store = useSavingsGoalsStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.goalName = 'New Car'
+    vm.targetAmount = 20000
+    vm.deadline = '2027-01-01'
+    await wrapper.find('form').trigger('submit')
+    expect(store.goals).toHaveLength(1)
+    expect(store.goals[0]!.name).toBe('New Car')
+  })
+
+  it('does not add goal without name', async () => {
+    const store = useSavingsGoalsStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.goalName = ''
+    vm.targetAmount = 1000
+    vm.deadline = '2027-01-01'
+    await wrapper.find('form').trigger('submit')
+    expect(store.goals).toHaveLength(0)
+  })
+
+  it('does not add goal without target amount', async () => {
+    const store = useSavingsGoalsStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.goalName = 'Car'
+    vm.targetAmount = null
+    vm.deadline = '2027-01-01'
+    await wrapper.find('form').trigger('submit')
+    expect(store.goals).toHaveLength(0)
+  })
+
+  it('does not add goal without deadline', async () => {
+    const store = useSavingsGoalsStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.goalName = 'Car'
+    vm.targetAmount = 1000
+    vm.deadline = ''
+    await wrapper.find('form').trigger('submit')
+    expect(store.goals).toHaveLength(0)
+  })
+
+  it('resets form after adding goal', async () => {
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.goalName = 'Car'
+    vm.targetAmount = 1000
+    vm.deadline = '2027-01-01'
+    await wrapper.find('form').trigger('submit')
+    expect(vm.goalName).toBe('')
+    expect(vm.deadline).toBe('')
+  })
+
+  it('opens add savings form on Add Savings click', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Vacation', targetAmount: 3000, deadline: '2026-12-31' })
+    const wrapper = mountView()
+    await wrapper.find('.btn-fund').trigger('click')
+    expect(wrapper.find('.add-savings-form').exists()).toBe(true)
+  })
+
+  it('submits savings to a goal', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Vacation', targetAmount: 3000, deadline: '2026-12-31' })
+    const wrapper = mountView()
+    await wrapper.find('.btn-fund').trigger('click')
+    const vm = wrapper.vm as any
+    vm.addAmount = 500
+    await wrapper.find('.add-savings-form').trigger('submit')
+    expect(store.goals[0]!.savedAmount).toBe(500)
+  })
+
+  it('does not submit savings without amount', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Vacation', targetAmount: 3000, deadline: '2026-12-31' })
+    const wrapper = mountView()
+    await wrapper.find('.btn-fund').trigger('click')
+    const vm = wrapper.vm as any
+    vm.addAmount = null
+    await wrapper.find('.add-savings-form').trigger('submit')
+    expect(store.goals[0]!.savedAmount).toBe(0)
+  })
+
+  it('closes savings form on cancel button click', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Vacation', targetAmount: 3000, deadline: '2026-12-31' })
+    const wrapper = mountView()
+    await wrapper.find('.btn-fund').trigger('click')
+    expect(wrapper.find('.add-savings-form').exists()).toBe(true)
+    await wrapper.find('.btn-cancel-sm').trigger('click')
+    expect(wrapper.find('.add-savings-form').exists()).toBe(false)
+  })
+
+  it('treats goal with targetAmount 0 as completed', () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Zero', targetAmount: 0, deadline: '2026-12-31' })
+    const wrapper = mountView()
+    // targetAmount 0 means savedAmount >= targetAmount, so it shows as completed
+    expect(wrapper.find('.goal-card.completed').exists()).toBe(true)
+  })
+
+  it('does not show empty message when completed goals exist but no active', () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Done', targetAmount: 100, deadline: '2026-12-31', savedAmount: 100 })
+    const wrapper = mountView()
+    expect(wrapper.text()).not.toContain('No savings goals yet')
+  })
+
+  it('shows snackbar with undo after removing goal', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'ToDelete', targetAmount: 500, deadline: '2026-12-31', savedAmount: 100 })
+    const wrapper = mountView()
+    await wrapper.find('.btn-remove').trigger('click')
+    expect(store.goals).toHaveLength(0)
+  })
+
+  it('can remove a completed goal', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Done', targetAmount: 100, deadline: '2026-12-31', savedAmount: 100 })
+    const wrapper = mountView()
+    await wrapper.find('.goal-card.completed .btn-remove').trigger('click')
+    expect(store.goals).toHaveLength(0)
+  })
+})

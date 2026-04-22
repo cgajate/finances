@@ -6,6 +6,7 @@ import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 import { useSortFilter } from '@/composables/useSortFilter'
 import { useSearch } from '@/composables/useSearch'
 import FilterSortBar from '@/components/FilterSortBar.vue'
+import SearchBar from '@/components/SearchBar.vue'
 
 const store = useFinancesStore()
 const budgetsStore = useBudgetsStore()
@@ -16,20 +17,30 @@ const { query: searchQuery, results: searchResults, resultCount, clearSearch } =
 
 const {
   sortBy: incomeSortBy,
+  sortField: incomeSortField,
+  sortDirection: incomeSortDirection,
   activeFilters: incomeActiveFilters,
+  activeCategoryFilters: incomeActiveCategoryFilters,
   filtered: filteredIncomes,
   toggleFilter: incomeToggleFilter,
+  toggleCategoryFilter: incomeToggleCategoryFilter,
   clearFilters: incomeClearFilters,
   hasFilter: incomeHasFilter,
+  hasCategoryFilter: incomeHasCategoryFilter,
 } = useSortFilter(() => store.incomes)
 
 const {
   sortBy: expenseSortBy,
+  sortField: expenseSortField,
+  sortDirection: expenseSortDirection,
   activeFilters: expenseActiveFilters,
+  activeCategoryFilters: expenseActiveCategoryFilters,
   filtered: filteredExpenses,
   toggleFilter: expenseToggleFilter,
+  toggleCategoryFilter: expenseToggleCategoryFilter,
   clearFilters: expenseClearFilters,
   hasFilter: expenseHasFilter,
+  hasCategoryFilter: expenseHasCategoryFilter,
 } = useSortFilter(() => store.expenses)
 
 const incomeExpanded = ref(false)
@@ -59,15 +70,7 @@ function formatFrequency(freq: string): string {
     <h1>Family Finances</h1>
 
     <!-- Global Search -->
-    <div class="search-bar">
-      <input
-        v-model="searchQuery"
-        type="text"
-        class="search-input"
-        placeholder="🔍 Search all income & expenses..."
-      />
-      <button v-if="searchQuery" class="search-clear" @click="clearSearch()">✕</button>
-    </div>
+    <SearchBar v-model="searchQuery" placeholder="Search all income & expenses..." />
 
     <!-- Search Results -->
     <div v-if="searchQuery.trim()" class="search-results">
@@ -111,10 +114,18 @@ function formatFrequency(freq: string): string {
         <FilterSortBar
           v-if="store.incomes.length"
           :sort-by="incomeSortBy"
+          :sort-field="incomeSortField"
+          :sort-direction="incomeSortDirection"
           :active-filters="incomeActiveFilters"
+          :active-category-filters="incomeActiveCategoryFilters"
           :has-filter="incomeHasFilter"
+          :has-category-filter="incomeHasCategoryFilter"
+          type="income"
           @update:sort-by="incomeSortBy = $event"
+          @update:sort-field="incomeSortField = $event"
+          @update:sort-direction="incomeSortDirection = $event"
           @toggle-filter="incomeToggleFilter"
+          @toggle-category-filter="incomeToggleCategoryFilter"
           @clear-filters="incomeClearFilters"
         />
 
@@ -147,10 +158,18 @@ function formatFrequency(freq: string): string {
         <FilterSortBar
           v-if="store.expenses.length"
           :sort-by="expenseSortBy"
+          :sort-field="expenseSortField"
+          :sort-direction="expenseSortDirection"
           :active-filters="expenseActiveFilters"
+          :active-category-filters="expenseActiveCategoryFilters"
           :has-filter="expenseHasFilter"
+          :has-category-filter="expenseHasCategoryFilter"
+          type="expense"
           @update:sort-by="expenseSortBy = $event"
+          @update:sort-field="expenseSortField = $event"
+          @update:sort-direction="expenseSortDirection = $event"
           @toggle-filter="expenseToggleFilter"
+          @toggle-category-filter="expenseToggleCategoryFilter"
           @clear-filters="expenseClearFilters"
         />
 
@@ -340,18 +359,6 @@ li strong { flex: 1; min-width: 120px; }
 .savings-meter-fill { height: 100%; background: var(--color-primary); border-radius: 4px; transition: width 0.3s ease; }
 .savings-section .btn { margin-top: 1rem; }
 
-.search-bar { position: relative; margin-bottom: 1.5rem; }
-.search-input {
-  width: 100%; padding: 0.7rem 2.2rem 0.7rem 0.75rem;
-  border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
-  box-sizing: border-box; background: var(--color-input-bg); color: var(--color-input-text);
-}
-.search-clear {
-  position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);
-  background: none; border: none; font-size: 1rem; color: var(--color-text-muted);
-  cursor: pointer; padding: 0.2rem;
-}
-.search-clear:hover { color: var(--color-text); }
 
 .search-results { margin-bottom: 2rem; }
 .search-list { display: flex; flex-direction: column; gap: 0.5rem; }

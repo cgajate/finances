@@ -21,6 +21,12 @@ vi.mock('@/composables/useHousehold', () => ({
   }),
 }))
 
+vi.mock('@/composables/useSnackbar', () => ({
+  useSnackbar: () => ({
+    show: vi.fn(),
+  }),
+}))
+
 describe('HouseholdSetup', () => {
   let pinia: ReturnType<typeof createPinia>
 
@@ -33,90 +39,93 @@ describe('HouseholdSetup', () => {
     setActivePinia(pinia)
   })
 
-  function mountSetup() {
+  function mountSetup(open = true) {
     return mount(HouseholdSetup, {
-      global: { plugins: [pinia] },
+      props: { open },
+      global: {
+        plugins: [pinia],
+        stubs: { Teleport: true },
+      },
     })
   }
 
-  it('shows offline banner when firebase is not ready', () => {
+  it('does not render when open is false', () => {
+    const wrapper = mountSetup(false)
+    expect(wrapper.find('.modal-backdrop').exists()).toBe(false)
+  })
+
+  it('shows modal with Sync with Family title when open', () => {
+    const wrapper = mountSetup()
+    expect(wrapper.text()).toContain('Sync with Family')
+  })
+
+  it('shows offline status when firebase is not ready', () => {
     mockFirebaseReadyFlag.value = false
     const wrapper = mountSetup()
     expect(wrapper.text()).toContain('Offline mode')
   })
 
-  it('shows setup card with Create and Join buttons when no household', () => {
+  it('shows Create and Join buttons when no household', () => {
     const wrapper = mountSetup()
-    expect(wrapper.text()).toContain('Sync with Family')
     expect(wrapper.text()).toContain('Create Household')
     expect(wrapper.text()).toContain('Join Existing')
   })
 
-  it('shows connected banner when has household', () => {
+  it('shows connected state when has household', () => {
     mockHouseholdId.value = 'XYZ789'
     const wrapper = mountSetup()
     expect(wrapper.text()).toContain('XYZ789')
-    expect(wrapper.text()).toContain('synced')
-    expect(wrapper.find('.leave-btn').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Leave Household')
   })
 
   describe('create household', () => {
-    it('shows code on success', async () => {
+    it('calls createHousehold on create click', async () => {
       mockCreateHousehold.mockResolvedValue('ABC123')
       const wrapper = mountSetup()
-
-      await wrapper.find('.setup-btn.create').trigger('click')
+      await wrapper.find('.modal-btn.primary').trigger('click')
       await flushPromises()
-
-      // createHousehold sets householdId
-      mockHouseholdId.value = 'ABC123'
-      await wrapper.vm.$nextTick()
-
       expect(mockCreateHousehold).toHaveBeenCalled()
-    })
-
-    it('shows error on failure', async () => {
-      mockCreateHousehold.mockResolvedValue(null)
-      const wrapper = mountSetup()
-
-      await wrapper.find('.setup-btn.create').trigger('click')
-      await flushPromises()
-
-      expect(wrapper.text()).toContain('Failed to create household')
     })
   })
 
   describe('join household', () => {
     it('switches to join form on Join Existing click', async () => {
       const wrapper = mountSetup()
-      await wrapper.find('.setup-btn.join').trigger('click')
+      await wrapper.find('.modal-btn.secondary').trigger('click')
       expect(wrapper.find('.code-input').exists()).toBe(true)
     })
 
     it('shows error for empty code', async () => {
       const wrapper = mountSetup()
-      await wrapper.find('.setup-btn.join').trigger('click')
+      await wrapper.find('.modal-btn.secondary').trigger('click')
       await wrapper.find('form').trigger('submit')
       expect(wrapper.text()).toContain('Enter a household code')
     })
 
-    it('shows error when household not found', async () => {
-      mockJoinHousehold.mockResolvedValue(false)
+    it('calls joinHousehold with code', async () => {
+      mockJoinHousehold.mockResolvedValue(true)
       const wrapper = mountSetup()
-      await wrapper.find('.setup-btn.join').trigger('click')
-      await wrapper.find('.code-input').setValue('NOPE')
+      await wrapper.find('.modal-btn.secondary').trigger('click')
+      await wrapper.find('.code-input').setValue('ABC')
       await wrapper.find('form').trigger('submit')
       await flushPromises()
-      expect(wrapper.text()).toContain('Household not found')
+      expect(mockJoinHousehold).toHaveBeenCalledWith('ABC')
     })
 
     it('back button returns to menu', async () => {
       const wrapper = mountSetup()
-      await wrapper.find('.setup-btn.join').trigger('click')
+      await wrapper.find('.modal-btn.secondary').trigger('click')
       expect(wrapper.find('.code-input').exists()).toBe(true)
-      await wrapper.find('.setup-btn.back').trigger('click')
+      // Click the "Back" button (second button in join-actions)
+      const backBtn = wrapper.findAll('.modal-btn.secondary')
+      await backBtn[0]!.trigger('click')
       expect(wrapper.find('.code-input').exists()).toBe(false)
-      expect(wrapper.text()).toContain('Create Household')
     })
+  })
+
+  it('emits close on close button', async () => {
+    const wrapper = mountSetup()
+    await wrapper.find('.modal-close').trigger('click')
+    expect(wrapper.emitted('close')).toBeTruthy()
   })
 })

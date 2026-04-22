@@ -1,6 +1,8 @@
 import { ref, computed, type Ref, isRef } from 'vue'
 import type { Frequency } from '@/types/finance'
 
+export type SortField = 'newest' | 'amount' | 'alpha'
+export type SortDirection = 'asc' | 'desc'
 export type SortOption = 'newest' | 'amount-asc' | 'amount-desc' | 'alpha-asc' | 'alpha-desc'
 export type FrequencyFilter = Frequency | 'one-time'
 
@@ -10,11 +12,34 @@ interface HasSortFields {
   createdAt: string
   type: string
   frequency?: Frequency
+  category?: string
 }
 
 export function useSortFilter<T extends HasSortFields>(items: Ref<T[]> | T[] | (() => T[])) {
-  const sortBy = ref<SortOption>('newest')
+  const sortField = ref<SortField>('newest')
+  const sortDirection = ref<SortDirection>('asc')
   const activeFilters = ref<FrequencyFilter[]>([])
+  const activeCategoryFilters = ref<string[]>([])
+
+  // Legacy computed for backward compat
+  const sortBy = computed<SortOption>({
+    get() {
+      if (sortField.value === 'newest') return 'newest'
+      return `${sortField.value === 'amount' ? 'amount' : 'alpha'}-${sortDirection.value}` as SortOption
+    },
+    set(val: SortOption) {
+      if (val === 'newest') {
+        sortField.value = 'newest'
+        sortDirection.value = 'asc'
+      } else if (val.startsWith('amount')) {
+        sortField.value = 'amount'
+        sortDirection.value = val.endsWith('asc') ? 'asc' : 'desc'
+      } else {
+        sortField.value = 'alpha'
+        sortDirection.value = val.endsWith('asc') ? 'asc' : 'desc'
+      }
+    },
+  })
 
   const itemsRef: Ref<T[]> | { readonly value: T[] } = isRef(items)
     ? items
@@ -25,7 +50,7 @@ export function useSortFilter<T extends HasSortFields>(items: Ref<T[]> | T[] | (
   const filtered = computed<T[]>(() => {
     let result = [...itemsRef.value]
 
-    // Filter — empty activeFilters means show all
+    // Frequency filter — empty means show all
     if (activeFilters.value.length > 0) {
       result = result.filter((i) => {
         if (i.type === 'adhoc') {
@@ -35,22 +60,25 @@ export function useSortFilter<T extends HasSortFields>(items: Ref<T[]> | T[] | (
       })
     }
 
+    // Category filter — empty means show all
+    if (activeCategoryFilters.value.length > 0) {
+      result = result.filter((i) => {
+        const cat = i.category ?? 'Other'
+        return activeCategoryFilters.value.includes(cat)
+      })
+    }
+
     // Sort
-    switch (sortBy.value) {
+    const dir = sortDirection.value === 'asc' ? 1 : -1
+    switch (sortField.value) {
       case 'newest':
-        result.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        result.sort((a, b) => dir * b.createdAt.localeCompare(a.createdAt))
         break
-      case 'amount-asc':
-        result.sort((a, b) => a.amount - b.amount)
+      case 'amount':
+        result.sort((a, b) => dir * (a.amount - b.amount))
         break
-      case 'amount-desc':
-        result.sort((a, b) => b.amount - a.amount)
-        break
-      case 'alpha-asc':
-        result.sort((a, b) => a.description.localeCompare(b.description))
-        break
-      case 'alpha-desc':
-        result.sort((a, b) => b.description.localeCompare(a.description))
+      case 'alpha':
+        result.sort((a, b) => dir * a.description.localeCompare(b.description))
         break
     }
 
@@ -66,13 +94,39 @@ export function useSortFilter<T extends HasSortFields>(items: Ref<T[]> | T[] | (
     }
   }
 
+  function toggleCategoryFilter(cat: string) {
+    const idx = activeCategoryFilters.value.indexOf(cat)
+    if (idx === -1) {
+      activeCategoryFilters.value.push(cat)
+    } else {
+      activeCategoryFilters.value.splice(idx, 1)
+    }
+  }
+
   function clearFilters() {
     activeFilters.value = []
+    activeCategoryFilters.value = []
   }
 
   function hasFilter(f: FrequencyFilter): boolean {
     return activeFilters.value.includes(f)
   }
 
-  return { sortBy, activeFilters, filtered, toggleFilter, clearFilters, hasFilter }
+  function hasCategoryFilter(cat: string): boolean {
+    return activeCategoryFilters.value.includes(cat)
+  }
+
+  return {
+    sortBy,
+    sortField,
+    sortDirection,
+    activeFilters,
+    activeCategoryFilters,
+    filtered,
+    toggleFilter,
+    toggleCategoryFilter,
+    clearFilters,
+    hasFilter,
+    hasCategoryFilter,
+  }
 }

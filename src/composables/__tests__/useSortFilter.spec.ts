@@ -9,6 +9,7 @@ interface TestItem {
   createdAt: string
   type: string
   frequency?: Frequency
+  category?: string
 }
 
 function makeItems(): TestItem[] {
@@ -143,5 +144,128 @@ describe('useSortFilter', () => {
       expect(hasFilter('monthly')).toBe(true)
     })
   })
-})
 
+  describe('category filtering', () => {
+    it('filters by category', () => {
+      const items = ref<TestItem[]>([
+        { amount: 100, description: 'A', createdAt: '2026-01-01T00:00:00Z', type: 'adhoc', category: 'Food' },
+        { amount: 200, description: 'B', createdAt: '2026-01-02T00:00:00Z', type: 'adhoc', category: 'Transport' },
+        { amount: 300, description: 'C', createdAt: '2026-01-03T00:00:00Z', type: 'adhoc' },
+      ])
+      const { filtered, toggleCategoryFilter } = useSortFilter(items)
+      toggleCategoryFilter('Food')
+      expect(filtered.value).toHaveLength(1)
+      expect(filtered.value[0]!.description).toBe('A')
+    })
+
+    it('filters by Other when category undefined', () => {
+      const items = ref<TestItem[]>([
+        { amount: 100, description: 'A', createdAt: '2026-01-01T00:00:00Z', type: 'adhoc' },
+      ])
+      const { filtered, toggleCategoryFilter } = useSortFilter(items)
+      toggleCategoryFilter('Other')
+      expect(filtered.value).toHaveLength(1)
+    })
+
+    it('toggling category filter off removes it', () => {
+      const items = ref<TestItem[]>([
+        { amount: 100, description: 'A', createdAt: '2026-01-01T00:00:00Z', type: 'adhoc', category: 'Food' },
+        { amount: 200, description: 'B', createdAt: '2026-01-02T00:00:00Z', type: 'adhoc', category: 'Transport' },
+      ])
+      const { filtered, toggleCategoryFilter } = useSortFilter(items)
+      toggleCategoryFilter('Food')
+      expect(filtered.value).toHaveLength(1)
+      toggleCategoryFilter('Food')
+      expect(filtered.value).toHaveLength(2)
+    })
+
+    it('hasCategoryFilter returns correct state', () => {
+      const items = ref(makeItems())
+      const { hasCategoryFilter, toggleCategoryFilter } = useSortFilter(items)
+      expect(hasCategoryFilter('Food')).toBe(false)
+      toggleCategoryFilter('Food')
+      expect(hasCategoryFilter('Food')).toBe(true)
+    })
+
+    it('clearFilters clears category filters too', () => {
+      const items = ref(makeItems())
+      const { toggleCategoryFilter, clearFilters, activeCategoryFilters } = useSortFilter(items)
+      toggleCategoryFilter('Food')
+      expect(activeCategoryFilters.value).toHaveLength(1)
+      clearFilters()
+      expect(activeCategoryFilters.value).toEqual([])
+    })
+  })
+
+  describe('sortBy computed get/set', () => {
+    it('getter returns newest for default', () => {
+      const items = ref(makeItems())
+      const { sortBy } = useSortFilter(items)
+      expect(sortBy.value).toBe('newest')
+    })
+
+    it('getter returns amount-asc', () => {
+      const items = ref(makeItems())
+      const { sortBy, sortField, sortDirection } = useSortFilter(items)
+      sortField.value = 'amount'
+      sortDirection.value = 'asc'
+      expect(sortBy.value).toBe('amount-asc')
+    })
+
+    it('getter returns amount-desc', () => {
+      const items = ref(makeItems())
+      const { sortBy, sortField, sortDirection } = useSortFilter(items)
+      sortField.value = 'amount'
+      sortDirection.value = 'desc'
+      expect(sortBy.value).toBe('amount-desc')
+    })
+
+    it('getter returns alpha-asc', () => {
+      const items = ref(makeItems())
+      const { sortBy, sortField, sortDirection } = useSortFilter(items)
+      sortField.value = 'alpha'
+      sortDirection.value = 'asc'
+      expect(sortBy.value).toBe('alpha-asc')
+    })
+
+    it('setter sets newest correctly', () => {
+      const items = ref(makeItems())
+      const { sortBy, sortField, sortDirection } = useSortFilter(items)
+      sortBy.value = 'amount-desc'
+      sortBy.value = 'newest'
+      expect(sortField.value).toBe('newest')
+      expect(sortDirection.value).toBe('asc')
+    })
+  })
+
+  describe('with function input', () => {
+    it('accepts a getter function', () => {
+      const items = makeItems()
+      const { filtered } = useSortFilter(() => items)
+      expect(filtered.value).toHaveLength(4)
+    })
+  })
+
+  describe('combined filter + sort', () => {
+    it('filters then sorts by amount', () => {
+      const items = ref(makeItems())
+      const { filtered, toggleFilter, sortBy } = useSortFilter(items)
+      toggleFilter('monthly')
+      toggleFilter('weekly')
+      sortBy.value = 'amount-asc'
+      expect(filtered.value).toHaveLength(2)
+      expect(filtered.value[0]!.amount).toBe(300)
+      expect(filtered.value[1]!.amount).toBe(500)
+    })
+  })
+
+  describe('sort direction desc for newest', () => {
+    it('sorts newest desc reverses order', () => {
+      const items = ref(makeItems())
+      const { filtered, sortDirection } = useSortFilter(items)
+      sortDirection.value = 'desc'
+      // With desc on newest, oldest should come first
+      expect(filtered.value[0]!.description).toBe('Apple')
+    })
+  })
+})

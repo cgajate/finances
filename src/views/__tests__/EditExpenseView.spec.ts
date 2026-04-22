@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory, type Router } from 'vue-router'
 import EditExpenseView from '@/views/EditExpenseView.vue'
 import { useFinancesStore } from '@/stores/finances'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 function makeRouter(): Router {
   return createRouter({
@@ -22,6 +23,7 @@ describe('EditExpenseView', () => {
     localStorage.clear()
     pinia = createPinia()
     setActivePinia(pinia)
+    useSnackbar().dismissAll()
   })
 
   async function mountView(id: string) {
@@ -111,5 +113,106 @@ describe('EditExpenseView', () => {
     const { wrapper } = await mountView(id)
     expect(wrapper.text()).toContain('Assigned To')
   })
-})
 
+  it('saves recurring expense changes on submit', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const vm = wrapper.vm as any
+    vm.description = 'Updated Rent'
+    vm.amount = 2000
+    vm.frequency = 'weekly'
+    vm.dueDate = '2026-07-01'
+    vm.notes = 'New note'
+    vm.category = 'Housing'
+    vm.assignedTo = 'Dad'
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses[0]!.description).toBe('Updated Rent')
+    expect(store.expenses[0]!.amount).toBe(2000)
+  })
+
+  it('saves adhoc expense changes on submit', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Fix', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const vm = wrapper.vm as any
+    vm.description = 'Updated Fix'
+    vm.amount = 300
+    vm.notes = 'Plumbing'
+    vm.category = 'Housing'
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses[0]!.description).toBe('Updated Fix')
+    expect(store.expenses[0]!.amount).toBe(300)
+  })
+
+  it('does not save without description', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Fix', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const vm = wrapper.vm as any
+    vm.description = ''
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses[0]!.description).toBe('Fix')
+  })
+
+  it('does not save without amount', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Fix', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const vm = wrapper.vm as any
+    vm.amount = null
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses[0]!.amount).toBe(50)
+  })
+
+  it('does not save yearly without dueDate', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'yearly', description: 'Annual', notes: '', dueDate: '2026-12-01' })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const vm = wrapper.vm as any
+    vm.dueDate = ''
+    await wrapper.find('form').trigger('submit')
+    // Should not have updated since yearly requires dueDate
+    expect(store.expenses[0]!.dueDate).toBe('2026-12-01')
+  })
+
+  it('cancel navigates back', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Fix', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper, router } = await mountView(id)
+    const pushSpy = vi.spyOn(router, 'push')
+    await wrapper.find('.btn-cancel').trigger('click')
+    expect(pushSpy).toHaveBeenCalledWith('/expenses')
+  })
+
+  it('delete with undo restores recurring expense', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Internet', notes: 'ISP', dueDate: '2026-05-01', assignedTo: 'Mom' })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    await wrapper.find('.btn-delete').trigger('click')
+    expect(store.expenses).toHaveLength(0)
+    const snackbar = useSnackbar()
+    snackbar.undo(snackbar.items.value[0]!.id)
+    expect(store.expenses).toHaveLength(1)
+    expect(store.expenses[0]!.description).toBe('Internet')
+  })
+
+  it('delete with undo restores adhoc expense', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 200, description: 'Repair', notes: 'Brakes', dueDate: '2026-05-01', assignedTo: 'Dad' })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    await wrapper.find('.btn-delete').trigger('click')
+    expect(store.expenses).toHaveLength(0)
+    const snackbar = useSnackbar()
+    snackbar.undo(snackbar.items.value[0]!.id)
+    expect(store.expenses).toHaveLength(1)
+  })
+})

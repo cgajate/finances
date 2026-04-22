@@ -1,128 +1,165 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 
 function mountBar(overrides = {}) {
   return mount(FilterSortBar, {
     props: {
       sortBy: 'newest',
+      sortField: 'newest',
+      sortDirection: 'asc',
       activeFilters: [],
+      activeCategoryFilters: [],
       hasFilter: () => false,
+      hasCategoryFilter: () => false,
+      type: 'expense',
       ...overrides,
     },
+    global: { plugins: [createPinia()] },
   })
 }
 
 describe('FilterSortBar', () => {
-  it('renders sort bubbles', () => {
-    const wrapper = mountBar()
-    expect(wrapper.text()).toContain('Newest')
-    expect(wrapper.text()).toContain('Amount ↓')
-    expect(wrapper.text()).toContain('A–Z')
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
   })
 
-  it('marks active sort bubble', () => {
-    const wrapper = mountBar({ sortBy: 'amount-desc' })
-    const bubbles = wrapper.findAll('.sort-bubble')
-    const active = bubbles.find((b) => b.classes().includes('active'))
-    expect(active?.text()).toContain('Amount ↓')
+  it('renders filter and sort trigger buttons', () => {
+    const wrapper = mountBar()
+    const triggers = wrapper.findAll('.trigger-btn')
+    expect(triggers).toHaveLength(2)
+    expect(wrapper.text()).toContain('Filter')
+    expect(wrapper.text()).toContain('Sort')
   })
 
-  it('emits update:sortBy when sort bubble clicked', async () => {
+  it('opens filter bubble on click', async () => {
     const wrapper = mountBar()
-    const bubbles = wrapper.findAll('.sort-bubble')
-    await bubbles[1]!.trigger('click')
-    expect(wrapper.emitted('update:sortBy')).toBeTruthy()
-    expect(wrapper.emitted('update:sortBy')![0]).toEqual(['amount-desc'])
+    expect(wrapper.find('.filter-bubble').exists()).toBe(false)
+    const filterBtn = wrapper.findAll('.trigger-btn')[0]!
+    await filterBtn.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Frequency')
+    expect(wrapper.text()).toContain('Category')
   })
 
-  it('toggles filter panel on Choose click', async () => {
+  it('opens sort bubble on click', async () => {
     const wrapper = mountBar()
-    expect(wrapper.find('.filter-panel').exists()).toBe(false)
-    await wrapper.find('.filter-toggle-btn').trigger('click')
-    expect(wrapper.find('.filter-panel').exists()).toBe(true)
-    await wrapper.find('.filter-toggle-btn').trigger('click')
-    expect(wrapper.find('.filter-panel').exists()).toBe(false)
+    const sortBtn = wrapper.findAll('.trigger-btn')[1]!
+    await sortBtn.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Sort By')
+    expect(wrapper.text()).toContain('Ascending')
+    expect(wrapper.text()).toContain('Descending')
   })
 
-  it('emits toggleFilter when filter bubble clicked in panel', async () => {
+  it('closes filter bubble on close button', async () => {
     const wrapper = mountBar()
-    await wrapper.find('.filter-toggle-btn').trigger('click')
-    const filterBubbles = wrapper.findAll('.filter-bubble')
-    await filterBubbles[0]!.trigger('click')
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    await wrapper.find('.bubble-close').trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
+  })
+
+  it('closes filter bubble on cancel', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    await wrapper.find('.footer-btn.cancel').trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
+  })
+
+  it('toggles frequency pills in filter draft', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    const pills = wrapper.findAll('.option-pill')
+    // Click "Weekly" pill
+    await pills[0]!.trigger('click')
+    expect(pills[0]!.classes()).toContain('selected')
+  })
+
+  it('emits filter changes on apply', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    // Select weekly
+    const pills = wrapper.findAll('.option-pill')
+    await pills[0]!.trigger('click')
+    await wrapper.find('.footer-btn.submit').trigger('click')
     expect(wrapper.emitted('toggleFilter')).toBeTruthy()
     expect(wrapper.emitted('toggleFilter')![0]).toEqual(['weekly'])
   })
 
-  it('emits clearFilters on Clear All click', async () => {
+  it('clears draft on clear button', async () => {
     const wrapper = mountBar()
-    await wrapper.find('.filter-toggle-btn').trigger('click')
-    const clearBtn = wrapper.find('.action-btn.clear')
-    await clearBtn.trigger('click')
-    expect(wrapper.emitted('clearFilters')).toBeTruthy()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    const pills = wrapper.findAll('.option-pill')
+    await pills[0]!.trigger('click')
+    expect(pills[0]!.classes()).toContain('selected')
+    await wrapper.find('.footer-btn.clear').trigger('click')
+    // After clear, no pills should be selected
+    const updatedPills = wrapper.findAll('.option-pill.selected')
+    expect(updatedPills).toHaveLength(0)
   })
 
-  it('closes panel on Apply click', async () => {
+  it('emits sort changes on apply', async () => {
     const wrapper = mountBar()
-    await wrapper.find('.filter-toggle-btn').trigger('click')
-    expect(wrapper.find('.filter-panel').exists()).toBe(true)
-    await wrapper.find('.action-btn.apply').trigger('click')
-    expect(wrapper.find('.filter-panel').exists()).toBe(false)
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    // Click "Amount"
+    const pills = wrapper.findAll('.option-pill')
+    await pills[1]!.trigger('click')
+    await wrapper.find('.footer-btn.submit').trigger('click')
+    expect(wrapper.emitted('update:sortField')).toBeTruthy()
+    expect(wrapper.emitted('update:sortField')![0]).toEqual(['amount'])
   })
 
-  it('shows active filter chips when panel is closed', () => {
-    const wrapper = mountBar({
-      activeFilters: ['monthly'],
-      hasFilter: (f: string) => f === 'monthly',
-    })
-    const chips = wrapper.findAll('.active-chip')
-    expect(chips).toHaveLength(1)
-    expect(chips[0]!.text()).toContain('Monthly')
+  it('toggles sort direction', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    const dirBtns = wrapper.findAll('.direction-btn')
+    await dirBtns[1]!.trigger('click') // Descending
+    await wrapper.find('.footer-btn.submit').trigger('click')
+    expect(wrapper.emitted('update:sortDirection')![0]).toEqual(['desc'])
   })
 
-  it('shows filter count badge', () => {
+  it('shows filter count badge when filters active', () => {
     const wrapper = mountBar({
       activeFilters: ['monthly', 'weekly'],
-      hasFilter: (f: string) => ['monthly', 'weekly'].includes(f),
+      activeCategoryFilters: ['Food'],
     })
-    expect(wrapper.find('.filter-count').text()).toBe('2')
+    expect(wrapper.find('.trigger-badge').text()).toBe('3')
   })
 
-  it('shows Clear All button when filters active and panel closed', () => {
-    const wrapper = mountBar({
-      activeFilters: ['monthly'],
-      hasFilter: (f: string) => f === 'monthly',
-    })
-    expect(wrapper.find('.clear-btn').exists()).toBe(true)
+  it('marks filter trigger as active when open', async () => {
+    const wrapper = mountBar()
+    const filterBtn = wrapper.findAll('.trigger-btn')[0]!
+    await filterBtn.trigger('click')
+    expect(filterBtn.classes()).toContain('active')
   })
 
-  it('emits clearFilters from Clear All button outside panel', async () => {
-    const wrapper = mountBar({
-      activeFilters: ['monthly'],
-      hasFilter: (f: string) => f === 'monthly',
-    })
-    await wrapper.find('.clear-btn').trigger('click')
-    expect(wrapper.emitted('clearFilters')).toBeTruthy()
+  it('closes sort on backdrop click', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    await wrapper.find('.bubble-backdrop').trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
   })
 
-  it('emits toggleFilter when active chip clicked', async () => {
-    const wrapper = mountBar({
-      activeFilters: ['monthly'],
-      hasFilter: (f: string) => f === 'monthly',
-    })
-    await wrapper.find('.active-chip').trigger('click')
-    expect(wrapper.emitted('toggleFilter')![0]).toEqual(['monthly'])
+  it('clear sort resets to defaults', async () => {
+    const wrapper = mountBar({ sortField: 'amount', sortDirection: 'desc' })
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    await wrapper.find('.footer-btn.clear').trigger('click')
+    // After clear, newest and asc should be selected
+    const selected = wrapper.findAll('.option-pill.selected')
+    expect(selected.length).toBeGreaterThan(0)
+    expect(selected[0]!.text()).toContain('Newest')
   })
 
-  it('shows check mark on selected filter in panel', async () => {
-    const wrapper = mountBar({
-      activeFilters: ['weekly'],
-      hasFilter: (f: string) => f === 'weekly',
-    })
-    await wrapper.find('.filter-toggle-btn').trigger('click')
-    const selected = wrapper.findAll('.filter-bubble.selected')
-    expect(selected).toHaveLength(1)
-    expect(wrapper.find('.check').exists()).toBe(true)
+  it('opening filter closes sort', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    expect(wrapper.findAll('.bubble')).toHaveLength(1)
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    // Only filter bubble should be open
+    expect(wrapper.text()).toContain('Frequency')
   })
 })
-

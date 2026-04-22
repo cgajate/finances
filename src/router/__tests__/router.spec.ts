@@ -54,8 +54,17 @@ describe('router', () => {
     expect(route.name).toBe('calendar')
   })
 
-  it('has 11 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(11)
+  it('has an activity route at /activity', () => {
+    const route = router.resolve('/activity')
+    expect(route.name).toBe('activity')
+  })
+
+  it('has a categories route at /categories', () => {
+    const route = router.resolve('/categories')
+    expect(route.name).toBe('categories')
+  })
+
+  it('has 12 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(12)
   })
 })
-

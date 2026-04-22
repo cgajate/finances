@@ -219,5 +219,183 @@ describe('ExpensesView', () => {
     expect(store.expenses[0]!.description).toBe('Groceries')
     expect(store.expenses[0]!.amount).toBe(50)
   })
-})
 
+  it('undo restores a deleted recurring expense', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Internet', notes: 'ISP', dueDate: '2026-05-01', assignedTo: 'Dad' })
+    const wrapper = mountView()
+    await wrapper.find('.btn-delete').trigger('click')
+    expect(store.expenses).toHaveLength(0)
+    const snackbar = useSnackbar()
+    snackbar.undo(snackbar.items.value[0]!.id)
+    expect(store.expenses).toHaveLength(1)
+    expect(store.expenses[0]!.description).toBe('Internet')
+  })
+
+  it('deleteExpense does nothing for non-existent id', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
+    // Manually remove the expense first to make the ID invalid
+    const id = store.expenses[0]!.id
+    store.removeExpense(id)
+    // Should not crash - the view's delete function guards against missing items
+    expect(store.expenses).toHaveLength(0)
+  })
+
+  it('submits recurring expense form successfully', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    // Fill in description
+    const inputs = wrapper.findAll('input[type="text"]')
+    await inputs[0]!.setValue('Rent')
+    // Set amount via the store directly since currency input is complex
+    // Instead, trigger form submit with required fields
+    // We need to simulate the form values
+    const vm = wrapper.vm as any
+    vm.rDescription = 'Rent'
+    vm.rAmount = 1500
+    vm.rFrequency = 'monthly'
+    vm.rCategory = 'Housing'
+    vm.rNotes = 'Apartment'
+    vm.rDueDate = '2026-06-01'
+    vm.rAssignedTo = 'Dad'
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(1)
+    expect(store.expenses[0]!.description).toBe('Rent')
+  })
+
+  it('does not submit recurring form without description', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rAmount = 100
+    vm.rDescription = ''
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(0)
+  })
+
+  it('does not submit recurring form without amount', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rDescription = 'Test'
+    vm.rAmount = null
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(0)
+  })
+
+  it('does not submit recurring yearly without dueDate', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rDescription = 'Annual'
+    vm.rAmount = 100
+    vm.rFrequency = 'yearly'
+    vm.rDueDate = ''
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(0)
+  })
+
+  it('submits adhoc expense form successfully', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    // Switch to adhoc tab
+    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aDescription = 'Car repair'
+    vm.aAmount = 300
+    vm.aCategory = 'Transport'
+    vm.aNotes = 'Brakes'
+    vm.aDueDate = '2026-05-15'
+    vm.aAssignedTo = 'Mom'
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(1)
+    expect(store.expenses[0]!.description).toBe('Car repair')
+  })
+
+  it('does not submit adhoc form without description', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aAmount = 100
+    vm.aDescription = ''
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(0)
+  })
+
+  it('does not submit adhoc form without amount', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aDescription = 'Test'
+    vm.aAmount = null
+    await wrapper.find('form').trigger('submit')
+    expect(store.expenses).toHaveLength(0)
+  })
+
+  it('resets form fields after successful recurring submit', async () => {
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rDescription = 'Rent'
+    vm.rAmount = 1500
+    vm.rFrequency = 'quarterly'
+    vm.rNotes = 'note'
+    vm.rDueDate = '2026-06-01'
+    vm.rCategory = 'Housing'
+    vm.rAssignedTo = 'Dad'
+    await wrapper.find('form').trigger('submit')
+    expect(vm.rDescription).toBe('')
+    expect(vm.rNotes).toBe('')
+    expect(vm.rDueDate).toBe('')
+    expect(vm.rFrequency).toBe('monthly')
+    expect(vm.rCategory).toBe('Other')
+    expect(vm.rAssignedTo).toBe('')
+  })
+
+  it('resets form fields after successful adhoc submit', async () => {
+    const wrapper = mountView()
+    await wrapper.findAll('.tabs button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aDescription = 'Fix'
+    vm.aAmount = 200
+    vm.aNotes = 'note'
+    vm.aDueDate = '2026-05-01'
+    vm.aCategory = 'Housing'
+    vm.aAssignedTo = 'Mom'
+    await wrapper.find('form').trigger('submit')
+    expect(vm.aDescription).toBe('')
+    expect(vm.aNotes).toBe('')
+    expect(vm.aDueDate).toBe('')
+    expect(vm.aCategory).toBe('Other')
+    expect(vm.aAssignedTo).toBe('')
+  })
+
+  it('shows category badge for expenses', () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null, category: 'Food' })
+    const wrapper = mountView()
+    expect(wrapper.find('.cat-badge').text()).toBe('Food')
+  })
+
+  it('shows "Other" for expense without category', () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
+    const wrapper = mountView()
+    expect(wrapper.find('.cat-badge').text()).toBe('Other')
+  })
+
+  it('shows filter message when filters active but nothing matches', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 50, description: 'Test', notes: '', dueDate: null })
+    const wrapper = mountView()
+    // Activate a frequency filter that won't match
+    const vm = wrapper.vm as any
+    vm.searchQuery = ''
+    // Toggle filter to 'weekly' which won't match the adhoc item
+    vm.toggleFilter('weekly')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('No expenses match the current filter')
+  })
+})

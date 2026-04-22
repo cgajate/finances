@@ -343,5 +343,99 @@ describe('finances store', () => {
       expect(store.familyMembers).toEqual(['Mom', 'Dad'])
     })
   })
-})
 
+  describe('spendingByCategory', () => {
+    it('groups adhoc expenses by category for current month', () => {
+      const store = useFinancesStore()
+      const curMonth = new Date().toISOString().slice(0, 7)
+      store.addAdhocExpense({ amount: 100, description: 'Groceries', notes: '', dueDate: `${curMonth}-15`, category: 'Food' })
+      store.addAdhocExpense({ amount: 50, description: 'Snack', notes: '', dueDate: `${curMonth}-20`, category: 'Food' })
+      expect(store.spendingByCategory.get('Food')).toBe(150)
+    })
+
+    it('excludes adhoc expenses from other months', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Old', notes: '', dueDate: '2020-01-15', category: 'Food' })
+      expect(store.spendingByCategory.get('Food')).toBeUndefined()
+    })
+
+    it('includes adhoc expenses with no dueDate', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'NoDue', notes: '', dueDate: null, category: 'Food' })
+      expect(store.spendingByCategory.get('Food')).toBe(100)
+    })
+
+    it('includes recurring expenses with monthlyEquivalent', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 100, frequency: 'weekly', description: 'Gas', notes: '', dueDate: null, category: 'Transport' })
+      expect(store.spendingByCategory.get('Transport')).toBeCloseTo(100 * 52 / 12)
+    })
+
+    it('defaults category to Other', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'X', notes: '', dueDate: null })
+      expect(store.spendingByCategory.get('Other')).toBe(100)
+    })
+  })
+
+  describe('autoAdvanceRecurringDates', () => {
+    it('advances past recurring income dates to future', () => {
+      localStorage.setItem('finances:incomes', JSON.stringify([
+        { id: '1', type: 'recurring', amount: 100, frequency: 'monthly', description: 'Pay', notes: '', date: '2020-01-15', category: 'Salary', createdAt: '2020-01-01' },
+      ]))
+      setActivePinia(createPinia())
+      const store = useFinancesStore()
+      const income = store.incomes[0]!
+      if (income.type === 'recurring' && income.date) {
+        const d = new Date(income.date + 'T00:00:00')
+        expect(d.getTime()).toBeGreaterThanOrEqual(new Date().setHours(0, 0, 0, 0))
+      }
+    })
+
+    it('advances past recurring expense dates to future', () => {
+      localStorage.setItem('finances:expenses', JSON.stringify([
+        { id: '1', type: 'recurring', amount: 100, frequency: 'weekly', description: 'Gas', notes: '', dueDate: '2020-01-15', category: 'Transport', assignedTo: '', createdAt: '2020-01-01' },
+      ]))
+      setActivePinia(createPinia())
+      const store = useFinancesStore()
+      const expense = store.expenses[0]!
+      if (expense.type === 'recurring' && expense.dueDate) {
+        const d = new Date(expense.dueDate + 'T00:00:00')
+        expect(d.getTime()).toBeGreaterThanOrEqual(new Date().setHours(0, 0, 0, 0))
+      }
+    })
+
+    it('does not advance future dates', () => {
+      localStorage.setItem('finances:incomes', JSON.stringify([
+        { id: '1', type: 'recurring', amount: 100, frequency: 'monthly', description: 'Pay', notes: '', date: '2099-01-15', category: 'Salary', createdAt: '2026-01-01' },
+      ]))
+      setActivePinia(createPinia())
+      const store = useFinancesStore()
+      const income = store.incomes[0]!
+      if (income.type === 'recurring') {
+        expect(income.date).toBe('2099-01-15')
+      }
+    })
+
+    it('does not advance recurring without date', () => {
+      localStorage.setItem('finances:incomes', JSON.stringify([
+        { id: '1', type: 'recurring', amount: 100, frequency: 'monthly', description: 'Pay', notes: '', date: null, category: 'Salary', createdAt: '2026-01-01' },
+      ]))
+      setActivePinia(createPinia())
+      const store = useFinancesStore()
+      const income = store.incomes[0]!
+      if (income.type === 'recurring') {
+        expect(income.date).toBeNull()
+      }
+    })
+  })
+
+  describe('removeExpense edge cases', () => {
+    it('removeExpense with non-existent id does nothing', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'A', notes: '', dueDate: null })
+      store.removeExpense('non-existent')
+      expect(store.expenses).toHaveLength(1)
+    })
+  })
+})

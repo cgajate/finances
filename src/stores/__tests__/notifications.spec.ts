@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useFinancesStore } from '@/stores/finances'
+import { useBudgetsStore } from '@/stores/budgets'
 
 function todayStr(): string {
   return new Date().toISOString().split('T')[0]!
@@ -258,10 +259,115 @@ describe('notifications store', () => {
       localStorage.setItem('notifications:dismissedIncomes', 'bad-json')
       localStorage.setItem('notifications:mutedExpenses', 'bad-json')
       setActivePinia(createPinia())
-      const finances = useFinancesStore()
+      useFinancesStore()
       const store = useNotificationsStore()
       expect(store.allNotifications).toEqual([])
     })
   })
-})
 
+  describe('budget notifications', () => {
+    it('shows budget-over notification when budget exceeded', () => {
+      const finances = useFinancesStore()
+      const curMonth = new Date().toISOString().slice(0, 7)
+      finances.addAdhocExpense({ amount: 600, description: 'Big meal', notes: '', dueDate: `${curMonth}-10`, category: 'Food' })
+      const budgets = useBudgetsStore()
+      budgets.setBudget('Food', 500)
+      const store = useNotificationsStore()
+      const overNotifs = store.allNotifications.filter((n) => n.kind === 'budget-over')
+      expect(overNotifs.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('shows budget-warning notification near limit', () => {
+      const finances = useFinancesStore()
+      const curMonth = new Date().toISOString().slice(0, 7)
+      finances.addAdhocExpense({ amount: 450, description: 'Dinner', notes: '', dueDate: `${curMonth}-10`, category: 'Food' })
+      const budgets = useBudgetsStore()
+      budgets.setBudget('Food', 500)
+      const store = useNotificationsStore()
+      const warnNotifs = store.allNotifications.filter((n) => n.kind === 'budget-warning')
+      expect(warnNotifs.length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('mute frequencies', () => {
+    it('muting recurring weekly expense uses next week date', () => {
+      const finances = useFinancesStore()
+      finances.addRecurringExpense({
+        amount: 50,
+        frequency: 'weekly',
+        description: 'Sub',
+        notes: '',
+        dueDate: daysFromNow(1),
+      })
+      const store = useNotificationsStore()
+      store.muteExpense(finances.expenses[0]!.id)
+      expect(store.isExpenseMuted(finances.expenses[0]!.id)).toBe(true)
+    })
+
+    it('muting recurring bi-weekly expense', () => {
+      const finances = useFinancesStore()
+      finances.addRecurringExpense({
+        amount: 50,
+        frequency: 'bi-weekly',
+        description: 'Sub',
+        notes: '',
+        dueDate: daysFromNow(1),
+      })
+      const store = useNotificationsStore()
+      store.muteExpense(finances.expenses[0]!.id)
+      expect(store.isExpenseMuted(finances.expenses[0]!.id)).toBe(true)
+    })
+
+    it('muting recurring quarterly expense', () => {
+      const finances = useFinancesStore()
+      finances.addRecurringExpense({
+        amount: 50,
+        frequency: 'quarterly',
+        description: 'Sub',
+        notes: '',
+        dueDate: daysFromNow(1),
+      })
+      const store = useNotificationsStore()
+      store.muteExpense(finances.expenses[0]!.id)
+      expect(store.isExpenseMuted(finances.expenses[0]!.id)).toBe(true)
+    })
+
+    it('muting recurring yearly expense', () => {
+      const finances = useFinancesStore()
+      finances.addRecurringExpense({
+        amount: 50,
+        frequency: 'yearly',
+        description: 'Sub',
+        notes: '',
+        dueDate: daysFromNow(1),
+      })
+      const store = useNotificationsStore()
+      store.muteExpense(finances.expenses[0]!.id)
+      expect(store.isExpenseMuted(finances.expenses[0]!.id)).toBe(true)
+    })
+  })
+
+  describe('income notification edge cases', () => {
+    it('does NOT show income more than 1 day past', () => {
+      const finances = useFinancesStore()
+      finances.addAdhocIncome({
+        amount: 500,
+        description: 'Old',
+        date: daysFromNow(-3),
+      })
+      const store = useNotificationsStore()
+      expect(store.incomeNotifications).toHaveLength(0)
+    })
+
+    it('shows income arriving today', () => {
+      const finances = useFinancesStore()
+      finances.addAdhocIncome({
+        amount: 500,
+        description: 'Today',
+        date: todayStr(),
+      })
+      const store = useNotificationsStore()
+      expect(store.incomeNotifications).toHaveLength(1)
+    })
+  })
+})
