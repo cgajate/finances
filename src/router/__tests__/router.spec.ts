@@ -7,36 +7,59 @@ describe('router', () => {
     expect(route.name).toBe('dashboard')
   })
 
-  it('has an income route at /income', () => {
-    const route = router.resolve('/income')
-    expect(route.name).toBe('income')
+  it('has a finances route at /finances', () => {
+    const route = router.resolve('/finances')
+    expect(route.name).toBe('finances')
   })
 
-  it('has an add-income route at /income/add', () => {
-    const route = router.resolve('/income/add')
+  it('has an add-income route at /finances/income/add', () => {
+    const route = router.resolve('/finances/income/add')
     expect(route.name).toBe('add-income')
   })
 
-  it('has an edit-income route at /income/:id/edit', () => {
-    const route = router.resolve('/income/abc123/edit')
+  it('has an edit-income route at /finances/income/:id/edit', () => {
+    const route = router.resolve('/finances/income/abc123/edit')
     expect(route.name).toBe('edit-income')
     expect(route.params.id).toBe('abc123')
   })
 
-  it('has an expenses route at /expenses', () => {
-    const route = router.resolve('/expenses')
-    expect(route.name).toBe('expenses')
-  })
-
-  it('has an add-expense route at /expenses/add', () => {
-    const route = router.resolve('/expenses/add')
+  it('has an add-expense route at /finances/expenses/add', () => {
+    const route = router.resolve('/finances/expenses/add')
     expect(route.name).toBe('add-expense')
   })
 
-  it('has an edit-expense route at /expenses/:id/edit', () => {
-    const route = router.resolve('/expenses/xyz789/edit')
+  it('has an edit-expense route at /finances/expenses/:id/edit', () => {
+    const route = router.resolve('/finances/expenses/xyz789/edit')
     expect(route.name).toBe('edit-expense')
     expect(route.params.id).toBe('xyz789')
+  })
+
+  it('has a redirect from /income to /finances', () => {
+    const routes = router.getRoutes()
+    const incomeRedirect = routes.find(r => r.path === '/income')
+    expect(incomeRedirect).toBeDefined()
+    expect(incomeRedirect!.redirect).toBe('/finances?tab=income')
+  })
+
+  it('has a redirect from /expenses to /finances', () => {
+    const routes = router.getRoutes()
+    const expensesRedirect = routes.find(r => r.path === '/expenses')
+    expect(expensesRedirect).toBeDefined()
+    expect(expensesRedirect!.redirect).toBe('/finances?tab=expenses')
+  })
+
+  it('has a redirect from /income/add to /finances/income/add', () => {
+    const routes = router.getRoutes()
+    const addIncomeRedirect = routes.find(r => r.path === '/income/add')
+    expect(addIncomeRedirect).toBeDefined()
+    expect(addIncomeRedirect!.redirect).toBe('/finances/income/add')
+  })
+
+  it('has a redirect from /expenses/add to /finances/expenses/add', () => {
+    const routes = router.getRoutes()
+    const addExpenseRedirect = routes.find(r => r.path === '/expenses/add')
+    expect(addExpenseRedirect).toBeDefined()
+    expect(addExpenseRedirect!.redirect).toBe('/finances/expenses/add')
   })
 
   it('has an analytics route at /analytics', () => {
@@ -54,7 +77,6 @@ describe('router', () => {
     expect(route.name).toBe('savings')
   })
 
-
   it('has a calendar route at /calendar', () => {
     const route = router.resolve('/calendar')
     expect(route.name).toBe('calendar')
@@ -70,7 +92,7 @@ describe('router', () => {
     expect(route.name).toBe('categories')
   })
 
-  it('has 13 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(13)
+  it('has 16 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(16)
   })
 })

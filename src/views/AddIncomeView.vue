@@ -85,12 +85,12 @@ const frequencies: { value: Frequency; label: string }[] = [
 </script>
 
 <template>
-  <div class="page">
+  <div>
     <div class="page-header">
-      <button class="btn-back" @click="router.push('/income')">
+      <button class="btn-back" @click="router.push('/finances?tab=income')">
         <font-awesome-icon :icon="['fas', 'arrow-left']" />
       </button>
-      <h1>Add Income</h1>
+      <h2>Add Income</h2>
     </div>
 
     <div class="tabs">
@@ -177,8 +177,7 @@ const frequencies: { value: Frequency; label: string }[] = [
 </template>
 
 <style scoped>
-.page { max-width: 600px; margin: 0 auto; }
-h1 { margin: 0; }
+h2 { margin: 0; }
 
 .page-header {
   display: flex;

@@ -10,8 +10,7 @@ function makeRouter() {
     history: createWebHistory(),
     routes: [
       { path: '/', component: DashboardView },
-      { path: '/income', component: { template: '<div />' } },
-      { path: '/expenses', component: { template: '<div />' } },
+      { path: '/finances', component: { template: '<div />' } },
       { path: '/analytics', component: { template: '<div />' } },
     ],
   })

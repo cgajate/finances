@@ -11,8 +11,8 @@ function makeRouter() {
     history: createWebHistory(),
     routes: [
       { path: '/', component: { template: '<div />' } },
-      { path: '/income', component: { template: '<div />' } },
-      { path: '/income/add', component: AddIncomeView },
+      { path: '/finances', component: { template: '<div />' } },
+      { path: '/finances/income/add', component: AddIncomeView },
     ],
   })
 }

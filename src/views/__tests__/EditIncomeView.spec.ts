@@ -10,8 +10,8 @@ function makeRouter(): Router {
   return createRouter({
     history: createWebHistory(),
     routes: [
-      { path: '/income', component: { template: '<div />' } },
-      { path: '/income/:id/edit', component: EditIncomeView },
+      { path: '/finances', component: { template: '<div />' } },
+      { path: '/finances/income/:id/edit', component: EditIncomeView },
     ],
   })
 }
@@ -28,7 +28,7 @@ describe('EditIncomeView', () => {
 
   async function mountView(id: string) {
     const router = makeRouter()
-    router.push(`/income/${id}/edit`)
+    router.push(`/finances/income/${id}/edit`)
     await router.isReady()
     const wrapper = mount(EditIncomeView, {
       global: { plugins: [pinia, router] },
@@ -40,7 +40,15 @@ describe('EditIncomeView', () => {
   it('shows not found for invalid id', async () => {
     const { wrapper } = await mountView('nonexistent')
     expect(wrapper.text()).toContain('Income entry not found')
-    expect(wrapper.find('.btn-back').exists()).toBe(true)
+    expect(wrapper.findAll('.btn-back').length).toBeGreaterThan(0)
+  })
+
+  it('shows a back button in the header', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'Test', notes: '', date: null })
+    const id = store.incomes[0]!.id
+    const { wrapper } = await mountView(id)
+    expect(wrapper.find('.page-header .btn-back').exists()).toBe(true)
   })
 
   it('populates form for recurring income', async () => {
@@ -186,7 +194,7 @@ describe('EditIncomeView', () => {
     const { wrapper, router } = await mountView(id)
     const pushSpy = vi.spyOn(router, 'push')
     await wrapper.find('.btn-cancel').trigger('click')
-    expect(pushSpy).toHaveBeenCalledWith('/income')
+    expect(pushSpy).toHaveBeenCalledWith('/finances?tab=income')
   })
 
   it('delete with undo restores recurring income', async () => {

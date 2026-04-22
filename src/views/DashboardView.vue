@@ -148,7 +148,7 @@ function formatFrequency(freq: string): string {
             {{ incomeExpanded ? 'Show Less' : `View All (${filteredIncomes.length})` }}
             <font-awesome-icon :icon="['fas', incomeExpanded ? 'chevron-up' : 'chevron-down']" />
           </button>
-          <RouterLink to="/income" class="btn">Manage Income <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
+          <RouterLink to="/finances?tab=income" class="btn">Manage Income <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
         </div>
       </section>
 
@@ -193,7 +193,7 @@ function formatFrequency(freq: string): string {
             {{ expenseExpanded ? 'Show Less' : `View All (${filteredExpenses.length})` }}
             <font-awesome-icon :icon="['fas', expenseExpanded ? 'chevron-up' : 'chevron-down']" />
           </button>
-          <RouterLink to="/expenses" class="btn">Manage Expenses <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
+          <RouterLink to="/finances?tab=expenses" class="btn">Manage Expenses <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
         </div>
       </section>
     </div>

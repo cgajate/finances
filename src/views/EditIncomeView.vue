@@ -67,11 +67,11 @@ function save() {
       category: category.value,
     })
   }
-  router.push('/income')
+  router.push('/finances?tab=income')
 }
 
 function cancel() {
-  router.push('/income')
+  router.push('/finances?tab=income')
 }
 
 function remove() {
@@ -98,7 +98,7 @@ function remove() {
       })
     }
   })
-  router.push('/income')
+  router.push('/finances?tab=income')
 }
 
 const frequencies: { value: Frequency; label: string }[] = [
@@ -111,12 +111,17 @@ const frequencies: { value: Frequency; label: string }[] = [
 </script>
 
 <template>
-  <div class="page">
-    <h1>Edit Income</h1>
+  <div>
+    <div class="page-header">
+      <button class="btn-back" @click="router.push('/finances?tab=income')">
+        <font-awesome-icon :icon="['fas', 'arrow-left']" />
+      </button>
+      <h2>Edit Income</h2>
+    </div>
 
     <div v-if="notFound" class="not-found">
       <p>Income entry not found.</p>
-      <button class="btn-back" @click="router.push('/income')">← Back to Income</button>
+      <button class="btn-back" @click="router.push('/finances?tab=income')">← Back to Income</button>
     </div>
 
     <form v-else class="form" @submit.prevent="save">
@@ -169,8 +174,14 @@ const frequencies: { value: Frequency; label: string }[] = [
 </template>
 
 <style scoped>
-.page { max-width: 600px; margin: 0 auto; }
-h1 { margin-bottom: 1.5rem; }
+h2 { margin: 0; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
 
 .form { display: flex; flex-direction: column; gap: 1rem; }
 .field { display: flex; flex-direction: column; gap: 0.25rem; }

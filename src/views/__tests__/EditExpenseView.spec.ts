@@ -10,8 +10,8 @@ function makeRouter(): Router {
   return createRouter({
     history: createWebHistory(),
     routes: [
-      { path: '/expenses', component: { template: '<div />' } },
-      { path: '/expenses/:id/edit', component: EditExpenseView },
+      { path: '/finances', component: { template: '<div />' } },
+      { path: '/finances/expenses/:id/edit', component: EditExpenseView },
     ],
   })
 }
@@ -28,7 +28,7 @@ describe('EditExpenseView', () => {
 
   async function mountView(id: string) {
     const router = makeRouter()
-    router.push(`/expenses/${id}/edit`)
+    router.push(`/finances/expenses/${id}/edit`)
     await router.isReady()
     const wrapper = mount(EditExpenseView, {
       global: { plugins: [pinia, router] },
@@ -40,7 +40,15 @@ describe('EditExpenseView', () => {
   it('shows not found for invalid id', async () => {
     const { wrapper } = await mountView('nonexistent')
     expect(wrapper.text()).toContain('Expense entry not found')
-    expect(wrapper.find('.btn-back').exists()).toBe(true)
+    expect(wrapper.findAll('.btn-back').length).toBeGreaterThan(0)
+  })
+
+  it('shows a back button in the header', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 100, description: 'Test', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    expect(wrapper.find('.page-header .btn-back').exists()).toBe(true)
   })
 
   it('populates form for recurring expense', async () => {
@@ -188,7 +196,7 @@ describe('EditExpenseView', () => {
     const { wrapper, router } = await mountView(id)
     const pushSpy = vi.spyOn(router, 'push')
     await wrapper.find('.btn-cancel').trigger('click')
-    expect(pushSpy).toHaveBeenCalledWith('/expenses')
+    expect(pushSpy).toHaveBeenCalledWith('/finances?tab=expenses')
   })
 
   it('delete with undo restores recurring expense', async () => {

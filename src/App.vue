@@ -95,8 +95,7 @@ onBeforeUnmount(() => {
           <RouterLink to="/" class="nav-badge nav-badge-icon" aria-label="Dashboard">
             <font-awesome-icon :icon="['fas', 'house']" />
           </RouterLink>
-          <RouterLink to="/income" class="nav-badge">Income</RouterLink>
-          <RouterLink to="/expenses" class="nav-badge">Expenses</RouterLink>
+          <RouterLink to="/finances" class="nav-badge">Finances</RouterLink>
           <RouterLink to="/analytics" class="nav-badge">Analytics</RouterLink>
           <RouterLink to="/budgets" class="nav-badge">Budgets</RouterLink>
           <RouterLink to="/savings" class="nav-badge">Savings</RouterLink>
@@ -175,11 +174,8 @@ onBeforeUnmount(() => {
           <RouterLink to="/" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'house']" /> Dashboard
           </RouterLink>
-          <RouterLink to="/income" class="sidebar-link" @click="closeMenu">
-            <font-awesome-icon :icon="['fas', 'money-bill-wave']" /> Income
-          </RouterLink>
-          <RouterLink to="/expenses" class="sidebar-link" @click="closeMenu">
-            <font-awesome-icon :icon="['fas', 'receipt']" /> Expenses
+          <RouterLink to="/finances" class="sidebar-link" @click="closeMenu">
+            <font-awesome-icon :icon="['fas', 'money-bill-wave']" /> Finances
           </RouterLink>
           <RouterLink to="/analytics" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'chart-line']" /> Analytics
