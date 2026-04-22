@@ -111,9 +111,13 @@ function formatCurrency(value: number): string {
         <div class="list-item-meta">
           <span class="badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
           <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
-          <span v-if="item.type === 'recurring' && item.date" class="meta">📅 {{ item.date }}</span>
-          <span v-if="item.type === 'adhoc'" class="meta">📅 {{ item.date }}</span>
           <span v-if="item.type === 'recurring' && item.notes" class="meta">📝 {{ item.notes }}</span>
+        </div>
+        <div v-if="item.type === 'recurring' && item.date" class="list-item-date">
+          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon" /> {{ item.date }}
+        </div>
+        <div v-if="item.type === 'adhoc'" class="list-item-date">
+          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon" /> {{ item.date }}
         </div>
         <div class="list-item-actions">
           <RouterLink :to="`/income/${item.id}/edit`" class="btn-edit">Edit</RouterLink>
@@ -155,6 +159,8 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
   border-radius: 4px; text-transform: capitalize;
 }
 .meta { font-size: 0.8rem; color: var(--color-text-muted); }
+.list-item-date { font-size: 0.85rem; color: var(--color-text); display: flex; align-items: center; gap: 0.4rem; }
+.date-icon { color: var(--color-income); font-size: 0.85rem; }
 .cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
 .empty { color: var(--color-text-muted); font-style: italic; }
 </style>

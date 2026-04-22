@@ -65,9 +65,10 @@
 // ─── Submit (form, full-width feel) ───
 .btn-submit {
   @extend %btn-base;
-  padding: 0.75rem;
+  padding: 0.75rem 1.5rem;
   color: white;
   font-size: 1rem;
+  align-self: flex-end;
   // Default to income color; override with .btn-submit--expense in expense forms
   background: var(--color-income);
 

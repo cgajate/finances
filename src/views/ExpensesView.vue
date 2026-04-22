@@ -128,8 +128,10 @@ function formatCurrency(value: number): string {
           <span v-if="item.assignedTo" class="badge assigned-badge"
             >👤 {{ item.assignedTo }}</span
           >
-          <span v-if="item.dueDate" class="meta">📅 Due: {{ item.dueDate }}</span>
           <span v-if="item.notes" class="meta">📝 {{ item.notes }}</span>
+        </div>
+        <div v-if="item.dueDate" class="list-item-date">
+          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon" /> Due: {{ item.dueDate }}
         </div>
         <div class="list-item-actions">
           <RouterLink :to="`/expenses/${item.id}/edit`" class="btn-edit">Edit</RouterLink>
@@ -173,6 +175,8 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
   border-radius: 4px; text-transform: capitalize;
 }
 .meta { font-size: 0.8rem; color: var(--color-text-muted); }
+.list-item-date { font-size: 0.85rem; color: var(--color-text); display: flex; align-items: center; gap: 0.4rem; }
+.date-icon { color: var(--color-expense); font-size: 0.85rem; }
 .cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
 .assigned-badge { background: var(--color-assigned-bg); color: var(--color-assigned-text); }
 .empty { color: var(--color-text-muted); font-style: italic; }
