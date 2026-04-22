@@ -155,7 +155,16 @@ function dueLabel(days: number | null): string {
   border: 1px solid var(--color-border);
 }
 
-@media (max-width: 400px) { .panel { width: calc(100vw - 2rem); right: -0.5rem; } }
+@media (max-width: 480px) {
+  .panel {
+    position: fixed;
+    top: auto;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    margin-top: 0.5rem;
+  }
+}
 
 .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border-light); }
 .panel-header h3 { font-size: 1rem; margin: 0; }

@@ -579,5 +579,16 @@ onBeforeUnmount(() => {
     width: 36px;
     height: 36px;
   }
+
+  .theme-bubble,
+  .admin-bubble {
+    position: fixed;
+    top: auto;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    min-width: unset;
+    margin-top: 0.5rem;
+  }
 }
 </style>
