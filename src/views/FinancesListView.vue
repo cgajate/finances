@@ -7,6 +7,8 @@ import { useSnackbar } from '@/composables/useSnackbar'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { formatDate, formatDateTime } from '@/lib/formatDate'
+import { formatCurrency } from '@/lib/formatCurrency'
+import { advanceDate, getNextDueDate } from '@/lib/dateUtils'
 import type { Frequency } from '@/types/finance'
 import { ref } from 'vue'
 
@@ -138,41 +140,6 @@ function deleteExpense(id: string) {
   })
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
-
-function advanceDate(dateStr: string, frequency: Frequency): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  switch (frequency) {
-    case 'weekly':
-      d.setDate(d.getDate() + 7)
-      break
-    case 'bi-weekly':
-      d.setDate(d.getDate() + 14)
-      break
-    case 'monthly':
-      d.setMonth(d.getMonth() + 1)
-      break
-    case 'quarterly':
-      d.setMonth(d.getMonth() + 3)
-      break
-    case 'yearly':
-      d.setFullYear(d.getFullYear() + 1)
-      break
-  }
-  return d.toISOString().split('T')[0] ?? dateStr
-}
-
-function getNextDueDate(dateStr: string, frequency: Frequency): string {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  let current = dateStr
-  while (new Date(current + 'T00:00:00') < today) {
-    current = advanceDate(current, frequency)
-  }
-  return current
-}
 </script>
 
 <template>

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { useFinancesStore } from '@/stores/finances'
 import { useBudgetsStore } from '@/stores/budgets'
 import type { Frequency } from '@/types/finance'
+import { advanceDate } from '@/lib/dateUtils'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
@@ -31,27 +32,6 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   return fallback
 }
 
-function getNextDueDate(dueDate: string, frequency: Frequency): string {
-  const due = new Date(dueDate + 'T00:00:00')
-  switch (frequency) {
-    case 'weekly':
-      due.setDate(due.getDate() + 7)
-      break
-    case 'bi-weekly':
-      due.setDate(due.getDate() + 14)
-      break
-    case 'monthly':
-      due.setMonth(due.getMonth() + 1)
-      break
-    case 'quarterly':
-      due.setMonth(due.getMonth() + 3)
-      break
-    case 'yearly':
-      due.setFullYear(due.getFullYear() + 1)
-      break
-  }
-  return due.toISOString().split('T')[0] ?? dueDate
-}
 
 function daysBetween(dateStr: string): number {
   const today = new Date()
@@ -213,7 +193,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     let mutedUntil: string
     if (expense.type === 'recurring') {
-      mutedUntil = getNextDueDate(expense.dueDate, expense.frequency)
+      mutedUntil = advanceDate(expense.dueDate, expense.frequency)
     } else {
       // Adhoc: mute for 30 days (effectively forever for one-time)
       const d = new Date()

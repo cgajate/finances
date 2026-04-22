@@ -1,5 +1,13 @@
 export type Frequency = 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'yearly'
 
+export const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'bi-weekly', label: 'Bi-Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'yearly', label: 'Yearly' },
+]
+
 export const EXPENSE_CATEGORIES = [
   'Housing',
   'Food',

@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useFinancesStore } from '@/stores/finances'
 import { useBillCalendar, type CalendarDay } from '@/composables/useBillCalendar'
+import { formatCurrency } from '@/lib/formatCurrency'
 
 const store = useFinancesStore()
 const now = new Date()
@@ -45,9 +46,6 @@ function selectDay(day: CalendarDay) {
   selectedDay.value = selectedDay.value?.date === day.date ? null : day
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
 </script>
 
 <template>

@@ -7,6 +7,7 @@ import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency, ExpenseCategory } from '@/types/finance'
+import { FREQUENCY_OPTIONS } from '@/types/finance'
 import TabBar from '@/components/TabBar.vue'
 
 const router = useRouter()
@@ -89,13 +90,7 @@ function addAdhoc() {
   }
 }
 
-const frequencies: { value: Frequency; label: string }[] = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'bi-weekly', label: 'Bi-Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'yearly', label: 'Yearly' },
-]
+const frequencies = FREQUENCY_OPTIONS
 </script>
 
 <template>

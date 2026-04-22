@@ -5,6 +5,7 @@ import { useForecasting } from '@/composables/useForecasting'
 import { useSpendingTrends } from '@/composables/useSpendingTrends'
 import { useYearReview } from '@/composables/useYearReview'
 import TabBar from '@/components/TabBar.vue'
+import { formatCurrency } from '@/lib/formatCurrency'
 
 const store = useFinancesStore()
 
@@ -41,9 +42,6 @@ function toggleMonth(month: string) {
   expandedMonth.value = expandedMonth.value === month ? null : month
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
 
 function isCurrentMonth(month: string): boolean {
   const now = new Date()

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useBudgetsStore } from '@/stores/budgets'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { formatCurrency } from '@/lib/formatCurrency'
 import type { ExpenseCategory } from '@/types/finance'
 
 const budgetsStore = useBudgetsStore()
@@ -12,9 +13,6 @@ const selectedCategory = ref<ExpenseCategory | ''>('')
 const limitAmount = ref<number | null>(null)
 const limitCurrency = useCurrencyInput(limitAmount)
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
 
 function addBudget() {
   if (!selectedCategory.value || !limitAmount.value) return

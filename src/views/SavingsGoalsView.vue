@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { formatCurrency } from '@/lib/formatCurrency'
 
 const store = useSavingsGoalsStore()
 const snackbar = useSnackbar()
@@ -52,9 +53,6 @@ function submitSavings(id: string) {
   addCurrency.reset()
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
 
 function daysUntilDeadline(deadline: string): number {
   const today = new Date()

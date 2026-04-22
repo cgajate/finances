@@ -8,6 +8,7 @@ import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency } from '@/types/finance'
 import type { ExpenseCategory } from '@/types/finance'
+import { FREQUENCY_OPTIONS } from '@/types/finance'
 
 const route = useRoute()
 const router = useRouter()
@@ -107,13 +108,7 @@ function remove() {
   router.push('/finances?tab=expenses')
 }
 
-const frequencies: { value: Frequency; label: string }[] = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'bi-weekly', label: 'Bi-Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'yearly', label: 'Yearly' },
-]
+const frequencies = FREQUENCY_OPTIONS
 </script>
 
 <template>

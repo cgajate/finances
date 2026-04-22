@@ -6,6 +6,7 @@ import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 import { useSortFilter } from '@/composables/useSortFilter'
 import { useSearch } from '@/composables/useSearch'
 import FilterSortBar from '@/components/FilterSortBar.vue'
+import { formatCurrency } from '@/lib/formatCurrency'
 import SearchBar from '@/components/SearchBar.vue'
 
 const store = useFinancesStore()
@@ -56,9 +57,6 @@ const displayedExpenses = computed(() => {
   return filteredExpenses.value.slice(0, 5)
 })
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
 
 function formatFrequency(freq: string): string {
   return freq.replace('-', '-')

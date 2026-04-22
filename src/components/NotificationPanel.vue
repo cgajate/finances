@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useNotificationsStore } from '@/stores/notifications'
+import { formatCurrency } from '@/lib/formatCurrency'
 
 const store = useNotificationsStore()
 const open = ref(false)
@@ -13,9 +14,6 @@ function close() {
   open.value = false
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-}
 
 function dueLabel(days: number | null): string {
   if (days === null) return ''
