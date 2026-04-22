@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBudgetsStore } from '@/stores/budgets'
-import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { formatCurrency } from '@/lib/formatCurrency'
 import type { ExpenseCategory } from '@/types/finance'
+import CurrencyInput from '@/components/CurrencyInput.vue'
+import ProgressBar from '@/components/ProgressBar.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const budgetsStore = useBudgetsStore()
 const snackbar = useSnackbar()
 
 const selectedCategory = ref<ExpenseCategory | ''>('')
 const limitAmount = ref<number | null>(null)
-const limitCurrency = useCurrencyInput(limitAmount)
 
 
 function addBudget() {
   if (!selectedCategory.value || !limitAmount.value) return
   budgetsStore.setBudget(selectedCategory.value, limitAmount.value)
   selectedCategory.value = ''
-  limitCurrency.reset()
+  limitAmount.value = null
 }
 
 function removeBudget(category: ExpenseCategory) {
@@ -35,13 +36,6 @@ function statusColor(status: string): string {
   if (status === 'over') return style.getPropertyValue('--color-expense').trim()
   if (status === 'warning') return style.getPropertyValue('--color-warning').trim()
   return style.getPropertyValue('--color-income').trim()
-}
-
-function barColor(status: string): string {
-  const style = getComputedStyle(document.documentElement)
-  if (status === 'over') return style.getPropertyValue('--color-progress-over').trim()
-  if (status === 'warning') return style.getPropertyValue('--color-progress-warning').trim()
-  return style.getPropertyValue('--color-progress-fill').trim()
 }
 </script>
 
@@ -67,16 +61,7 @@ function barColor(status: string): string {
         </div>
         <div class="field">
           <label>Monthly Limit</label>
-          <input
-            type="text"
-            inputmode="decimal"
-            placeholder="$0.00"
-            :value="limitCurrency.display.value"
-            @input="limitCurrency.onInput"
-            @blur="limitCurrency.onBlur"
-            @focus="limitCurrency.onFocus"
-            required
-          />
+          <CurrencyInput v-model="limitAmount" :required="true" />
         </div>
         <button type="submit" class="btn-add">+ Add</button>
       </div>
@@ -96,15 +81,7 @@ function barColor(status: string): string {
             {{ formatCurrency(bs.spent) }} / {{ formatCurrency(bs.limit) }}
           </span>
         </div>
-        <div class="progress-bar">
-          <div
-            class="progress-fill"
-            :style="{
-              width: Math.min(bs.percent, 100) + '%',
-              background: barColor(bs.status),
-            }"
-          ></div>
-        </div>
+        <ProgressBar :percent="bs.percent" :variant="bs.status as 'ok' | 'warning' | 'over'" />
         <div class="budget-footer">
           <span class="budget-percent" :style="{ color: statusColor(bs.status) }">
             {{ Math.round(bs.percent) }}%
@@ -115,7 +92,7 @@ function barColor(status: string): string {
         </div>
       </div>
     </div>
-    <p v-else class="empty">No budgets set yet. Add one above to start tracking.</p>
+    <EmptyState v-else message="No budgets set yet. Add one above to start tracking." />
   </div>
 </template>
 
@@ -141,11 +118,7 @@ function barColor(status: string): string {
 .budget-category { font-weight: 700; font-size: 1rem; }
 .budget-values { font-weight: 600; font-size: 0.9rem; }
 
-.progress-bar { height: 10px; background: var(--color-progress-track); border-radius: 5px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 5px; transition: width 0.3s ease; }
-
 .budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }
 .status-label { font-weight: 500; }
 </style>
-

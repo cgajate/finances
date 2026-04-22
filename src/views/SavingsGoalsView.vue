@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSavingsGoalsStore } from '@/stores/savingsGoals'
-import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { formatCurrency } from '@/lib/formatCurrency'
+import CurrencyInput from '@/components/CurrencyInput.vue'
+import ProgressBar from '@/components/ProgressBar.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const store = useSavingsGoalsStore()
 const snackbar = useSnackbar()
@@ -26,13 +28,11 @@ function deleteGoal(id: string) {
 // Add goal form
 const goalName = ref('')
 const targetAmount = ref<number | null>(null)
-const targetCurrency = useCurrencyInput(targetAmount)
 const deadline = ref('')
 
 // Add savings form
 const addAmountFor = ref<string | null>(null)
 const addAmount = ref<number | null>(null)
-const addCurrency = useCurrencyInput(addAmount)
 
 function addGoal() {
   if (!goalName.value || !targetAmount.value || !deadline.value) return
@@ -42,7 +42,7 @@ function addGoal() {
     deadline: deadline.value,
   })
   goalName.value = ''
-  targetCurrency.reset()
+  targetAmount.value = null
   deadline.value = ''
 }
 
@@ -50,7 +50,7 @@ function submitSavings(id: string) {
   if (!addAmount.value) return
   store.addSavings(id, addAmount.value)
   addAmountFor.value = null
-  addCurrency.reset()
+  addAmount.value = null
 }
 
 
@@ -66,12 +66,11 @@ function percentComplete(goal: { savedAmount: number; targetAmount: number }): n
   return Math.min(Math.round((goal.savedAmount / goal.targetAmount) * 100), 100)
 }
 
-function meterColor(percent: number): string {
-  const style = getComputedStyle(document.documentElement)
-  if (percent >= 100) return style.getPropertyValue('--color-progress-fill').trim()
-  if (percent >= 60) return style.getPropertyValue('--color-primary').trim()
-  if (percent >= 30) return style.getPropertyValue('--color-progress-warning').trim()
-  return style.getPropertyValue('--color-btn-delete').trim()
+function meterVariant(percent: number): 'ok' | 'warning' | 'over' | 'primary' {
+  if (percent >= 100) return 'ok'
+  if (percent >= 60) return 'primary'
+  if (percent >= 30) return 'warning'
+  return 'over'
 }
 </script>
 
@@ -87,16 +86,7 @@ function meterColor(percent: number): string {
         </div>
         <div class="field">
           <label>Target Amount *</label>
-          <input
-            type="text"
-            inputmode="decimal"
-            placeholder="$0.00"
-            :value="targetCurrency.display.value"
-            @input="targetCurrency.onInput"
-            @blur="targetCurrency.onBlur"
-            @focus="targetCurrency.onFocus"
-            required
-          />
+          <CurrencyInput v-model="targetAmount" :required="true" />
         </div>
         <div class="field">
           <label>Deadline *</label>
@@ -128,33 +118,16 @@ function meterColor(percent: number): string {
         </div>
 
         <!-- Visual meter -->
-        <div class="meter-track">
-          <div
-            class="meter-fill"
-            :style="{
-              width: percentComplete(goal) + '%',
-              background: meterColor(percentComplete(goal)),
-            }"
-          ></div>
-        </div>
+        <ProgressBar :percent="percentComplete(goal)" :variant="meterVariant(percentComplete(goal))" :height="12" />
         <div class="meter-label">{{ percentComplete(goal) }}% complete</div>
 
         <!-- Actions -->
         <div class="goal-actions">
           <template v-if="addAmountFor === goal.id">
             <form class="add-savings-form" @submit.prevent="submitSavings(goal.id)">
-              <input
-                type="text"
-                inputmode="decimal"
-                placeholder="$0.00"
-                :value="addCurrency.display.value"
-                @input="addCurrency.onInput"
-                @blur="addCurrency.onBlur"
-                @focus="addCurrency.onFocus"
-                class="savings-input"
-              />
+              <CurrencyInput v-model="addAmount" class="savings-input" />
               <button type="submit" class="btn-save-sm">Add</button>
-              <button type="button" class="btn-cancel-sm" @click="addAmountFor = null; addCurrency.reset()">✕</button>
+              <button type="button" class="btn-cancel-sm" @click="addAmountFor = null; addAmount = null">✕</button>
             </form>
           </template>
           <template v-else>
@@ -164,7 +137,7 @@ function meterColor(percent: number): string {
         </div>
       </div>
     </div>
-    <p v-else-if="!store.completedGoals.length" class="empty">No savings goals yet. Add one above to start tracking!</p>
+    <EmptyState v-else-if="!store.completedGoals.length" message="No savings goals yet. Add one above to start tracking!" />
 
     <!-- Completed goals -->
     <template v-if="store.completedGoals.length">
@@ -175,9 +148,7 @@ function meterColor(percent: number): string {
             <span class="goal-name"><font-awesome-icon :icon="['fas', 'circle-check']" /> {{ goal.name }}</span>
             <span class="goal-saved-final">{{ formatCurrency(goal.savedAmount) }}</span>
           </div>
-          <div class="meter-track">
-            <div class="meter-fill" style="width: 100%; background: var(--color-progress-fill)"></div>
-          </div>
+          <ProgressBar :percent="100" variant="ok" :height="12" />
           <div class="goal-actions">
             <button class="btn-remove" @click="deleteGoal(goal.id)">Remove</button>
           </div>
@@ -217,8 +188,6 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 .goal-target { font-size: 1rem; font-weight: 600; color: var(--color-text-secondary); }
 .goal-saved-final { font-weight: 700; color: var(--color-income); }
 
-.meter-track { height: 12px; background: var(--color-progress-track); border-radius: 6px; overflow: hidden; }
-.meter-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
 .meter-label { font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); }
 
 .goal-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }

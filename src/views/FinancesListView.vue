@@ -6,6 +6,7 @@ import { useSortFilter } from '@/composables/useSortFilter'
 import { useSnackbar } from '@/composables/useSnackbar'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import SearchBar from '@/components/SearchBar.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import { formatDate, formatDateTime } from '@/lib/formatDate'
 import { formatCurrency } from '@/lib/formatCurrency'
 import { advanceDate, getNextDueDate } from '@/lib/dateUtils'
@@ -200,11 +201,9 @@ function deleteExpense(id: string) {
         </div>
       </div>
     </div>
-    <p v-else-if="store.incomes.length && incomeSearchQuery" class="empty">
-      No income matches "{{ incomeSearchQuery }}".
-    </p>
-    <p v-else-if="store.incomes.length" class="empty">No income matches the current filter.</p>
-    <p v-else class="empty">No income entries yet.</p>
+    <EmptyState v-else-if="store.incomes.length && incomeSearchQuery" :message="`No income matches &quot;${incomeSearchQuery}&quot;.`" />
+    <EmptyState v-else-if="store.incomes.length" message="No income matches the current filter." />
+    <EmptyState v-else message="No income entries yet." />
   </div>
 
   <!-- Expenses Tab -->
@@ -270,13 +269,9 @@ function deleteExpense(id: string) {
         </div>
       </div>
     </div>
-    <p v-else-if="store.expenses.length && expenseSearchQuery" class="empty">
-      No expenses match "{{ expenseSearchQuery }}".
-    </p>
-    <p v-else-if="store.expenses.length" class="empty">
-      No expenses match the current filter.
-    </p>
-    <p v-else class="empty">No expense entries yet.</p>
+    <EmptyState v-else-if="store.expenses.length && expenseSearchQuery" :message="`No expenses match &quot;${expenseSearchQuery}&quot;.`" />
+    <EmptyState v-else-if="store.expenses.length" message="No expenses match the current filter." />
+    <EmptyState v-else message="No expense entries yet." />
   </div>
 </template>
 

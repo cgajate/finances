@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useActivityFeedStore } from '@/stores/activityFeed'
+import EmptyState from '@/components/EmptyState.vue'
 
 const store = useActivityFeedStore()
 
@@ -43,7 +44,7 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
       </button>
     </div>
 
-    <p v-if="!hasActivities" class="empty">No activity yet. Actions by household members will appear here.</p>
+    <EmptyState v-if="!hasActivities" message="No activity yet. Actions by household members will appear here." />
 
     <ul v-else class="feed-list">
       <li v-for="entry in store.sortedActivities" :key="entry.id" class="feed-item">
@@ -81,12 +82,6 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
 }
 
 
-.empty {
-  color: var(--color-text-muted);
-  font-style: italic;
-  text-align: center;
-  padding: 3rem 1rem;
-}
 
 .feed-list {
   list-style: none;

@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatCurrency } from '@/lib/formatCurrency'
+import EmptyState from '@/components/EmptyState.vue'
 
 const store = useNotificationsStore()
 const open = ref(false)
@@ -48,9 +49,7 @@ function dueLabel(days: number | null): string {
           </button>
         </div>
 
-        <div v-if="store.allNotifications.length === 0" class="empty">
-          No notifications right now 🎉
-        </div>
+        <EmptyState v-if="store.allNotifications.length === 0" message="No notifications right now 🎉" />
 
         <ul v-else class="notification-list">
           <!-- Expense notifications -->

@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useCategoriesStore } from '@/stores/categories'
 import { useSnackbar } from '@/composables/useSnackbar'
 import TabBar from '@/components/TabBar.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const store = useCategoriesStore()
 const { expenseCategories, incomeCategories } = storeToRefs(store)
@@ -126,12 +127,10 @@ function restore(id: string, name: string) {
           </div>
         </template>
       </div>
-      <p
+      <EmptyState
         v-if="(tab === 'expense' ? expenseCategories : incomeCategories).filter(c => !c.deleted).length === 0"
-        class="empty"
-      >
-        No active categories. Add one above.
-      </p>
+        message="No active categories. Add one above."
+      />
     </div>
 
     <!-- Deleted categories -->
@@ -159,12 +158,10 @@ function restore(id: string, name: string) {
             Restore
           </button>
         </div>
-        <p
+        <EmptyState
           v-if="(tab === 'expense' ? expenseCategories : incomeCategories).filter(c => c.deleted).length === 0"
-          class="empty"
-        >
-          No removed categories.
-        </p>
+          message="No removed categories."
+        />
       </div>
     </div>
   </div>
@@ -364,13 +361,6 @@ h2 {
 
 .deleted-list {
   margin-top: 0.5rem;
-}
-
-.empty {
-  color: var(--color-text-muted);
-  font-style: italic;
-  font-size: 0.9rem;
-  padding: 0.5rem 0;
 }
 </style>
 

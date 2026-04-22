@@ -91,7 +91,7 @@ describe('BudgetView', () => {
     const store = useBudgetsStore()
     store.setBudget('Food', 500)
     const wrapper = mount(BudgetView, { global: { plugins: [pinia] } })
-    expect(wrapper.find('.progress-bar').exists()).toBe(true)
+    expect(wrapper.find('.progress-track').exists()).toBe(true)
   })
 
   it('remove button removes budget', async () => {

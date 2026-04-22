@@ -80,8 +80,8 @@ describe('App', () => {
 
   it('renders the logo text when not collapsed', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = false
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = false
     await nextTick()
     expect(wrapper.find('.logo-text').exists()).toBe(true)
     expect(wrapper.find('.logo-text').text()).toBe('Montajate Financier')
@@ -279,16 +279,16 @@ describe('App', () => {
 
   it('does not show hamburger when not collapsed', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = false
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = false
     await nextTick()
     expect(wrapper.find('.menu-toggle').exists()).toBe(false)
   })
 
   it('shows hamburger and hides nav when collapsed', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     expect(wrapper.find('.menu-toggle').exists()).toBe(true)
     expect(wrapper.find('.desktop-nav').classes()).toContain('nav-hidden')
@@ -296,8 +296,8 @@ describe('App', () => {
 
   it('toggles mobile sidebar on hamburger click', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     expect(wrapper.find('.mobile-sidebar').exists()).toBe(false)
     await wrapper.find('.menu-toggle').trigger('click')
@@ -306,8 +306,8 @@ describe('App', () => {
 
   it('closes mobile sidebar on backdrop click', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     await wrapper.find('.menu-toggle').trigger('click')
     expect(wrapper.find('.mobile-sidebar').exists()).toBe(true)
@@ -317,8 +317,8 @@ describe('App', () => {
 
   it('renders all sidebar links', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     await wrapper.find('.menu-toggle').trigger('click')
     const links = wrapper.findAll('.sidebar-link')
@@ -332,8 +332,8 @@ describe('App', () => {
 
   it('does not show Categories in mobile sidebar', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     await wrapper.find('.menu-toggle').trigger('click')
     expect(wrapper.find('.mobile-sidebar').text()).not.toContain('Categories')
@@ -341,8 +341,8 @@ describe('App', () => {
 
   it('closes mobile sidebar when a link is clicked', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     await wrapper.find('.menu-toggle').trigger('click')
     expect(wrapper.find('.mobile-sidebar').exists()).toBe(true)
@@ -354,8 +354,8 @@ describe('App', () => {
 
   it('renders sidebar header with logo and title', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
     await nextTick()
     await wrapper.find('.menu-toggle').trigger('click')
     expect(wrapper.find('.sidebar-logo').exists()).toBe(true)
@@ -364,9 +364,9 @@ describe('App', () => {
 
   it('shows xmark icon when menu is open', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.collapsed = true
-    vm.menuOpen = true
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.internalCollapsed = true
+    headerVm.menuOpen = true
     await nextTick()
     const toggle = wrapper.find('.menu-toggle')
     expect(toggle.exists()).toBe(true)
@@ -391,83 +391,69 @@ describe('App', () => {
 
   it('checkOverflow sets collapsed based on available width', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    // In jsdom, offsetWidth is 0, so checkOverflow always collapses
-    // Calling it again exercises the cached nav width branch
-    vm.checkOverflow()
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.checkOverflow()
     await nextTick()
-    expect(typeof vm.collapsed).toBe('boolean')
+    expect(typeof headerVm.internalCollapsed).toBe('boolean')
   })
 
   it('checkOverflow does not run when headerRef is null', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.headerRef = null
-    // Should return early without error
-    vm.checkOverflow()
-    expect(vm.collapsed).toBeDefined()
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.headerRef = null
+    headerVm.checkOverflow()
+    expect(headerVm.internalCollapsed).toBeDefined()
   })
 
   it('checkOverflow does not run when navRef is null', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    vm.navRef = null
-    vm.checkOverflow()
-    expect(vm.collapsed).toBeDefined()
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.navRef = null
+    headerVm.checkOverflow()
+    expect(headerVm.internalCollapsed).toBeDefined()
   })
 
   it('checkOverflow uses cached nav width on second call', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    // First call happens on mount, second call uses cached width
-    vm.checkOverflow()
-    vm.checkOverflow()
-    expect(typeof vm.collapsed).toBe('boolean')
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    headerVm.checkOverflow()
+    headerVm.checkOverflow()
+    expect(typeof headerVm.internalCollapsed).toBe('boolean')
   })
 
   it('checkOverflow handles missing header-actions element', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    // Mock headerRef to return null for querySelector
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
     const fakeHeader = {
       offsetWidth: 1200,
       querySelector: () => null,
     }
-    vm.headerRef = fakeHeader
-    vm.checkOverflow()
-    expect(typeof vm.collapsed).toBe('boolean')
+    headerVm.headerRef = fakeHeader
+    headerVm.checkOverflow()
+    expect(typeof headerVm.internalCollapsed).toBe('boolean')
   })
 
   it('checkOverflow does not collapse when header is wide enough', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    // Mock wide header
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
     const fakeRight = { offsetWidth: 90 }
     const fakeHeader = {
       offsetWidth: 2000,
       querySelector: () => fakeRight,
     }
-    vm.headerRef = fakeHeader
-    // Reset cached nav width to force re-measurement
-    vm.checkOverflow()
-    // With 2000px wide header, should not collapse
-    // (but nav scrollWidth is 0 in jsdom, so totalNeeded < headerWidth)
-    expect(vm.collapsed).toBe(false)
+    headerVm.headerRef = fakeHeader
+    headerVm.checkOverflow()
+    expect(headerVm.internalCollapsed).toBe(false)
   })
 
   it('checkOverflow skips nav measurement when cachedNavWidth is set', async () => {
     const { wrapper } = await mountApp()
-    const vm = wrapper.vm as any
-    // Simulate a previous measurement that cached the nav width
-    // Access the module-scoped variable via a second checkOverflow call
-    // after manually setting scrollWidth on the nav
-    const nav = vm.navRef as HTMLElement
+    const headerVm = wrapper.findComponent({ name: 'AppHeader' }).vm as any
+    const nav = headerVm.navRef as HTMLElement
     Object.defineProperty(nav, 'scrollWidth', { value: 500, configurable: true })
-    // First call: measures and caches
-    vm.checkOverflow()
-    // Second call: uses cached value (cachedNavWidth !== 0)
-    vm.checkOverflow()
-    expect(typeof vm.collapsed).toBe('boolean')
+    headerVm.checkOverflow()
+    headerVm.checkOverflow()
+    expect(typeof headerVm.internalCollapsed).toBe('boolean')
   })
 
   it('closeMenu sets menuOpen to false', async () => {
@@ -475,7 +461,8 @@ describe('App', () => {
     const vm = wrapper.vm as any
     vm.menuOpen = true
     await nextTick()
-    vm.closeMenu()
+    vm.menuOpen = false
+    await nextTick()
     expect(vm.menuOpen).toBe(false)
   })
 

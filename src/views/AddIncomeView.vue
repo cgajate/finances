@@ -3,12 +3,13 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
-import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency, IncomeCategory } from '@/types/finance'
 import { FREQUENCY_OPTIONS } from '@/types/finance'
 import TabBar from '@/components/TabBar.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import CurrencyInput from '@/components/CurrencyInput.vue'
 
 const router = useRouter()
 const store = useFinancesStore()
@@ -24,7 +25,6 @@ const formTabs = [
 
 // Recurring form
 const rAmount = ref<number | null>(null)
-const rCurrency = useCurrencyInput(rAmount)
 const rFrequency = ref<Frequency>('monthly')
 const rDescription = ref('')
 const rNotes = ref('')
@@ -33,7 +33,6 @@ const rCategory = ref<IncomeCategory>('Other')
 
 // Adhoc form
 const aAmount = ref<number | null>(null)
-const aCurrency = useCurrencyInput(aAmount)
 const aDescription = ref('')
 const aDate = ref('')
 const aCategory = ref<IncomeCategory>('Other')
@@ -51,7 +50,7 @@ function addRecurring() {
       category: rCategory.value,
     })
     snackbar.show(`Added recurring income "${rDescription.value}"`, { duration: 8000 })
-    rCurrency.reset()
+    rAmount.value = null
     rDescription.value = ''
     rNotes.value = ''
     rDate.value = ''
@@ -72,7 +71,7 @@ function addAdhoc() {
       category: aCategory.value,
     })
     snackbar.show(`Added income "${aDescription.value}"`, { duration: 8000 })
-    aCurrency.reset()
+    aAmount.value = null
     aDescription.value = ''
     aDate.value = ''
     aCategory.value = 'Other'
@@ -86,12 +85,7 @@ const frequencies = FREQUENCY_OPTIONS
 
 <template>
   <div>
-    <div class="page-header">
-      <button class="btn-back" @click="router.push('/finances?tab=income')">
-        <font-awesome-icon :icon="['fas', 'arrow-left']" />
-      </button>
-      <h2>Add Income</h2>
-    </div>
+    <PageHeader title="Add Income" back-to="/finances?tab=income" />
 
     <TabBar :tabs="formTabs" v-model="tab" />
 
@@ -103,16 +97,7 @@ const frequencies = FREQUENCY_OPTIONS
       </div>
       <div class="field">
         <label>Amount *</label>
-        <input
-          type="text"
-          inputmode="decimal"
-          placeholder="$0.00"
-          :value="rCurrency.display.value"
-          @input="rCurrency.onInput"
-          @blur="rCurrency.onBlur"
-          @focus="rCurrency.onFocus"
-          required
-        />
+        <CurrencyInput v-model="rAmount" :required="true" />
       </div>
       <div class="field">
         <label>Frequency *</label>
@@ -145,16 +130,7 @@ const frequencies = FREQUENCY_OPTIONS
       </div>
       <div class="field">
         <label>Amount *</label>
-        <input
-          type="text"
-          inputmode="decimal"
-          placeholder="$0.00"
-          :value="aCurrency.display.value"
-          @input="aCurrency.onInput"
-          @blur="aCurrency.onBlur"
-          @focus="aCurrency.onFocus"
-          required
-        />
+        <CurrencyInput v-model="aAmount" :required="true" />
       </div>
       <div class="field">
         <label>Category</label>

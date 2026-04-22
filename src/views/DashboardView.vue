@@ -8,6 +8,8 @@ import { useSearch } from '@/composables/useSearch'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import { formatCurrency } from '@/lib/formatCurrency'
 import SearchBar from '@/components/SearchBar.vue'
+import ProgressBar from '@/components/ProgressBar.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const store = useFinancesStore()
 const budgetsStore = useBudgetsStore()
@@ -85,7 +87,7 @@ function formatFrequency(freq: string): string {
           </div>
         </div>
       </div>
-      <p v-else class="empty">No results for "{{ searchQuery }}".</p>
+      <EmptyState v-else :message="`No results for &quot;${searchQuery}&quot;.`" />
     </div>
 
     <template v-if="!searchQuery.trim()">
@@ -134,8 +136,8 @@ function formatFrequency(freq: string): string {
             <span class="badge">{{ item.type === 'recurring' ? formatFrequency(item.frequency) : 'one-time' }}</span>
           </li>
         </ul>
-        <p v-else-if="store.incomes.length" class="empty">No income matches the current filter.</p>
-        <p v-else class="empty">No income added yet.</p>
+        <EmptyState v-else-if="store.incomes.length" message="No income matches the current filter." />
+        <EmptyState v-else message="No income added yet." />
 
         <div class="section-actions">
           <button
@@ -179,8 +181,8 @@ function formatFrequency(freq: string): string {
             <span class="badge">{{ item.type === 'recurring' ? formatFrequency(item.frequency) : 'one-time' }}</span>
           </li>
         </ul>
-        <p v-else-if="store.expenses.length" class="empty">No expenses match the current filter.</p>
-        <p v-else class="empty">No expenses added yet.</p>
+        <EmptyState v-else-if="store.expenses.length" message="No expenses match the current filter." />
+        <EmptyState v-else message="No expenses added yet." />
 
         <div class="section-actions">
           <button
@@ -214,13 +216,11 @@ function formatFrequency(freq: string): string {
               {{ formatCurrency(bs.spent) }} / {{ formatCurrency(bs.limit) }}
             </span>
           </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              :class="{ 'fill-warning': bs.status === 'warning', 'fill-over': bs.status === 'over' }"
-              :style="{ width: Math.min(bs.percent, 100) + '%' }"
-            ></div>
-          </div>
+          <ProgressBar
+            :percent="bs.percent"
+            :variant="bs.status as 'ok' | 'warning' | 'over'"
+            :height="8"
+          />
         </div>
       </div>
       <RouterLink to="/budgets" class="btn">Manage Budgets <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
@@ -237,12 +237,11 @@ function formatFrequency(freq: string): string {
               {{ formatCurrency(goal.savedAmount) }} / {{ formatCurrency(goal.targetAmount) }}
             </span>
           </div>
-          <div class="savings-meter-track">
-            <div
-              class="savings-meter-fill"
-              :style="{ width: Math.min(Math.round((goal.savedAmount / goal.targetAmount) * 100), 100) + '%' }"
-            ></div>
-          </div>
+          <ProgressBar
+            :percent="Math.min(Math.round((goal.savedAmount / goal.targetAmount) * 100), 100)"
+            variant="primary"
+            :height="8"
+          />
         </div>
       </div>
       <RouterLink to="/savings" class="btn">Manage Goals <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
@@ -330,10 +329,6 @@ li strong { flex: 1; min-width: 120px; }
 .budget-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-income); }
 .budget-warning { color: var(--color-warning); }
 .budget-over { color: var(--color-expense); }
-.progress-track { height: 8px; border-radius: 4px; background: var(--color-progress-track); overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 4px; background: var(--color-progress-fill); transition: width 0.3s ease; }
-.fill-warning { background: var(--color-progress-warning); }
-.fill-over { background: var(--color-progress-over); }
 .budget-section .btn { margin-top: 1rem; }
 
 .savings-section {
@@ -347,8 +342,6 @@ li strong { flex: 1; min-width: 120px; }
 .savings-goal-info { display: flex; justify-content: space-between; align-items: center; }
 .savings-goal-name { font-weight: 500; font-size: 0.9rem; }
 .savings-goal-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
-.savings-meter-track { height: 8px; background: var(--color-progress-track); border-radius: 4px; overflow: hidden; }
-.savings-meter-fill { height: 100%; background: var(--color-primary); border-radius: 4px; transition: width 0.3s ease; }
 .savings-section .btn { margin-top: 1rem; }.search-results { margin-bottom: 2rem; }
 .search-list { display: flex; flex-direction: column; gap: 0.5rem; }
 .search-item {

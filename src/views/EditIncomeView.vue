@@ -3,12 +3,13 @@ import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
-import { useCurrencyInput } from '@/composables/useCurrencyInput'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency } from '@/types/finance'
 import type { IncomeCategory } from '@/types/finance'
 import { FREQUENCY_OPTIONS } from '@/types/finance'
+import PageHeader from '@/components/PageHeader.vue'
+import CurrencyInput from '@/components/CurrencyInput.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,7 +22,6 @@ const id = route.params.id as string
 const itemType = ref<'recurring' | 'adhoc'>('recurring')
 const description = ref('')
 const amount = ref<number | null>(null)
-const currency = useCurrencyInput(amount)
 const frequency = ref<Frequency>('monthly')
 const date = ref('')
 const notes = ref('')
@@ -37,7 +37,6 @@ onMounted(() => {
   itemType.value = item.type
   description.value = item.description
   amount.value = item.amount
-  currency.setFromValue(item.amount)
   category.value = item.category ?? 'Other'
   if (item.type === 'recurring') {
     frequency.value = item.frequency
@@ -107,12 +106,7 @@ const frequencies = FREQUENCY_OPTIONS
 
 <template>
   <div>
-    <div class="page-header">
-      <button class="btn-back" @click="router.push('/finances?tab=income')">
-        <font-awesome-icon :icon="['fas', 'arrow-left']" />
-      </button>
-      <h2>Edit Income</h2>
-    </div>
+    <PageHeader title="Edit Income" back-to="/finances?tab=income" />
 
     <div v-if="notFound" class="not-found">
       <p>Income entry not found.</p>
@@ -126,16 +120,7 @@ const frequencies = FREQUENCY_OPTIONS
       </div>
       <div class="field">
         <label>Amount *</label>
-        <input
-          type="text"
-          inputmode="decimal"
-          placeholder="$0.00"
-          :value="currency.display.value"
-          @input="currency.onInput"
-          @blur="currency.onBlur"
-          @focus="currency.onFocus"
-          required
-        />
+        <CurrencyInput v-model="amount" :required="true" />
       </div>
       <div v-if="itemType === 'recurring'" class="field">
         <label>Frequency</label>

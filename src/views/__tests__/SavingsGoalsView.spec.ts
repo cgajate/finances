@@ -45,7 +45,7 @@ describe('SavingsGoalsView', () => {
     expect(wrapper.text()).toContain('Vacation')
     expect(wrapper.text()).toContain('$1,500.00')
     expect(wrapper.text()).toContain('$3,000.00')
-    expect(wrapper.find('.meter-fill').exists()).toBe(true)
+    expect(wrapper.find('.progress-fill').exists()).toBe(true)
     expect(wrapper.text()).toContain('50% complete')
   })
 
@@ -93,7 +93,7 @@ describe('SavingsGoalsView', () => {
     const store = useSavingsGoalsStore()
     store.addGoal({ name: 'Full', targetAmount: 200, deadline: '2026-12-31', savedAmount: 250 })
     const wrapper = mountView()
-    const fill = wrapper.find('.goal-card.completed .meter-fill')
+    const fill = wrapper.find('.goal-card.completed .progress-fill')
     expect(fill.attributes('style')).toContain('width: 100%')
   })
 
