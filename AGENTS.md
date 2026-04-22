@@ -2,10 +2,13 @@
 
 ## Project Overview
 
-Personal finances app built with **Vue 3 + TypeScript + Vite**. Currently in early scaffold stage (created from `create-vue`).
+Personal finances app built with **Vue 3 + TypeScript + Vite**. Supports web and Android (via Capacitor).
 
-- **State management**: Pinia 3 with Composition API style (`defineStore` + `ref`/`computed`) — see `src/stores/counter.ts`
+- **State management**: Pinia 3 with Composition API style (`defineStore` + `ref`/`computed`) — see `src/stores/finances.ts`
 - **Routing**: Vue Router 5 with HTML5 history mode — see `src/router/index.ts`
+- **Backend**: Firebase (Firestore + anonymous Auth) — configured via `VITE_FIREBASE_*` env vars, lazy-initialized in `src/lib/firebase.ts`
+- **Icons**: Font Awesome (solid icons) registered globally as `<font-awesome-icon>` — see `src/main.ts`
+- **Mobile**: Capacitor 8 for Android — see `capacitor.config.ts`
 - **Path alias**: `@` → `./src` (configured in both `vite.config.ts` and `tsconfig.app.json`)
 
 ## Commands
@@ -19,6 +22,9 @@ Personal finances app built with **Vue 3 + TypeScript + Vite**. Currently in ear
 | E2E tests | `npm run test:e2e` (Playwright — run `npx playwright install` first) |
 | Lint | `npm run lint` (runs oxlint then eslint sequentially, both with `--fix`) |
 | Format | `npm run format` (Prettier on `src/`) |
+| Capacitor sync | `npm run cap:sync` (build + sync to Android) |
+| Capacitor run | `npm run cap:run` (build + sync + run on device/emulator) |
+| Capacitor build APK | `npm run cap:build` (produces debug APK) |
 
 ## Code Conventions
 
@@ -34,9 +40,29 @@ Personal finances app built with **Vue 3 + TypeScript + Vite**. Currently in ear
 
 ```
 src/
-  main.ts          # App entry — mounts Vue with Pinia + Router
-  App.vue          # Root component
-  router/index.ts  # Route definitions (currently empty)
-  stores/          # Pinia stores (composition style)
+  main.ts            # App entry — mounts Vue with Pinia + Router + Font Awesome
+  App.vue            # Root component
+  router/index.ts    # Route definitions (12 routes, lazy-loaded except dashboard)
+  stores/            # Pinia stores (composition style)
+    finances.ts      #   Core income/expense CRUD
+    budgets.ts       #   Monthly budget limits per category
+    savingsGoals.ts  #   Savings goal tracking
+    categories.ts    #   Expense/income category management
+    activityFeed.ts  #   User action audit log
+    approvals.ts     #   Expense approval workflow
+    notifications.ts #   In-app notifications
+  composables/       # Reusable composition functions
+    useFirestoreSync.ts  # Firestore ↔ local state sync
+    useForecasting.ts    # Monthly income/expense projections
+    useBillCalendar.ts   # Bill due-date calendar logic
+    useHousehold.ts      # Multi-user household management
+    usePin.ts            # PIN-based app lock
+    useSnackbar.ts       # Toast notification helper
+    useSpendingTrends.ts # Spending analytics
+    useTheme.ts          # Dark/light theme toggle
+  components/        # Shared UI components
+  views/             # Route-level page components
+  types/finance.ts   # Core domain types (Income, Expense, Budget, SavingsGoal, etc.)
+  lib/firebase.ts    # Firebase init (lazy, env-gated via VITE_FIREBASE_API_KEY)
 ```
 
