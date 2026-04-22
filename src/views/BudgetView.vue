@@ -30,13 +30,6 @@ function removeBudget(category: ExpenseCategory) {
     budgetsStore.setBudget(category, limit)
   })
 }
-
-function statusColor(status: string): string {
-  const style = getComputedStyle(document.documentElement)
-  if (status === 'over') return style.getPropertyValue('--color-expense').trim()
-  if (status === 'warning') return style.getPropertyValue('--color-warning').trim()
-  return style.getPropertyValue('--color-income').trim()
-}
 </script>
 
 <template>
@@ -77,13 +70,13 @@ function statusColor(status: string): string {
       >
         <div class="budget-header">
           <span class="budget-category">{{ bs.category }}</span>
-          <span class="budget-values" :style="{ color: statusColor(bs.status) }">
+          <span class="budget-values" :class="`status-${bs.status}`">
             {{ formatCurrency(bs.spent) }} / {{ formatCurrency(bs.limit) }}
           </span>
         </div>
         <ProgressBar :percent="bs.percent" :variant="bs.status as 'ok' | 'warning' | 'over'" />
         <div class="budget-footer">
-          <span class="budget-percent" :style="{ color: statusColor(bs.status) }">
+          <span class="budget-percent" :class="`status-${bs.status}`">
             {{ Math.round(bs.percent) }}%
             <span v-if="bs.status === 'over'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Over budget!</span>
             <span v-else-if="bs.status === 'warning'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Approaching limit</span>
@@ -121,4 +114,8 @@ function statusColor(status: string): string {
 .budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }
 .status-label { font-weight: 500; }
+
+.status-ok { color: var(--color-income); }
+.status-warning { color: var(--color-warning); }
+.status-over { color: var(--color-expense); }
 </style>

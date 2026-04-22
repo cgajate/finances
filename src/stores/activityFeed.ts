@@ -3,16 +3,7 @@ import { defineStore } from 'pinia'
 import type { ActivityEntry, ActivityAction, ActivityEntity } from '@/types/finance'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
-
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    if (raw) return JSON.parse(raw) as T
-  } catch {
-    // ignore
-  }
-  return fallback
-}
+import { loadFromStorage } from '@/lib/storage'
 
 export const useActivityFeedStore = defineStore('activityFeed', () => {
   const activities = ref<ActivityEntry[]>(loadFromStorage('activityFeed:entries', []))

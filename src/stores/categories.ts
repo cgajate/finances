@@ -1,5 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
+import { generateId } from '@/lib/id'
+import { loadFromStorage } from '@/lib/storage'
 
 export interface CategoryItem {
   id: string
@@ -26,19 +28,6 @@ const DEFAULT_EXPENSE: string[] = [
 
 const DEFAULT_INCOME: string[] = ['Salary', 'Freelance', 'Investment', 'Gift', 'Other']
 
-function generateId(): string {
-  return crypto.randomUUID()
-}
-
-function loadFromStorage(): CategoryItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw) as CategoryItem[]
-  } catch {
-    // ignore
-  }
-  return []
-}
 
 function seedDefaults(): CategoryItem[] {
   const now = new Date().toISOString()
@@ -53,7 +42,7 @@ function seedDefaults(): CategoryItem[] {
 }
 
 export const useCategoriesStore = defineStore('categories', () => {
-  const stored = loadFromStorage()
+  const stored = loadFromStorage<CategoryItem[]>(STORAGE_KEY, [])
   const categories = ref<CategoryItem[]>(stored.length > 0 ? stored : seedDefaults())
 
   // Persist

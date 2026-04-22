@@ -6,20 +6,8 @@ import { useCategoriesStore } from '@/stores/categories'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 import { useActivityFeedStore } from '@/stores/activityFeed'
-
-function generateId(): string {
-  return crypto.randomUUID()
-}
-
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    if (raw) return JSON.parse(raw) as T
-  } catch {
-    // ignore
-  }
-  return fallback
-}
+import { generateId } from '@/lib/id'
+import { loadFromStorage } from '@/lib/storage'
 
 function currentMonth(): string {
   return new Date().toISOString().slice(0, 7)

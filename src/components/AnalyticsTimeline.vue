@@ -57,7 +57,7 @@ function isPast(month: string): boolean {
           expanded: expandedMonth === m.month,
         }"
       >
-        <div class="month-header" @click="toggleMonth(m.month)">
+        <div class="month-header" role="button" tabindex="0" @click="toggleMonth(m.month)" @keydown.enter.prevent="toggleMonth(m.month)" @keydown.space.prevent="toggleMonth(m.month)">
           <div class="month-title">
             <span class="month-name">{{ m.label }}</span>
             <span v-if="isCurrentMonth(m.month)" class="current-badge">Current</span>

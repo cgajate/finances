@@ -6,6 +6,7 @@ import type { Frequency } from '@/types/finance'
 import { advanceDate } from '@/lib/dateUtils'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
+import { loadFromStorage } from '@/lib/storage'
 
 export interface Notification {
   id: string
@@ -22,15 +23,6 @@ interface MutedEntry {
   mutedUntil: string // ISO date — muted until this date
 }
 
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    if (raw) return JSON.parse(raw) as T
-  } catch {
-    // ignore
-  }
-  return fallback
-}
 
 
 function daysBetween(dateStr: string): number {

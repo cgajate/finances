@@ -46,7 +46,11 @@ const expandedCategory = ref<string | null>(null)
         v-for="cat in trends.categories"
         :key="cat.category"
         class="trend-cat-card"
+        role="button"
+        tabindex="0"
         @click="expandedCategory = expandedCategory === cat.category ? null : cat.category"
+        @keydown.enter.prevent="expandedCategory = expandedCategory === cat.category ? null : cat.category"
+        @keydown.space.prevent="expandedCategory = expandedCategory === cat.category ? null : cat.category"
       >
         <div class="trend-cat-header">
           <div class="trend-cat-info">
