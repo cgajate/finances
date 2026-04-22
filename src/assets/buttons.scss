@@ -51,10 +51,15 @@
 // ─── Back navigation ───
 .btn-back {
   @extend %btn-base;
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  font-size: 0.9rem;
+  padding: 0.5rem;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-badge-bg);
+  }
 }
 
 // ─── Submit (form, full-width feel) ───

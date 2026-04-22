@@ -43,7 +43,6 @@ describe('AddIncomeView', () => {
     const wrapper = mountView()
     const backBtn = wrapper.find('.btn-back')
     expect(backBtn.exists()).toBe(true)
-    expect(backBtn.text()).toContain('Back')
   })
 
   it('shows recurring tab active by default', () => {

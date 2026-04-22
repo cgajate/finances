@@ -86,10 +86,12 @@ const frequencies: { value: Frequency; label: string }[] = [
 
 <template>
   <div class="page">
-    <button class="btn-back" @click="router.push('/income')">
-      <font-awesome-icon :icon="['fas', 'arrow-left']" /> Back
-    </button>
-    <h1>Add Income</h1>
+    <div class="page-header">
+      <button class="btn-back" @click="router.push('/income')">
+        <font-awesome-icon :icon="['fas', 'arrow-left']" />
+      </button>
+      <h1>Add Income</h1>
+    </div>
 
     <div class="tabs">
       <button :class="{ active: tab === 'recurring' }" @click="tab = 'recurring'">
@@ -176,7 +178,14 @@ const frequencies: { value: Frequency; label: string }[] = [
 
 <style scoped>
 .page { max-width: 600px; margin: 0 auto; }
-h1 { margin-bottom: 1rem; }
+h1 { margin: 0; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
 
 .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; }
 .tabs button {
