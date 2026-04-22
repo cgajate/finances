@@ -17,4 +17,25 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules/vue/') ||
+              id.includes('node_modules/@vue/') ||
+              id.includes('node_modules/vue-router/') ||
+              id.includes('node_modules/pinia/')) {
+            return 'vue-vendor'
+          }
+          if (id.includes('node_modules/@fortawesome/')) {
+            return 'fontawesome'
+          }
+          if (id.includes('node_modules/firebase/') ||
+              id.includes('node_modules/@firebase/')) {
+            return 'firebase'
+          }
+        },
+      },
+    },
+  },
 })
