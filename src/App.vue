@@ -9,6 +9,7 @@ import { useHousehold } from '@/composables/useHousehold'
 
 const menuOpen = ref(false)
 const themeMenuOpen = ref(false)
+const adminMenuOpen = ref(false)
 const syncModalOpen = ref(false)
 const collapsed = ref(false)
 const headerRef = ref<HTMLElement | null>(null)
@@ -96,10 +97,9 @@ onBeforeUnmount(() => {
             <font-awesome-icon :icon="['fas', 'house']" />
           </RouterLink>
           <RouterLink to="/finances" class="nav-badge">Finances</RouterLink>
-          <RouterLink to="/analytics" class="nav-badge">Analytics</RouterLink>
           <RouterLink to="/goals" class="nav-badge">Goals</RouterLink>
           <RouterLink to="/calendar" class="nav-badge">Calendar</RouterLink>
-          <RouterLink to="/categories" class="nav-badge">Categories</RouterLink>
+          <RouterLink to="/analytics" class="nav-badge">Analytics</RouterLink>
         </nav>
 
         <!-- Right: Sync, Theme, Notifications -->
@@ -157,6 +157,27 @@ onBeforeUnmount(() => {
 
           <!-- Notifications -->
           <NotificationPanel />
+
+          <!-- Admin menu -->
+          <div class="admin-dropdown-wrapper">
+            <button
+              class="icon-btn"
+              title="Admin"
+              aria-label="Admin menu"
+              @click="adminMenuOpen = !adminMenuOpen"
+            >
+              <font-awesome-icon :icon="['fas', 'gear']" />
+            </button>
+            <div v-if="adminMenuOpen" class="admin-backdrop" @click="adminMenuOpen = false"></div>
+            <Transition name="slide">
+              <div v-if="adminMenuOpen" class="admin-bubble">
+                <RouterLink to="/categories" class="admin-option" @click="adminMenuOpen = false">
+                  <span>Categories</span>
+                  <font-awesome-icon :icon="['fas', 'tags']" />
+                </RouterLink>
+              </div>
+            </Transition>
+          </div>
         </div>
       </header>
 
@@ -176,17 +197,14 @@ onBeforeUnmount(() => {
           <RouterLink to="/finances" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'money-bill-wave']" /> Finances
           </RouterLink>
-          <RouterLink to="/analytics" class="sidebar-link" @click="closeMenu">
-            <font-awesome-icon :icon="['fas', 'chart-line']" /> Analytics
-          </RouterLink>
           <RouterLink to="/goals" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'bullseye']" /> Goals
           </RouterLink>
           <RouterLink to="/calendar" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'calendar-days']" /> Calendar
           </RouterLink>
-          <RouterLink to="/categories" class="sidebar-link" @click="closeMenu">
-            <font-awesome-icon :icon="['fas', 'tags']" /> Categories
+          <RouterLink to="/analytics" class="sidebar-link" @click="closeMenu">
+            <font-awesome-icon :icon="['fas', 'chart-line']" /> Analytics
           </RouterLink>
         </nav>
       </Transition>
@@ -394,6 +412,52 @@ onBeforeUnmount(() => {
 }
 
 .theme-option.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+}
+
+/* ─── Admin dropdown ─── */
+.admin-dropdown-wrapper {
+  position: relative;
+}
+
+.admin-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 199;
+}
+
+.admin-bubble {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px var(--color-card-shadow);
+  z-index: 200;
+  min-width: 180px;
+  padding: 0.4rem;
+}
+
+.admin-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.admin-option:hover {
   background: var(--color-primary-light);
   color: var(--color-primary-text);
 }
