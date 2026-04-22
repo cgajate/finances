@@ -163,7 +163,7 @@ const frequencies: { value: Frequency; label: string }[] = [
         <button type="button" class="btn-cancel" @click="cancel">Cancel</button>
       </div>
 
-      <button type="button" class="btn-delete" @click="remove">Delete This Income</button>
+      <button type="button" class="btn-delete--outline" @click="remove">Delete This Income</button>
     </form>
   </div>
 </template>
@@ -182,23 +182,6 @@ h1 { margin-bottom: 1.5rem; }
 .field textarea { resize: vertical; }
 
 .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-.btn-save {
-  flex: 1; padding: 0.75rem; background: var(--color-income); color: white; border: none; border-radius: 8px;
-  font-size: 1rem; font-weight: 600; cursor: pointer;
-}
-.btn-cancel {
-  flex: 1; padding: 0.75rem; background: var(--color-text-muted); color: white; border: none; border-radius: 8px;
-  font-size: 1rem; font-weight: 600; cursor: pointer;
-}
-.btn-delete {
-  margin-top: 1.5rem; padding: 0.6rem; background: none; color: var(--color-btn-delete); border: 1px solid var(--color-btn-delete);
-  border-radius: 8px; font-size: 0.9rem; cursor: pointer; width: 100%;
-}
-.btn-delete:hover { background: var(--color-expense-bg); }
-.btn-back {
-  padding: 0.5rem 1rem; background: var(--color-primary); color: white; border: none; border-radius: 8px;
-  font-size: 0.9rem; cursor: pointer;
-}
 .not-found { text-align: center; padding: 2rem 0; }
 .not-found p { margin-bottom: 1rem; color: var(--color-text-muted); }
 </style>

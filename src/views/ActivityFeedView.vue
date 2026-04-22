@@ -80,19 +80,6 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
   margin: 0;
 }
 
-.btn-clear {
-  padding: 0.4rem 0.8rem;
-  background: none;
-  border: 1px solid var(--color-btn-delete);
-  color: var(--color-expense);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-clear:hover {
-  background: var(--color-expense-bg);
-}
 
 .empty {
   color: var(--color-text-muted);

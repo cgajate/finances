@@ -290,10 +290,6 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 }
 .field textarea { resize: vertical; }
 
-.btn-submit {
-  padding: 0.75rem; background: var(--color-income); color: white; border: none; border-radius: 8px;
-  font-size: 1rem; font-weight: 600; cursor: pointer;
-}
 
 .list { display: flex; flex-direction: column; gap: 0.5rem; }
 .list-item {
@@ -310,15 +306,6 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 }
 .meta { font-size: 0.8rem; color: var(--color-text-muted); }
 .cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
-.btn-edit {
-  padding: 0.3rem 0.75rem; background: var(--color-primary); color: white;
-  border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
-  text-decoration: none; display: inline-block;
-}
-.btn-delete {
-  padding: 0.3rem 0.75rem; background: var(--color-btn-delete); color: white;
-  border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
-}
 .empty { color: var(--color-text-muted); font-style: italic; }
 </style>
 

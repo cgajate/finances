@@ -135,11 +135,6 @@ h1 { margin-bottom: 0.25rem; }
   padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
   background: var(--color-input-bg); color: var(--color-input-text);
 }
-.btn-add {
-  padding: 0.6rem 1.25rem; background: var(--color-primary); color: white; border: none;
-  border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;
-  white-space: nowrap; align-self: flex-end;
-}
 .all-set { color: var(--color-income); font-weight: 500; margin-bottom: 1.5rem; }
 
 .budget-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -157,11 +152,6 @@ h1 { margin-bottom: 0.25rem; }
 .budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }
 .status-label { font-weight: 500; }
-.btn-remove {
-  padding: 0.25rem 0.6rem; background: none; color: var(--color-btn-delete); border: 1px solid var(--color-btn-delete);
-  border-radius: 6px; font-size: 0.8rem; cursor: pointer;
-}
-.btn-remove:hover { background: var(--color-expense-bg); }
 .empty { color: var(--color-text-muted); font-style: italic; }
 </style>
 

@@ -70,6 +70,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
   const mutedExpenses = ref<MutedEntry[]>(
     loadFromStorage('notifications:mutedExpenses', []),
   )
+  const dismissedBudgetIds = ref<string[]>(
+    loadFromStorage('notifications:dismissedBudgets', []),
+  )
 
   watch(
     dismissedIncomeIds,
@@ -79,6 +82,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
   watch(
     mutedExpenses,
     (val) => localStorage.setItem('notifications:mutedExpenses', JSON.stringify(val)),
+    { deep: true },
+  )
+  watch(
+    dismissedBudgetIds,
+    (val) => localStorage.setItem('notifications:dismissedBudgets', JSON.stringify(val)),
     { deep: true },
   )
 
@@ -156,9 +164,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const budgetsStore = useBudgetsStore()
     const results: Notification[] = []
     for (const bs of budgetsStore.budgetStatus) {
+      const notifId = bs.status === 'over' ? `budget-over-${bs.category}` : `budget-warn-${bs.category}`
+      if (dismissedBudgetIds.value.includes(notifId)) continue
       if (bs.status === 'over') {
         results.push({
-          id: `budget-over-${bs.category}`,
+          id: notifId,
           kind: 'budget-over',
           sourceId: bs.category,
           description: `${bs.category} budget exceeded!`,
@@ -168,7 +178,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         })
       } else if (bs.status === 'warning') {
         results.push({
-          id: `budget-warn-${bs.category}`,
+          id: notifId,
           kind: 'budget-warning',
           sourceId: bs.category,
           description: `${bs.category} budget at ${Math.round(bs.percent)}%`,
@@ -220,6 +230,12 @@ export const useNotificationsStore = defineStore('notifications', () => {
     mutedExpenses.value = mutedExpenses.value.filter((m) => m.sourceId !== sourceId)
   }
 
+  function dismissBudget(notifId: string) {
+    if (!dismissedBudgetIds.value.includes(notifId)) {
+      dismissedBudgetIds.value.push(notifId)
+    }
+  }
+
   function dismissAll() {
     // Dismiss all income notifications
     for (const n of incomeNotifications.value) {
@@ -228,6 +244,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
     // Mute all expense notifications
     for (const n of expenseNotifications.value) {
       muteExpense(n.sourceId)
+    }
+    // Dismiss all budget notifications
+    for (const n of budgetNotifications.value) {
+      dismissBudget(n.id)
     }
   }
 
@@ -238,16 +258,19 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const path = `households/${householdId}`
     useFirestoreSync(db, path, 'dismissedIncomeIds', dismissedIncomeIds)
     useFirestoreSync(db, path, 'mutedExpenses', mutedExpenses)
+    useFirestoreSync(db, path, 'dismissedBudgetIds', dismissedBudgetIds)
   }
 
   return {
     expenseNotifications,
     incomeNotifications,
+    budgetNotifications,
     allNotifications,
     unreadCount,
     dismissIncome,
     muteExpense,
     unmuteExpense,
+    dismissBudget,
     dismissAll,
     isExpenseMuted,
     enableSync,

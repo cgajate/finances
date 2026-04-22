@@ -145,9 +145,10 @@ function formatFrequency(freq: string): string {
             class="btn-toggle"
             @click="incomeExpanded = !incomeExpanded"
           >
-            {{ incomeExpanded ? 'Show Less ↑' : `View All (${filteredIncomes.length}) ↓` }}
+            {{ incomeExpanded ? 'Show Less' : `View All (${filteredIncomes.length})` }}
+            <font-awesome-icon :icon="['fas', incomeExpanded ? 'chevron-up' : 'chevron-down']" />
           </button>
-          <RouterLink to="/income" class="btn">Manage Income →</RouterLink>
+          <RouterLink to="/income" class="btn">Manage Income <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
         </div>
       </section>
 
@@ -189,9 +190,10 @@ function formatFrequency(freq: string): string {
             class="btn-toggle"
             @click="expenseExpanded = !expenseExpanded"
           >
-            {{ expenseExpanded ? 'Show Less ↑' : `View All (${filteredExpenses.length}) ↓` }}
+            {{ expenseExpanded ? 'Show Less' : `View All (${filteredExpenses.length})` }}
+            <font-awesome-icon :icon="['fas', expenseExpanded ? 'chevron-up' : 'chevron-down']" />
           </button>
-          <RouterLink to="/expenses" class="btn">Manage Expenses →</RouterLink>
+          <RouterLink to="/expenses" class="btn">Manage Expenses <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
         </div>
       </section>
     </div>
@@ -223,7 +225,7 @@ function formatFrequency(freq: string): string {
           </div>
         </div>
       </div>
-      <RouterLink to="/budgets" class="btn">Manage Budgets →</RouterLink>
+      <RouterLink to="/budgets" class="btn">Manage Budgets <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
     </section>
 
     <!-- Savings Goals -->
@@ -245,7 +247,7 @@ function formatFrequency(freq: string): string {
           </div>
         </div>
       </div>
-      <RouterLink to="/savings" class="btn">Manage Goals →</RouterLink>
+      <RouterLink to="/savings" class="btn">Manage Goals <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
     </section>
     </template>
   </div>
@@ -313,15 +315,8 @@ li strong { flex: 1; min-width: 120px; }
 .section-actions {
   display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
 }
-.btn {
-  display: inline-block; padding: 0.5rem 1rem; background: var(--color-primary);
-  color: white; border-radius: 8px; text-decoration: none; font-size: 0.9rem;
-}
-.btn-toggle {
-  padding: 0.5rem 1rem; background: none; color: var(--color-primary);
-  border: 1px solid var(--color-primary); border-radius: 8px; font-size: 0.9rem;
-  cursor: pointer; font-weight: 500;
-}
+.budget-section .btn { margin-top: 1rem; }
+
 .btn-toggle:hover { background: var(--color-primary-light); }
 
 .budget-section {
@@ -357,10 +352,7 @@ li strong { flex: 1; min-width: 120px; }
 .savings-goal-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
 .savings-meter-track { height: 8px; background: var(--color-progress-track); border-radius: 4px; overflow: hidden; }
 .savings-meter-fill { height: 100%; background: var(--color-primary); border-radius: 4px; transition: width 0.3s ease; }
-.savings-section .btn { margin-top: 1rem; }
-
-
-.search-results { margin-bottom: 2rem; }
+.savings-section .btn { margin-top: 1rem; }.search-results { margin-bottom: 2rem; }
 .search-list { display: flex; flex-direction: column; gap: 0.5rem; }
 .search-item {
   padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px;

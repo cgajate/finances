@@ -61,7 +61,9 @@ function dueLabel(days: number | null): string {
             :key="n.id"
             class="notification-item expense"
           >
-            <div class="notification-icon">💸</div>
+            <div class="notification-icon expense-icon">
+              <font-awesome-icon :icon="['fas', 'money-bill-transfer']" />
+            </div>
             <div class="notification-body">
               <div class="notification-title">{{ n.description }}</div>
               <div class="notification-detail">
@@ -76,7 +78,7 @@ function dueLabel(days: number | null): string {
               title="Mute until next billing cycle"
               @click="store.muteExpense(n.sourceId)"
             >
-              🔇 Mute
+              <font-awesome-icon :icon="['fas', 'volume-xmark']" /> Mute
             </button>
           </li>
 
@@ -86,7 +88,9 @@ function dueLabel(days: number | null): string {
             :key="n.id"
             class="notification-item income"
           >
-            <div class="notification-icon">💰</div>
+            <div class="notification-icon income-icon">
+              <font-awesome-icon :icon="['fas', 'coins']" />
+            </div>
             <div class="notification-body">
               <div class="notification-title">{{ n.description }}</div>
               <div class="notification-detail">
@@ -101,7 +105,32 @@ function dueLabel(days: number | null): string {
               title="Dismiss"
               @click="store.dismissIncome(n.sourceId)"
             >
-              ✓ Got it
+              <font-awesome-icon :icon="['fas', 'check']" /> Got it
+            </button>
+          </li>
+
+          <!-- Budget notifications -->
+          <li
+            v-for="n in store.budgetNotifications"
+            :key="n.id"
+            class="notification-item"
+            :class="n.kind === 'budget-over' ? 'expense' : 'income'"
+          >
+            <div class="notification-icon" :class="n.kind === 'budget-over' ? 'budget-over-icon' : 'budget-warn-icon'">
+              <font-awesome-icon :icon="['fas', n.kind === 'budget-over' ? 'circle-exclamation' : 'triangle-exclamation']" />
+            </div>
+            <div class="notification-body">
+              <div class="notification-title">{{ n.description }}</div>
+              <div class="notification-detail">
+                Spent {{ formatCurrency(n.amount) }}
+              </div>
+            </div>
+            <button
+              class="dismiss-btn"
+              title="Dismiss"
+              @click="store.dismissBudget(n.id)"
+            >
+              <font-awesome-icon :icon="['fas', 'check']" /> Got it
             </button>
           </li>
         </ul>
@@ -130,25 +159,23 @@ function dueLabel(days: number | null): string {
 
 .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border-light); }
 .panel-header h3 { font-size: 1rem; margin: 0; }
-.dismiss-all { background: none; border: none; color: var(--color-primary); font-size: 0.8rem; cursor: pointer; font-weight: 500; }
 
 .empty { padding: 2rem 1rem; text-align: center; color: var(--color-text-muted); font-size: 0.9rem; }
 
 .notification-list { list-style: none; padding: 0; margin: 0; }
 .notification-item { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border-light); }
 .notification-item:last-child { border-bottom: none; }
-.notification-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+.notification-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 3px; width: 1.4rem; text-align: center; }
+.expense-icon { color: var(--color-expense); }
+.income-icon { color: var(--color-income); }
+.budget-over-icon { color: var(--color-btn-delete); }
+.budget-warn-icon { color: var(--color-warning); }
 .notification-body { flex: 1; min-width: 0; }
 .notification-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.15rem; }
 .notification-detail { font-size: 0.8rem; color: var(--color-text-muted); display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .due-label { font-weight: 500; color: var(--color-warning); }
 .due-label.overdue { color: var(--color-expense); font-weight: 700; }
 
-.mute-btn, .dismiss-btn { flex-shrink: 0; padding: 0.3rem 0.5rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; border: none; white-space: nowrap; align-self: center; }
-.mute-btn { background: var(--color-warning-bg); color: var(--color-warning); }
-.mute-btn:hover { background: var(--color-warning-bg); filter: brightness(0.95); }
-.dismiss-btn { background: var(--color-income-bg); color: var(--color-income); }
-.dismiss-btn:hover { background: var(--color-income-bg); filter: brightness(0.95); }
 
 /* Transition */
 .slide-enter-active, .slide-leave-active { transition: opacity 0.15s, transform 0.15s; }

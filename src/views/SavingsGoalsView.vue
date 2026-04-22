@@ -203,11 +203,6 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
   padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
   background: var(--color-input-bg); color: var(--color-input-text);
 }
-.btn-add {
-  padding: 0.6rem 1.25rem; background: var(--color-primary); color: white; border: none;
-  border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;
-  white-space: nowrap; align-self: flex-end;
-}
 
 .goals-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .goal-card {
@@ -232,28 +227,11 @@ h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 .meter-label { font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); }
 
 .goal-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-.btn-fund {
-  padding: 0.4rem 0.8rem; background: var(--color-primary); color: white; border: none;
-  border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
-}
-.btn-remove {
-  padding: 0.4rem 0.8rem; background: none; color: var(--color-btn-delete); border: 1px solid var(--color-btn-delete);
-  border-radius: 6px; font-size: 0.85rem; cursor: pointer;
-}
-.btn-remove:hover { background: var(--color-expense-bg); }
 
 .add-savings-form { display: flex; gap: 0.4rem; align-items: center; }
 .savings-input {
   width: 100px; padding: 0.4rem; border: 1px solid var(--color-input-border); border-radius: 6px;
   font-size: 0.9rem; background: var(--color-input-bg); color: var(--color-input-text);
-}
-.btn-save-sm {
-  padding: 0.4rem 0.6rem; background: var(--color-progress-fill); color: white; border: none;
-  border-radius: 6px; font-size: 0.85rem; cursor: pointer;
-}
-.btn-cancel-sm {
-  padding: 0.4rem 0.5rem; background: none; color: var(--color-text-muted); border: none;
-  font-size: 1rem; cursor: pointer;
 }
 .empty { color: var(--color-text-muted); font-style: italic; }
 </style>
