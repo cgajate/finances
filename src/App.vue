@@ -100,7 +100,6 @@ onBeforeUnmount(() => {
           <RouterLink to="/analytics" class="nav-badge">Analytics</RouterLink>
           <RouterLink to="/budgets" class="nav-badge">Budgets</RouterLink>
           <RouterLink to="/savings" class="nav-badge">Savings</RouterLink>
-          <RouterLink to="/year-review" class="nav-badge">Year Review</RouterLink>
           <RouterLink to="/calendar" class="nav-badge">Calendar</RouterLink>
           <RouterLink to="/categories" class="nav-badge">Categories</RouterLink>
         </nav>
@@ -190,9 +189,6 @@ onBeforeUnmount(() => {
           </RouterLink>
           <RouterLink to="/savings" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'piggy-bank']" /> Savings
-          </RouterLink>
-          <RouterLink to="/year-review" class="sidebar-link" @click="closeMenu">
-            <font-awesome-icon :icon="['fas', 'calendar-check']" /> Year Review
           </RouterLink>
           <RouterLink to="/calendar" class="sidebar-link" @click="closeMenu">
             <font-awesome-icon :icon="['fas', 'calendar-days']" /> Calendar

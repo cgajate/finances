@@ -30,13 +30,14 @@ describe('AnalyticsView', () => {
     expect(wrapper.find('h1').text()).toContain('Analytics & Forecasting')
   })
 
-  it('shows three tabs', () => {
+  it('shows four tabs', () => {
     const wrapper = mountView()
     const tabs = wrapper.findAll('.tabs button')
-    expect(tabs).toHaveLength(3)
+    expect(tabs).toHaveLength(4)
     expect(tabs[0]!.text()).toContain('Month-by-Month')
     expect(tabs[1]!.text()).toContain('12-Month Projection')
     expect(tabs[2]!.text()).toContain('Spending Trends')
+    expect(tabs[3]!.text()).toContain('Year Review')
   })
 
   it('defaults to timeline tab', () => {
@@ -180,6 +181,107 @@ describe('AnalyticsView', () => {
     const currentCard = wrapper.find('.month-card.current')
     expect(currentCard.find('.summary-income').text()).toContain('$2,000.00')
     expect(currentCard.find('.summary-expense').text()).toContain('$800.00')
+  })
+
+  describe('year review tab', () => {
+    async function switchToYearReview(wrapper: ReturnType<typeof mountView>) {
+      await wrapper.findAll('.tabs button')[3]!.trigger('click')
+    }
+
+    it('switches to year review tab', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.find('.year-review-tab').exists()).toBe(true)
+      expect(wrapper.find('.timeline').exists()).toBe(false)
+    })
+
+    it('shows a year selector defaulting to current year', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      const select = wrapper.find('.year-select')
+      expect(select.exists()).toBe(true)
+      expect((select.element as HTMLSelectElement).value).toBe('2026')
+    })
+
+    it('renders 4 summary cards', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.findAll('.yr-card')).toHaveLength(4)
+      expect(wrapper.text()).toContain('Total Earned')
+      expect(wrapper.text()).toContain('Total Spent')
+      expect(wrapper.text()).toContain('Net Savings')
+      expect(wrapper.text()).toContain('Savings Rate')
+    })
+
+    it('shows $0.00 with no data', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      const cards = wrapper.findAll('.yr-card-value')
+      expect(cards[0]!.text()).toBe('$0.00')
+      expect(cards[1]!.text()).toBe('$0.00')
+      expect(cards[2]!.text()).toBe('$0.00')
+      expect(cards[3]!.text()).toBe('0%')
+    })
+
+    it('shows correct totals with data', async () => {
+      const store = useFinancesStore()
+      store.addRecurringIncome({ amount: 5000, frequency: 'monthly', description: 'Sal', notes: '', date: null })
+      store.addRecurringExpense({ amount: 2000, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.text()).toContain('$60,000.00')
+      expect(wrapper.text()).toContain('$24,000.00')
+      expect(wrapper.text()).toContain('$36,000.00')
+      expect(wrapper.text()).toContain('60%')
+    })
+
+    it('shows 12 month columns in chart', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.findAll('.yr-month-col')).toHaveLength(12)
+    })
+
+    it('shows legend', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.find('.income-dot').exists()).toBe(true)
+      expect(wrapper.find('.expense-dot').exists()).toBe(true)
+    })
+
+    it('shows category breakdown with data', async () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 1000, frequency: 'monthly', description: 'R', notes: '', dueDate: null, category: 'Housing' })
+      store.addRecurringExpense({ amount: 400, frequency: 'monthly', description: 'F', notes: '', dueDate: null, category: 'Food' })
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.findAll('.cat-row')).toHaveLength(2)
+      expect(wrapper.text()).toContain('Housing')
+      expect(wrapper.text()).toContain('Food')
+    })
+
+    it('shows empty message when no expenses', async () => {
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.text()).toContain('No expense data')
+    })
+
+    it('shows best and worst month highlights with data', async () => {
+      const store = useFinancesStore()
+      store.addRecurringIncome({ amount: 5000, frequency: 'monthly', description: 'S', notes: '', date: null })
+      store.addRecurringExpense({ amount: 3000, frequency: 'monthly', description: 'R', notes: '', dueDate: null })
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.text()).toContain('Best Month')
+      expect(wrapper.text()).toContain('Tightest Month')
+    })
+
+    it('adds negative class to net card when negative', async () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 5000, frequency: 'monthly', description: 'Big', notes: '', dueDate: null })
+      const wrapper = mountView()
+      await switchToYearReview(wrapper)
+      expect(wrapper.find('.yr-card.net').classes()).toContain('negative')
+    })
   })
 })
 
