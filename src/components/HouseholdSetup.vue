@@ -96,8 +96,8 @@ if (hasHousehold.value) {
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="open" class="modal-backdrop" @click.self="closeModal">
-        <div class="modal-card">
+      <div v-if="open" class="modal-backdrop" @click.self="closeModal" @keydown.escape="closeModal">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-label="Sync with Family">
           <div class="modal-header">
             <h2>
               <font-awesome-icon :icon="['fas', 'users']" />

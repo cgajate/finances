@@ -47,8 +47,8 @@ function statusColor(status: string): string {
     <form v-if="budgetsStore.availableCategories.length" class="form" @submit.prevent="addBudget">
       <div class="form-row">
         <div class="field">
-          <label>Category</label>
-          <select v-model="selectedCategory" required>
+          <label for="budget-category">Category</label>
+          <select id="budget-category" v-model="selectedCategory" required>
             <option value="" disabled>Select category</option>
             <option
               v-for="cat in budgetsStore.availableCategories"
@@ -60,8 +60,8 @@ function statusColor(status: string): string {
           </select>
         </div>
         <div class="field">
-          <label>Monthly Limit</label>
-          <CurrencyInput v-model="limitAmount" :required="true" />
+          <label for="budget-limit">Monthly Limit</label>
+          <CurrencyInput id="budget-limit" v-model="limitAmount" :required="true" />
         </div>
         <button type="submit" class="btn-add">+ Add</button>
       </div>
@@ -88,7 +88,7 @@ function statusColor(status: string): string {
             <span v-if="bs.status === 'over'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Over budget!</span>
             <span v-else-if="bs.status === 'warning'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Approaching limit</span>
           </span>
-          <button class="btn-remove" @click="removeBudget(bs.category)">Remove</button>
+          <button class="btn-remove" :aria-label="`Remove ${bs.category} budget`" @click="removeBudget(bs.category)">Remove</button>
         </div>
       </div>
     </div>

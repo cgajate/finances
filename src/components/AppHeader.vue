@@ -124,7 +124,7 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
         </button>
         <div v-if="themeMenuOpen" class="theme-backdrop" @click="themeMenuOpen = false"></div>
         <Transition name="slide">
-          <div v-if="themeMenuOpen" class="theme-bubble">
+          <div v-if="themeMenuOpen" class="theme-bubble" role="dialog" aria-label="Theme settings" @keydown.escape="themeMenuOpen = false">
             <button class="theme-option" @click="toggleDark">
               <font-awesome-icon :icon="['fas', isDark ? 'sun' : 'moon']" />
               <span>{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
@@ -164,7 +164,7 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
         </button>
         <div v-if="adminMenuOpen" class="admin-backdrop" @click="adminMenuOpen = false"></div>
         <Transition name="slide">
-          <div v-if="adminMenuOpen" class="admin-bubble">
+          <div v-if="adminMenuOpen" class="admin-bubble" role="dialog" aria-label="Admin menu" @keydown.escape="adminMenuOpen = false">
             <RouterLink to="/categories" class="admin-option" @click="adminMenuOpen = false">
               <span>Categories</span>
               <font-awesome-icon :icon="['fas', 'tags']" />

@@ -115,32 +115,32 @@ const frequencies = FREQUENCY_OPTIONS
 
     <form v-else class="form" @submit.prevent="save">
       <div class="field">
-        <label>Description *</label>
-        <input v-model="description" type="text" required />
+        <label for="edit-inc-desc">Description *</label>
+        <input id="edit-inc-desc" v-model="description" type="text" required />
       </div>
       <div class="field">
-        <label>Amount *</label>
-        <CurrencyInput v-model="amount" :required="true" />
+        <label for="edit-inc-amount">Amount *</label>
+        <CurrencyInput id="edit-inc-amount" v-model="amount" :required="true" />
       </div>
       <div v-if="itemType === 'recurring'" class="field">
-        <label>Frequency</label>
-        <select v-model="frequency">
+        <label for="edit-inc-freq">Frequency</label>
+        <select id="edit-inc-freq" v-model="frequency">
           <option v-for="f in frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Category</label>
-        <select v-model="category">
+        <label for="edit-inc-cat">Category</label>
+        <select id="edit-inc-cat" v-model="category">
           <option v-for="cat in categoriesStore.activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
-        <label>{{ itemType === 'adhoc' || frequency === 'yearly' ? 'Date *' : 'Date (optional)' }}</label>
-        <input v-model="date" type="date" :required="itemType === 'adhoc' || frequency === 'yearly'" />
+        <label for="edit-inc-date">{{ itemType === 'adhoc' || frequency === 'yearly' ? 'Date *' : 'Date (optional)' }}</label>
+        <input id="edit-inc-date" v-model="date" type="date" :required="itemType === 'adhoc' || frequency === 'yearly'" />
       </div>
       <div v-if="itemType === 'recurring'" class="field">
-        <label>Notes</label>
-        <textarea v-model="notes" rows="3" placeholder="Additional details..."></textarea>
+        <label for="edit-inc-notes">Notes</label>
+        <textarea id="edit-inc-notes" v-model="notes" rows="3" placeholder="Additional details..."></textarea>
       </div>
 
       <div class="actions">

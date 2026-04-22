@@ -101,36 +101,36 @@ const frequencies = FREQUENCY_OPTIONS
     <!-- Recurring Expense Form -->
     <form v-if="tab === 'recurring'" class="form" @submit.prevent="addRecurring">
       <div class="field">
-        <label>Description *</label>
-        <input v-model="rDescription" type="text" placeholder="e.g. Rent" required />
+        <label for="r-exp-desc">Description *</label>
+        <input id="r-exp-desc" v-model="rDescription" type="text" placeholder="e.g. Rent" required />
       </div>
       <div class="field">
-        <label>Amount *</label>
-        <CurrencyInput v-model="rAmount" :required="true" />
+        <label for="r-exp-amount">Amount *</label>
+        <CurrencyInput id="r-exp-amount" v-model="rAmount" :required="true" />
       </div>
       <div class="field">
-        <label>Frequency *</label>
-        <select v-model="rFrequency">
+        <label for="r-exp-freq">Frequency *</label>
+        <select id="r-exp-freq" v-model="rFrequency">
           <option v-for="f in frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Category</label>
-        <select v-model="rCategory">
+        <label for="r-exp-cat">Category</label>
+        <select id="r-exp-cat" v-model="rCategory">
           <option v-for="cat in activeExpenseCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
-        <label>{{ rFrequency === 'yearly' ? 'Due Date *' : 'Due Date (optional)' }}</label>
-        <input v-model="rDueDate" type="date" :required="rFrequency === 'yearly'" />
+        <label for="r-exp-due">{{ rFrequency === 'yearly' ? 'Due Date *' : 'Due Date (optional)' }}</label>
+        <input id="r-exp-due" v-model="rDueDate" type="date" :required="rFrequency === 'yearly'" />
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea v-model="rNotes" rows="2" placeholder="Additional details..."></textarea>
+        <label for="r-exp-notes">Notes</label>
+        <textarea id="r-exp-notes" v-model="rNotes" rows="2" placeholder="Additional details..."></textarea>
       </div>
       <div class="field">
-        <label>Assigned To</label>
-        <input v-model="rAssignedTo" type="text" placeholder="e.g. Mom, Dad" list="family-members" />
+        <label for="r-exp-assigned">Assigned To</label>
+        <input id="r-exp-assigned" v-model="rAssignedTo" type="text" placeholder="e.g. Mom, Dad" list="family-members" />
         <datalist id="family-members">
           <option v-for="m in store.familyMembers" :key="m" :value="m" />
         </datalist>
@@ -141,30 +141,30 @@ const frequencies = FREQUENCY_OPTIONS
     <!-- Adhoc Expense Form -->
     <form v-if="tab === 'adhoc'" class="form" @submit.prevent="addAdhoc">
       <div class="field">
-        <label>Description *</label>
-        <input v-model="aDescription" type="text" placeholder="e.g. Car repair" required />
+        <label for="a-exp-desc">Description *</label>
+        <input id="a-exp-desc" v-model="aDescription" type="text" placeholder="e.g. Car repair" required />
       </div>
       <div class="field">
-        <label>Amount *</label>
-        <CurrencyInput v-model="aAmount" :required="true" />
+        <label for="a-exp-amount">Amount *</label>
+        <CurrencyInput id="a-exp-amount" v-model="aAmount" :required="true" />
       </div>
       <div class="field">
-        <label>Category</label>
-        <select v-model="aCategory">
+        <label for="a-exp-cat">Category</label>
+        <select id="a-exp-cat" v-model="aCategory">
           <option v-for="cat in activeExpenseCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Due Date (optional)</label>
-        <input v-model="aDueDate" type="date" />
+        <label for="a-exp-due">Due Date (optional)</label>
+        <input id="a-exp-due" v-model="aDueDate" type="date" />
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea v-model="aNotes" rows="2" placeholder="Additional details..."></textarea>
+        <label for="a-exp-notes">Notes</label>
+        <textarea id="a-exp-notes" v-model="aNotes" rows="2" placeholder="Additional details..."></textarea>
       </div>
       <div class="field">
-        <label>Assigned To</label>
-        <input v-model="aAssignedTo" type="text" placeholder="e.g. Mom, Dad" list="family-members" />
+        <label for="a-exp-assigned">Assigned To</label>
+        <input id="a-exp-assigned" v-model="aAssignedTo" type="text" placeholder="e.g. Mom, Dad" list="family-members" />
       </div>
       <button type="submit" class="btn-submit btn-submit--expense">Add Ad-hoc Expense</button>
     </form>

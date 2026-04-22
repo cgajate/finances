@@ -92,32 +92,32 @@ const frequencies = FREQUENCY_OPTIONS
     <!-- Recurring Income Form -->
     <form v-if="tab === 'recurring'" class="form" @submit.prevent="addRecurring">
       <div class="field">
-        <label>Description *</label>
-        <input v-model="rDescription" type="text" placeholder="e.g. Salary" required />
+        <label for="r-inc-desc">Description *</label>
+        <input id="r-inc-desc" v-model="rDescription" type="text" placeholder="e.g. Salary" required />
       </div>
       <div class="field">
-        <label>Amount *</label>
-        <CurrencyInput v-model="rAmount" :required="true" />
+        <label for="r-inc-amount">Amount *</label>
+        <CurrencyInput id="r-inc-amount" v-model="rAmount" :required="true" />
       </div>
       <div class="field">
-        <label>Frequency *</label>
-        <select v-model="rFrequency">
+        <label for="r-inc-freq">Frequency *</label>
+        <select id="r-inc-freq" v-model="rFrequency">
           <option v-for="f in frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Category</label>
-        <select v-model="rCategory">
+        <label for="r-inc-cat">Category</label>
+        <select id="r-inc-cat" v-model="rCategory">
           <option v-for="cat in activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
-        <label>{{ rFrequency === 'yearly' ? 'Date *' : 'Date (optional)' }}</label>
-        <input v-model="rDate" type="date" :required="rFrequency === 'yearly'" />
+        <label for="r-inc-date">{{ rFrequency === 'yearly' ? 'Date *' : 'Date (optional)' }}</label>
+        <input id="r-inc-date" v-model="rDate" type="date" :required="rFrequency === 'yearly'" />
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea v-model="rNotes" rows="2" placeholder="Additional details..."></textarea>
+        <label for="r-inc-notes">Notes</label>
+        <textarea id="r-inc-notes" v-model="rNotes" rows="2" placeholder="Additional details..."></textarea>
       </div>
       <button type="submit" class="btn-submit">Add Recurring Income</button>
     </form>
@@ -125,22 +125,22 @@ const frequencies = FREQUENCY_OPTIONS
     <!-- Adhoc Income Form -->
     <form v-if="tab === 'adhoc'" class="form" @submit.prevent="addAdhoc">
       <div class="field">
-        <label>Description *</label>
-        <input v-model="aDescription" type="text" placeholder="e.g. Freelance gig" required />
+        <label for="a-inc-desc">Description *</label>
+        <input id="a-inc-desc" v-model="aDescription" type="text" placeholder="e.g. Freelance gig" required />
       </div>
       <div class="field">
-        <label>Amount *</label>
-        <CurrencyInput v-model="aAmount" :required="true" />
+        <label for="a-inc-amount">Amount *</label>
+        <CurrencyInput id="a-inc-amount" v-model="aAmount" :required="true" />
       </div>
       <div class="field">
-        <label>Category</label>
-        <select v-model="aCategory">
+        <label for="a-inc-cat">Category</label>
+        <select id="a-inc-cat" v-model="aCategory">
           <option v-for="cat in activeIncomeCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Date *</label>
-        <input v-model="aDate" type="date" required />
+        <label for="a-inc-date">Date *</label>
+        <input id="a-inc-date" v-model="aDate" type="date" required />
       </div>
       <button type="submit" class="btn-submit">Add Ad-hoc Income</button>
     </form>

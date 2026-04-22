@@ -196,8 +196,8 @@ function deleteExpense(id: string) {
           Created {{ formatDateTime(item.createdAt) }}
         </div>
         <div class="list-item-actions">
-          <RouterLink :to="`/finances/income/${item.id}/edit`" class="btn-edit">Edit</RouterLink>
-          <button class="btn-delete" @click="deleteIncome(item.id)">Remove</button>
+          <RouterLink :to="`/finances/income/${item.id}/edit`" class="btn-edit" :aria-label="`Edit ${item.description}`">Edit</RouterLink>
+          <button class="btn-delete" :aria-label="`Remove ${item.description}`" @click="deleteIncome(item.id)">Remove</button>
         </div>
       </div>
     </div>
@@ -264,8 +264,8 @@ function deleteExpense(id: string) {
           <span v-if="item.assignedTo" class="created-by">by {{ item.assignedTo }}</span>
         </div>
         <div class="list-item-actions">
-          <RouterLink :to="`/finances/expenses/${item.id}/edit`" class="btn-edit">Edit</RouterLink>
-          <button class="btn-delete" @click="deleteExpense(item.id)">Remove</button>
+          <RouterLink :to="`/finances/expenses/${item.id}/edit`" class="btn-edit" :aria-label="`Edit ${item.description}`">Edit</RouterLink>
+          <button class="btn-delete" :aria-label="`Remove ${item.description}`" @click="deleteExpense(item.id)">Remove</button>
         </div>
       </div>
     </div>

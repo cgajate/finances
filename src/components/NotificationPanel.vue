@@ -37,7 +37,7 @@ function dueLabel(days: number | null): string {
 
     <!-- Panel -->
     <Transition name="slide">
-      <div v-if="open" class="panel">
+      <div v-if="open" class="panel" role="dialog" aria-label="Notifications" @keydown.escape="close">
         <div class="panel-header">
           <h3>Notifications</h3>
           <button
@@ -72,7 +72,7 @@ function dueLabel(days: number | null): string {
             </div>
             <button
               class="mute-btn"
-              title="Mute until next billing cycle"
+              :aria-label="`Mute ${n.description} until next billing cycle`"
               @click="store.muteExpense(n.sourceId)"
             >
               <font-awesome-icon :icon="['fas', 'volume-xmark']" /> Mute

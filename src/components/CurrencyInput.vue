@@ -5,6 +5,7 @@ import { useCurrencyInput } from '@/composables/useCurrencyInput'
 const props = defineProps<{
   modelValue: number | null
   required?: boolean
+  id?: string
 }>()
 
 const emit = defineEmits<{
@@ -36,6 +37,7 @@ watch(innerValue, (val) => {
 
 <template>
   <input
+    :id="id"
     type="text"
     inputmode="decimal"
     placeholder="$0.00"
@@ -46,4 +48,3 @@ watch(innerValue, (val) => {
     @focus="currency.onFocus"
   />
 </template>
-

@@ -19,7 +19,14 @@ const fillClass = computed(() => {
 </script>
 
 <template>
-  <div class="progress-track">
+  <div
+    class="progress-track"
+    role="progressbar"
+    :aria-valuenow="Math.min(Math.round(percent), 100)"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    :aria-label="`${Math.min(Math.round(percent), 100)}% complete`"
+  >
     <div class="progress-fill" :class="fillClass" :style="{ width: clampedWidth }"></div>
   </div>
 </template>

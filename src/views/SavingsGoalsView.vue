@@ -81,16 +81,16 @@ function meterVariant(percent: number): 'ok' | 'warning' | 'over' | 'primary' {
     <form class="form" @submit.prevent="addGoal">
       <div class="form-row">
         <div class="field">
-          <label>Goal Name *</label>
-          <input v-model="goalName" type="text" placeholder="e.g. Vacation" required />
+          <label for="goal-name">Goal Name *</label>
+          <input id="goal-name" v-model="goalName" type="text" placeholder="e.g. Vacation" required />
         </div>
         <div class="field">
-          <label>Target Amount *</label>
-          <CurrencyInput v-model="targetAmount" :required="true" />
+          <label for="goal-target">Target Amount *</label>
+          <CurrencyInput id="goal-target" v-model="targetAmount" :required="true" />
         </div>
         <div class="field">
-          <label>Deadline *</label>
-          <input v-model="deadline" type="date" required />
+          <label for="goal-deadline">Deadline *</label>
+          <input id="goal-deadline" v-model="deadline" type="date" required />
         </div>
         <button type="submit" class="btn-add">+ Add Goal</button>
       </div>
@@ -131,8 +131,8 @@ function meterVariant(percent: number): 'ok' | 'warning' | 'over' | 'primary' {
             </form>
           </template>
           <template v-else>
-            <button class="btn-fund" @click="addAmountFor = goal.id">+ Add Savings</button>
-            <button class="btn-remove" @click="deleteGoal(goal.id)">Remove</button>
+            <button class="btn-fund" :aria-label="`Add savings to ${goal.name}`" @click="addAmountFor = goal.id">+ Add Savings</button>
+            <button class="btn-remove" :aria-label="`Remove ${goal.name} goal`" @click="deleteGoal(goal.id)">Remove</button>
           </template>
         </div>
       </div>
@@ -150,7 +150,7 @@ function meterVariant(percent: number): 'ok' | 'warning' | 'over' | 'primary' {
           </div>
           <ProgressBar :percent="100" variant="ok" :height="12" />
           <div class="goal-actions">
-            <button class="btn-remove" @click="deleteGoal(goal.id)">Remove</button>
+            <button class="btn-remove" :aria-label="`Remove ${goal.name} goal`" @click="deleteGoal(goal.id)">Remove</button>
           </div>
         </div>
       </div>

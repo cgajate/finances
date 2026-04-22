@@ -54,12 +54,12 @@ function selectDay(day: CalendarDay) {
 
     <!-- Month navigation -->
     <div class="nav-row">
-      <button class="nav-btn" @click="prevMonth"><font-awesome-icon :icon="['fas', 'chevron-left']" /> Prev</button>
+      <button class="nav-btn" aria-label="Previous month" @click="prevMonth"><font-awesome-icon :icon="['fas', 'chevron-left']" /> Prev</button>
       <div class="nav-center">
         <span class="nav-label">{{ calendar.label }}</span>
         <button class="today-btn" @click="goToday">Today</button>
       </div>
-      <button class="nav-btn" @click="nextMonth">Next <font-awesome-icon :icon="['fas', 'chevron-right']" /></button>
+      <button class="nav-btn" aria-label="Next month" @click="nextMonth">Next <font-awesome-icon :icon="['fas', 'chevron-right']" /></button>
     </div>
 
     <!-- Month summary -->
@@ -87,10 +87,15 @@ function selectDay(day: CalendarDay) {
             'has-events': day.events.length > 0,
             'selected': selectedDay?.date === day.date,
           }"
+          role="button"
+          tabindex="0"
+          :aria-label="`${day.dayOfMonth}, ${day.events.length} event${day.events.length === 1 ? '' : 's'}${day.isToday ? ', today' : ''}`"
           @click="selectDay(day)"
+          @keydown.enter.prevent="selectDay(day)"
+          @keydown.space.prevent="selectDay(day)"
         >
           <span class="day-number">{{ day.dayOfMonth }}</span>
-          <div v-if="day.events.length && day.isCurrentMonth" class="day-dots">
+          <div v-if="day.events.length && day.isCurrentMonth" class="day-dots" aria-hidden="true">
             <span
               v-for="(ev, ei) in day.events.slice(0, 3)"
               :key="ei"

@@ -121,36 +121,36 @@ const frequencies = FREQUENCY_OPTIONS
 
     <form v-else class="form" @submit.prevent="save">
       <div class="field">
-        <label>Description *</label>
-        <input v-model="description" type="text" required />
+        <label for="edit-exp-desc">Description *</label>
+        <input id="edit-exp-desc" v-model="description" type="text" required />
       </div>
       <div class="field">
-        <label>Amount *</label>
-        <CurrencyInput v-model="amount" :required="true" />
+        <label for="edit-exp-amount">Amount *</label>
+        <CurrencyInput id="edit-exp-amount" v-model="amount" :required="true" />
       </div>
       <div v-if="itemType === 'recurring'" class="field">
-        <label>Frequency</label>
-        <select v-model="frequency">
+        <label for="edit-exp-freq">Frequency</label>
+        <select id="edit-exp-freq" v-model="frequency">
           <option v-for="f in frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Category</label>
-        <select v-model="category">
+        <label for="edit-exp-cat">Category</label>
+        <select id="edit-exp-cat" v-model="category">
           <option v-for="cat in activeExpenseCategories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
       </div>
       <div class="field">
-        <label>{{ frequency === 'yearly' ? 'Due Date *' : 'Due Date (optional)' }}</label>
-        <input v-model="dueDate" type="date" :required="frequency === 'yearly'" />
+        <label for="edit-exp-due">{{ frequency === 'yearly' ? 'Due Date *' : 'Due Date (optional)' }}</label>
+        <input id="edit-exp-due" v-model="dueDate" type="date" :required="frequency === 'yearly'" />
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea v-model="notes" rows="3" placeholder="Additional details..."></textarea>
+        <label for="edit-exp-notes">Notes</label>
+        <textarea id="edit-exp-notes" v-model="notes" rows="3" placeholder="Additional details..."></textarea>
       </div>
       <div class="field">
-        <label>Assigned To</label>
-        <input v-model="assignedTo" type="text" placeholder="e.g. Mom, Dad" list="edit-family-members" />
+        <label for="edit-exp-assigned">Assigned To</label>
+        <input id="edit-exp-assigned" v-model="assignedTo" type="text" placeholder="e.g. Mom, Dad" list="edit-family-members" />
         <datalist id="edit-family-members">
           <option v-for="m in store.familyMembers" :key="m" :value="m" />
         </datalist>

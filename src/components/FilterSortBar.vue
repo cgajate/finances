@@ -148,7 +148,7 @@ const frequencies: { value: FrequencyFilter; label: string }[] = [
         <div v-if="filterOpen" class="bubble-backdrop" @click="closeFilter"></div>
 
         <Transition name="bubble">
-          <div v-if="filterOpen" class="bubble filter-bubble">
+          <div v-if="filterOpen" class="bubble filter-bubble" role="dialog" aria-label="Filter options" @keydown.escape="closeFilter">
             <div class="bubble-header">
               <h3>
                 <font-awesome-icon :icon="['fas', 'filter']" />
@@ -234,7 +234,7 @@ const frequencies: { value: FrequencyFilter; label: string }[] = [
         <div v-if="sortOpen" class="bubble-backdrop" @click="closeSort"></div>
 
         <Transition name="bubble">
-          <div v-if="sortOpen" class="bubble sort-bubble">
+          <div v-if="sortOpen" class="bubble sort-bubble" role="dialog" aria-label="Sort options" @keydown.escape="closeSort">
             <div class="bubble-header">
               <h3>
                 <font-awesome-icon :icon="['fas', 'arrow-up-wide-short']" />
