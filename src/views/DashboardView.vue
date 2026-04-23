@@ -9,6 +9,7 @@ import FilterSortBar from '@/components/FilterSortBar.vue'
 import SummaryCard from '@/components/SummaryCard.vue'
 import BudgetProgressRow from '@/components/BudgetProgressRow.vue'
 import SavingsGoalRow from '@/components/SavingsGoalRow.vue'
+import DashboardSearchResults from '@/components/DashboardSearchResults.vue'
 import { formatCurrency } from '@/lib/formatCurrency'
 import SearchBar from '@/components/SearchBar.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -46,22 +47,12 @@ const displayedExpenses = computed(() => {
     <SearchBar v-model="searchQuery" placeholder="Search all income & expenses..." />
 
     <!-- Search Results -->
-    <div v-if="searchQuery.trim()" class="search-results">
-      <h2>Search Results ({{ resultCount }})</h2>
-      <div v-if="searchResults.length" class="search-list">
-        <div v-for="r in searchResults" :key="r.id" class="search-item">
-          <div class="search-item-main">
-            <span class="badge" :class="r.kind === 'income' ? 'badge-income' : 'badge-expense'">{{ r.kind }}</span>
-            <strong>{{ r.description }}</strong>
-            <span class="amount" :class="r.kind === 'income' ? '' : 'expense'">{{ formatCurrency(r.amount) }}</span>
-          </div>
-          <div class="search-item-meta">
-            <span class="badge cat-badge">{{ r.category }}</span>
-          </div>
-        </div>
-      </div>
-      <EmptyState v-else :message="`No results for &quot;${searchQuery}&quot;.`" />
-    </div>
+    <DashboardSearchResults
+      v-if="searchQuery.trim()"
+      :query="searchQuery"
+      :results="searchResults"
+      :count="resultCount"
+    />
 
     <template v-if="!searchQuery.trim()">
     <div class="summary-cards">
@@ -240,14 +231,4 @@ li strong { flex: 1; min-width: 120px; }
 
 .budget-bars,
 .savings-goals { display: flex; flex-direction: column; gap: 0.75rem; }
-
-.search-results { margin-bottom: 2rem; }
-.search-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.search-item {
-  padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px;
-  display: flex; flex-direction: column; gap: 0.4rem; background: var(--color-surface);
-}
-.search-item-main { display: flex; align-items: center; gap: 0.5rem; }
-.search-item-main strong { flex: 1; }
-.search-item-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 </style>

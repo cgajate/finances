@@ -67,6 +67,7 @@ import './assets/_badges.scss'
 import './assets/_cards.scss'
 import './assets/_list-items.scss'
 import './assets/_utilities.scss'
+import './assets/_bubble.scss'
 
 library.add(
   faArrowDown,

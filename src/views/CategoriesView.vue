@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCategoriesStore } from '@/stores/categories'
 import { useSnackbar } from '@/composables/useSnackbar'
@@ -19,6 +19,12 @@ const newName = ref('')
 const editingId = ref<string | null>(null)
 const editingName = ref('')
 const showDeleted = ref(false)
+
+const allCategories = computed(() =>
+  tab.value === 'expense' ? expenseCategories.value : incomeCategories.value,
+)
+const activeCategories = computed(() => allCategories.value.filter(c => !c.deleted))
+const deletedCategories = computed(() => allCategories.value.filter(c => c.deleted))
 
 function addCategory() {
   const name = newName.value.trim()
@@ -88,7 +94,7 @@ function restore(id: string, name: string) {
     <h2>Active Categories</h2>
     <div class="category-list">
       <div
-        v-for="cat in (tab === 'expense' ? expenseCategories : incomeCategories).filter(c => !c.deleted)"
+        v-for="cat in activeCategories"
         :key="cat.id"
         class="category-item"
       >
@@ -128,7 +134,7 @@ function restore(id: string, name: string) {
         </template>
       </div>
       <EmptyState
-        v-if="(tab === 'expense' ? expenseCategories : incomeCategories).filter(c => !c.deleted).length === 0"
+        v-if="activeCategories.length === 0"
         message="No active categories. Add one above."
       />
     </div>
@@ -139,13 +145,13 @@ function restore(id: string, name: string) {
         <font-awesome-icon :icon="['fas', showDeleted ? 'chevron-up' : 'chevron-down']" />
         {{ showDeleted ? 'Hide' : 'Show' }} Removed Categories
         <span class="deleted-count">
-          ({{ (tab === 'expense' ? expenseCategories : incomeCategories).filter(c => c.deleted).length }})
+          ({{ deletedCategories.length }})
         </span>
       </button>
 
       <div v-if="showDeleted" class="category-list deleted-list">
         <div
-          v-for="cat in (tab === 'expense' ? expenseCategories : incomeCategories).filter(c => c.deleted)"
+          v-for="cat in deletedCategories"
           :key="cat.id"
           class="category-item deleted"
         >
@@ -159,7 +165,7 @@ function restore(id: string, name: string) {
           </button>
         </div>
         <EmptyState
-          v-if="(tab === 'expense' ? expenseCategories : incomeCategories).filter(c => c.deleted).length === 0"
+          v-if="deletedCategories.length === 0"
           message="No removed categories."
         />
       </div>
