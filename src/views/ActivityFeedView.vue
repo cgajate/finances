@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useActivityFeedStore } from '@/stores/activityFeed'
+import { formatRelativeTime } from '@/lib/formatRelativeTime'
 import EmptyState from '@/components/EmptyState.vue'
 
 const store = useActivityFeedStore()
@@ -18,19 +19,6 @@ const entityLabel: Record<string, string> = {
   'savings-goal': 'Savings Goal',
 }
 
-function formatTimestamp(iso: string): string {
-  const date = new Date(iso)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60_000)
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `${diffHours}h ago`
-  const diffDays = Math.floor(diffHours / 24)
-  if (diffDays < 7) return `${diffDays}d ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
 
 const hasActivities = computed(() => store.sortedActivities.length > 0)
 </script>
@@ -56,7 +44,7 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
             <span class="feed-dot">·</span>
             <span class="feed-entity">{{ entityLabel[entry.entity] ?? entry.entity }}</span>
             <span class="feed-dot">·</span>
-            <time class="feed-time" :datetime="entry.timestamp">{{ formatTimestamp(entry.timestamp) }}</time>
+            <time class="feed-time" :datetime="entry.timestamp">{{ formatRelativeTime(entry.timestamp) }}</time>
           </div>
         </div>
       </li>

@@ -352,7 +352,7 @@ describe('FinancesView', () => {
     store.addAdhocIncome({ amount: 100, description: 'Test', date: '2026-01-01' })
     const wrapper = await mountView()
     const listVm = wrapper.findComponent(FinancesListView).vm as any
-    listVm.incomeToggleFilter('weekly')
+    listVm.income.toggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No income matches the current filter')
   })
@@ -636,7 +636,7 @@ describe('FinancesView', () => {
     const wrapper = await mountView('expenses')
     const listVm = wrapper.findComponent(FinancesListView).vm as any
     listVm.expenseSearchQuery = ''
-    listVm.expenseToggleFilter('weekly')
+    listVm.expense.toggleFilter('weekly')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('No expenses match the current filter')
   })

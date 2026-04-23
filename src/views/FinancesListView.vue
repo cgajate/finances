@@ -2,145 +2,56 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
-import { useSortFilter } from '@/composables/useSortFilter'
-import { useSnackbar } from '@/composables/useSnackbar'
+import { useDualSortFilter } from '@/composables/useDualSortFilter'
+import { useDeleteWithUndo } from '@/composables/useDeleteWithUndo'
+import { useSearchFilter } from '@/composables/useSearchFilter'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { formatDate, formatDateTime } from '@/lib/formatDate'
 import { formatCurrency } from '@/lib/formatCurrency'
-import { advanceDate, getNextDueDate } from '@/lib/dateUtils'
-import type { Frequency } from '@/types/finance'
-import { ref } from 'vue'
+import { getNextDueDate } from '@/lib/dateUtils'
+import type { Income, Expense } from '@/types/finance'
 
 const route = useRoute()
 const store = useFinancesStore()
-const snackbar = useSnackbar()
+const { deleteIncome, deleteExpense } = useDeleteWithUndo()
 
 const activeTab = computed(() => (route.query.tab as string) || 'income')
 
-// Income sort & filter
-const {
-  sortBy: incomeSortBy,
-  sortField: incomeSortField,
-  sortDirection: incomeSortDirection,
-  activeFilters: incomeActiveFilters,
-  activeCategoryFilters: incomeActiveCategoryFilters,
-  filtered: sortedIncomes,
-  toggleFilter: incomeToggleFilter,
-  toggleCategoryFilter: incomeToggleCategoryFilter,
-  clearFilters: incomeClearFilters,
-  hasFilter: incomeHasFilter,
-  hasCategoryFilter: incomeHasCategoryFilter,
-} = useSortFilter(() => store.incomes)
+const { income, expense } = useDualSortFilter(
+  () => store.incomes,
+  () => store.expenses,
+)
 
 // Income search
-const incomeSearchQuery = ref('')
-const filteredIncomes = computed(() => {
-  const q = incomeSearchQuery.value.trim().toLowerCase()
-  if (!q) return sortedIncomes.value
-  return sortedIncomes.value.filter((item) => {
-    const notes = item.type === 'recurring' ? item.notes : ''
-    const freq = item.type === 'recurring' ? item.frequency : 'one-time'
-    const date = item.type === 'recurring' ? item.date : item.date
-    return [item.description, String(item.amount), item.category, item.type, notes, freq, date]
-      .filter(Boolean)
-      .some((field) => String(field).toLowerCase().includes(q))
-  })
-})
-
-// Expense sort & filter
-const {
-  sortBy: expenseSortBy,
-  sortField: expenseSortField,
-  sortDirection: expenseSortDirection,
-  activeFilters: expenseActiveFilters,
-  activeCategoryFilters: expenseActiveCategoryFilters,
-  filtered: sortedExpenses,
-  toggleFilter: expenseToggleFilter,
-  toggleCategoryFilter: expenseToggleCategoryFilter,
-  clearFilters: expenseClearFilters,
-  hasFilter: expenseHasFilter,
-  hasCategoryFilter: expenseHasCategoryFilter,
-} = useSortFilter(() => store.expenses)
+const { searchQuery: incomeSearchQuery, filtered: filteredIncomes } = useSearchFilter<Income>(
+  () => income.filtered,
+  (item) => [
+    item.description,
+    String(item.amount),
+    item.category,
+    item.type,
+    item.type === 'recurring' ? item.notes : '',
+    item.type === 'recurring' ? item.frequency : 'one-time',
+    item.date,
+  ],
+)
 
 // Expense search
-const expenseSearchQuery = ref('')
-const filteredExpenses = computed(() => {
-  const q = expenseSearchQuery.value.trim().toLowerCase()
-  if (!q) return sortedExpenses.value
-  return sortedExpenses.value.filter((item) => {
-    const freq = item.type === 'recurring' ? item.frequency : 'one-time'
-    return [
-      item.description,
-      String(item.amount),
-      item.category,
-      item.type,
-      item.notes,
-      freq,
-      item.dueDate,
-      item.assignedTo,
-    ]
-      .filter(Boolean)
-      .some((field) => String(field).toLowerCase().includes(q))
-  })
-})
-
-function deleteIncome(id: string) {
-  const item = store.getIncomeById(id)
-  if (!item) return
-  const snapshot = { ...item }
-  store.removeIncome(id)
-  snackbar.show(`Deleted "${snapshot.description}"`, () => {
-    if (snapshot.type === 'recurring') {
-      store.addRecurringIncome({
-        amount: snapshot.amount,
-        frequency: snapshot.frequency,
-        description: snapshot.description,
-        notes: snapshot.notes,
-        date: snapshot.date,
-        category: snapshot.category,
-      })
-    } else {
-      store.addAdhocIncome({
-        amount: snapshot.amount,
-        description: snapshot.description,
-        date: snapshot.date,
-        category: snapshot.category,
-      })
-    }
-  })
-}
-
-function deleteExpense(id: string) {
-  const item = store.getExpenseById(id)
-  if (!item) return
-  const snapshot = { ...item }
-  store.removeExpense(id)
-  snackbar.show(`Deleted "${snapshot.description}"`, () => {
-    if (snapshot.type === 'recurring') {
-      store.addRecurringExpense({
-        amount: snapshot.amount,
-        frequency: snapshot.frequency,
-        description: snapshot.description,
-        notes: snapshot.notes,
-        dueDate: snapshot.dueDate,
-        category: snapshot.category,
-        assignedTo: snapshot.assignedTo,
-      })
-    } else {
-      store.addAdhocExpense({
-        amount: snapshot.amount,
-        description: snapshot.description,
-        notes: snapshot.notes,
-        dueDate: snapshot.dueDate,
-        category: snapshot.category,
-        assignedTo: snapshot.assignedTo,
-      })
-    }
-  })
-}
-
+const { searchQuery: expenseSearchQuery, filtered: filteredExpenses } = useSearchFilter<Expense>(
+  () => expense.filtered,
+  (item) => [
+    item.description,
+    String(item.amount),
+    item.category,
+    item.type,
+    item.notes,
+    item.type === 'recurring' ? item.frequency : 'one-time',
+    item.dueDate,
+    item.assignedTo,
+  ],
+)
 </script>
 
 <template>
@@ -157,20 +68,20 @@ function deleteExpense(id: string) {
 
     <FilterSortBar
       v-if="store.incomes.length"
-      :sort-by="incomeSortBy"
-      :sort-field="incomeSortField"
-      :sort-direction="incomeSortDirection"
-      :active-filters="incomeActiveFilters"
-      :active-category-filters="incomeActiveCategoryFilters"
-      :has-filter="incomeHasFilter"
-      :has-category-filter="incomeHasCategoryFilter"
+      :sort-by="income.sortBy"
+      :sort-field="income.sortField"
+      :sort-direction="income.sortDirection"
+      :active-filters="income.activeFilters"
+      :active-category-filters="income.activeCategoryFilters"
+      :has-filter="income.hasFilter"
+      :has-category-filter="income.hasCategoryFilter"
       type="income"
-      @update:sort-by="incomeSortBy = $event"
-      @update:sort-field="incomeSortField = $event"
-      @update:sort-direction="incomeSortDirection = $event"
-      @toggle-filter="incomeToggleFilter"
-      @toggle-category-filter="incomeToggleCategoryFilter"
-      @clear-filters="incomeClearFilters"
+      @update:sort-by="income.sortBy = $event"
+      @update:sort-field="income.sortField = $event"
+      @update:sort-direction="income.sortDirection = $event"
+      @toggle-filter="income.toggleFilter"
+      @toggle-category-filter="income.toggleCategoryFilter"
+      @clear-filters="income.clearFilters"
     />
 
     <div v-if="filteredIncomes.length" class="list">
@@ -223,20 +134,20 @@ function deleteExpense(id: string) {
 
     <FilterSortBar
       v-if="store.expenses.length"
-      :sort-by="expenseSortBy"
-      :sort-field="expenseSortField"
-      :sort-direction="expenseSortDirection"
-      :active-filters="expenseActiveFilters"
-      :active-category-filters="expenseActiveCategoryFilters"
-      :has-filter="expenseHasFilter"
-      :has-category-filter="expenseHasCategoryFilter"
+      :sort-by="expense.sortBy"
+      :sort-field="expense.sortField"
+      :sort-direction="expense.sortDirection"
+      :active-filters="expense.activeFilters"
+      :active-category-filters="expense.activeCategoryFilters"
+      :has-filter="expense.hasFilter"
+      :has-category-filter="expense.hasCategoryFilter"
       type="expense"
-      @update:sort-by="expenseSortBy = $event"
-      @update:sort-field="expenseSortField = $event"
-      @update:sort-direction="expenseSortDirection = $event"
-      @toggle-filter="expenseToggleFilter"
-      @toggle-category-filter="expenseToggleCategoryFilter"
-      @clear-filters="expenseClearFilters"
+      @update:sort-by="expense.sortBy = $event"
+      @update:sort-field="expense.sortField = $event"
+      @update:sort-direction="expense.sortDirection = $event"
+      @toggle-filter="expense.toggleFilter"
+      @toggle-category-filter="expense.toggleCategoryFilter"
+      @clear-filters="expense.clearFilters"
     />
 
     <div v-if="filteredExpenses.length" class="list">

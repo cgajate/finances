@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useFinancesStore } from '@/stores/finances'
 import { useBudgetsStore } from '@/stores/budgets'
 import { useSavingsGoalsStore } from '@/stores/savingsGoals'
-import { useSortFilter } from '@/composables/useSortFilter'
+import { useDualSortFilter } from '@/composables/useDualSortFilter'
 import { useSearch } from '@/composables/useSearch'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import { formatCurrency } from '@/lib/formatCurrency'
@@ -18,52 +18,23 @@ const savingsStore = useSavingsGoalsStore()
 // Global search
 const { query: searchQuery, results: searchResults, resultCount, clearSearch } = useSearch()
 
-const {
-  sortBy: incomeSortBy,
-  sortField: incomeSortField,
-  sortDirection: incomeSortDirection,
-  activeFilters: incomeActiveFilters,
-  activeCategoryFilters: incomeActiveCategoryFilters,
-  filtered: filteredIncomes,
-  toggleFilter: incomeToggleFilter,
-  toggleCategoryFilter: incomeToggleCategoryFilter,
-  clearFilters: incomeClearFilters,
-  hasFilter: incomeHasFilter,
-  hasCategoryFilter: incomeHasCategoryFilter,
-} = useSortFilter(() => store.incomes)
-
-const {
-  sortBy: expenseSortBy,
-  sortField: expenseSortField,
-  sortDirection: expenseSortDirection,
-  activeFilters: expenseActiveFilters,
-  activeCategoryFilters: expenseActiveCategoryFilters,
-  filtered: filteredExpenses,
-  toggleFilter: expenseToggleFilter,
-  toggleCategoryFilter: expenseToggleCategoryFilter,
-  clearFilters: expenseClearFilters,
-  hasFilter: expenseHasFilter,
-  hasCategoryFilter: expenseHasCategoryFilter,
-} = useSortFilter(() => store.expenses)
+const { income, expense } = useDualSortFilter(
+  () => store.incomes,
+  () => store.expenses,
+)
 
 const incomeExpanded = ref(false)
 const expenseExpanded = ref(false)
 
 const displayedIncomes = computed(() => {
-  if (incomeExpanded.value) return filteredIncomes.value
-  return filteredIncomes.value.slice(0, 5)
+  if (incomeExpanded.value) return income.filtered
+  return income.filtered.slice(0, 5)
 })
 
 const displayedExpenses = computed(() => {
-  if (expenseExpanded.value) return filteredExpenses.value
-  return filteredExpenses.value.slice(0, 5)
-})
-
-
-function formatFrequency(freq: string): string {
-  return freq.replace('-', '-')
-}
-</script>
+  if (expenseExpanded.value) return expense.filtered
+  return expense.filtered.slice(0, 5)
+})</script>
 
 <template>
   <div class="dashboard">
@@ -109,31 +80,31 @@ function formatFrequency(freq: string): string {
     <div class="quick-lists">
       <!-- Income Section -->
       <section>
-        <h2>Income ({{ filteredIncomes.length }}<span v-if="incomeActiveFilters.length"> filtered</span>)</h2>
+        <h2>Income ({{ income.filtered.length }}<span v-if="income.activeFilters.length"> filtered</span>)</h2>
 
         <FilterSortBar
           v-if="store.incomes.length"
-          :sort-by="incomeSortBy"
-          :sort-field="incomeSortField"
-          :sort-direction="incomeSortDirection"
-          :active-filters="incomeActiveFilters"
-          :active-category-filters="incomeActiveCategoryFilters"
-          :has-filter="incomeHasFilter"
-          :has-category-filter="incomeHasCategoryFilter"
+          :sort-by="income.sortBy"
+          :sort-field="income.sortField"
+          :sort-direction="income.sortDirection"
+          :active-filters="income.activeFilters"
+          :active-category-filters="income.activeCategoryFilters"
+          :has-filter="income.hasFilter"
+          :has-category-filter="income.hasCategoryFilter"
           type="income"
-          @update:sort-by="incomeSortBy = $event"
-          @update:sort-field="incomeSortField = $event"
-          @update:sort-direction="incomeSortDirection = $event"
-          @toggle-filter="incomeToggleFilter"
-          @toggle-category-filter="incomeToggleCategoryFilter"
-          @clear-filters="incomeClearFilters"
+          @update:sort-by="income.sortBy = $event"
+          @update:sort-field="income.sortField = $event"
+          @update:sort-direction="income.sortDirection = $event"
+          @toggle-filter="income.toggleFilter"
+          @toggle-category-filter="income.toggleCategoryFilter"
+          @clear-filters="income.clearFilters"
         />
 
         <ul v-if="displayedIncomes.length">
           <li v-for="item in displayedIncomes" :key="item.id">
             <strong>{{ item.description }}</strong>
             <span class="amount">{{ formatCurrency(item.amount) }}</span>
-            <span class="badge">{{ item.type === 'recurring' ? formatFrequency(item.frequency) : 'one-time' }}</span>
+            <span class="badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
           </li>
         </ul>
         <EmptyState v-else-if="store.incomes.length" message="No income matches the current filter." />
@@ -141,11 +112,11 @@ function formatFrequency(freq: string): string {
 
         <div class="section-actions">
           <button
-            v-if="filteredIncomes.length > 5"
+            v-if="income.filtered.length > 5"
             class="btn-toggle"
             @click="incomeExpanded = !incomeExpanded"
           >
-            {{ incomeExpanded ? 'Show Less' : `View All (${filteredIncomes.length})` }}
+            {{ incomeExpanded ? 'Show Less' : `View All (${income.filtered.length})` }}
             <font-awesome-icon :icon="['fas', incomeExpanded ? 'chevron-up' : 'chevron-down']" />
           </button>
           <RouterLink to="/finances?tab=income" class="btn">Manage Income <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
@@ -154,31 +125,31 @@ function formatFrequency(freq: string): string {
 
       <!-- Expenses Section -->
       <section>
-        <h2>Expenses ({{ filteredExpenses.length }}<span v-if="expenseActiveFilters.length"> filtered</span>)</h2>
+        <h2>Expenses ({{ expense.filtered.length }}<span v-if="expense.activeFilters.length"> filtered</span>)</h2>
 
         <FilterSortBar
           v-if="store.expenses.length"
-          :sort-by="expenseSortBy"
-          :sort-field="expenseSortField"
-          :sort-direction="expenseSortDirection"
-          :active-filters="expenseActiveFilters"
-          :active-category-filters="expenseActiveCategoryFilters"
-          :has-filter="expenseHasFilter"
-          :has-category-filter="expenseHasCategoryFilter"
+          :sort-by="expense.sortBy"
+          :sort-field="expense.sortField"
+          :sort-direction="expense.sortDirection"
+          :active-filters="expense.activeFilters"
+          :active-category-filters="expense.activeCategoryFilters"
+          :has-filter="expense.hasFilter"
+          :has-category-filter="expense.hasCategoryFilter"
           type="expense"
-          @update:sort-by="expenseSortBy = $event"
-          @update:sort-field="expenseSortField = $event"
-          @update:sort-direction="expenseSortDirection = $event"
-          @toggle-filter="expenseToggleFilter"
-          @toggle-category-filter="expenseToggleCategoryFilter"
-          @clear-filters="expenseClearFilters"
+          @update:sort-by="expense.sortBy = $event"
+          @update:sort-field="expense.sortField = $event"
+          @update:sort-direction="expense.sortDirection = $event"
+          @toggle-filter="expense.toggleFilter"
+          @toggle-category-filter="expense.toggleCategoryFilter"
+          @clear-filters="expense.clearFilters"
         />
 
         <ul v-if="displayedExpenses.length">
           <li v-for="item in displayedExpenses" :key="item.id">
             <strong>{{ item.description }}</strong>
             <span class="amount expense">{{ formatCurrency(item.amount) }}</span>
-            <span class="badge">{{ item.type === 'recurring' ? formatFrequency(item.frequency) : 'one-time' }}</span>
+            <span class="badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
           </li>
         </ul>
         <EmptyState v-else-if="store.expenses.length" message="No expenses match the current filter." />
@@ -186,11 +157,11 @@ function formatFrequency(freq: string): string {
 
         <div class="section-actions">
           <button
-            v-if="filteredExpenses.length > 5"
+            v-if="expense.filtered.length > 5"
             class="btn-toggle"
             @click="expenseExpanded = !expenseExpanded"
           >
-            {{ expenseExpanded ? 'Show Less' : `View All (${filteredExpenses.length})` }}
+            {{ expenseExpanded ? 'Show Less' : `View All (${expense.filtered.length})` }}
             <font-awesome-icon :icon="['fas', expenseExpanded ? 'chevron-up' : 'chevron-down']" />
           </button>
           <RouterLink to="/finances?tab=expenses" class="btn">Manage Expenses <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>

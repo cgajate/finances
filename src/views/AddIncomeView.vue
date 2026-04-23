@@ -11,7 +11,6 @@ import TabBar from '@/components/TabBar.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import CurrencyInput from '@/components/CurrencyInput.vue'
 
-const router = useRouter()
 const store = useFinancesStore()
 const snackbar = useSnackbar()
 const categoriesStore = useCategoriesStore()

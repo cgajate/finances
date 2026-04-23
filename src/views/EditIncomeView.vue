@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
-import { useSnackbar } from '@/composables/useSnackbar'
+import { useDeleteWithUndo } from '@/composables/useDeleteWithUndo'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency } from '@/types/finance'
 import type { IncomeCategory } from '@/types/finance'
@@ -14,7 +14,7 @@ import CurrencyInput from '@/components/CurrencyInput.vue'
 const route = useRoute()
 const router = useRouter()
 const store = useFinancesStore()
-const snackbar = useSnackbar()
+const { deleteIncome } = useDeleteWithUndo()
 const categoriesStore = useCategoriesStore()
 const { activeIncomeCategories } = storeToRefs(categoriesStore)
 
@@ -75,29 +75,7 @@ function cancel() {
 }
 
 function remove() {
-  const item = store.getIncomeById(id)
-  if (!item) return
-  const snapshot = { ...item }
-  store.removeIncome(id)
-  snackbar.show(`Deleted "${snapshot.description}"`, () => {
-    if (snapshot.type === 'recurring') {
-      store.addRecurringIncome({
-        amount: snapshot.amount,
-        frequency: snapshot.frequency,
-        description: snapshot.description,
-        notes: snapshot.notes,
-        date: snapshot.date,
-        category: snapshot.category,
-      })
-    } else {
-      store.addAdhocIncome({
-        amount: snapshot.amount,
-        description: snapshot.description,
-        date: snapshot.date,
-        category: snapshot.category,
-      })
-    }
-  })
+  deleteIncome(id)
   router.push('/finances?tab=income')
 }
 

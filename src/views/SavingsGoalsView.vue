@@ -1,29 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSavingsGoalsStore } from '@/stores/savingsGoals'
-import { useSnackbar } from '@/composables/useSnackbar'
+import { useDeleteWithUndo } from '@/composables/useDeleteWithUndo'
 import { formatCurrency } from '@/lib/formatCurrency'
 import CurrencyInput from '@/components/CurrencyInput.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
 const store = useSavingsGoalsStore()
-const snackbar = useSnackbar()
-
-function deleteGoal(id: string) {
-  const goal = store.goals.find((g: { id: string }) => g.id === id)
-  if (!goal) return
-  const snapshot = { ...goal }
-  store.removeGoal(id)
-  snackbar.show(`Deleted "${snapshot.name}"`, () => {
-    store.addGoal({
-      name: snapshot.name,
-      targetAmount: snapshot.targetAmount,
-      deadline: snapshot.deadline,
-      savedAmount: snapshot.savedAmount,
-    })
-  })
-}
+const { deleteSavingsGoal: deleteGoal } = useDeleteWithUndo()
 
 // Add goal form
 const goalName = ref('')

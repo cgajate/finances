@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
-import { useSnackbar } from '@/composables/useSnackbar'
+import { useDeleteWithUndo } from '@/composables/useDeleteWithUndo'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency } from '@/types/finance'
 import type { ExpenseCategory } from '@/types/finance'
@@ -14,7 +14,7 @@ import CurrencyInput from '@/components/CurrencyInput.vue'
 const route = useRoute()
 const router = useRouter()
 const store = useFinancesStore()
-const snackbar = useSnackbar()
+const { deleteExpense } = useDeleteWithUndo()
 const categoriesStore = useCategoriesStore()
 const { activeExpenseCategories } = storeToRefs(categoriesStore)
 
@@ -78,32 +78,7 @@ function cancel() {
 }
 
 function remove() {
-  const item = store.getExpenseById(id)
-  if (!item) return
-  const snapshot = { ...item }
-  store.removeExpense(id)
-  snackbar.show(`Deleted "${snapshot.description}"`, () => {
-    if (snapshot.type === 'recurring') {
-      store.addRecurringExpense({
-        amount: snapshot.amount,
-        frequency: snapshot.frequency,
-        description: snapshot.description,
-        notes: snapshot.notes,
-        dueDate: snapshot.dueDate,
-        category: snapshot.category,
-        assignedTo: snapshot.assignedTo,
-      })
-    } else {
-      store.addAdhocExpense({
-        amount: snapshot.amount,
-        description: snapshot.description,
-        notes: snapshot.notes,
-        dueDate: snapshot.dueDate,
-        category: snapshot.category,
-        assignedTo: snapshot.assignedTo,
-      })
-    }
-  })
+  deleteExpense(id)
   router.push('/finances?tab=expenses')
 }
 
