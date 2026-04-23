@@ -39,10 +39,10 @@ describe('DashboardView', () => {
 
   it('renders three summary cards', () => {
     const wrapper = mountView()
-    expect(wrapper.findAll('.card')).toHaveLength(3)
-    expect(wrapper.find('.income-card').text()).toContain('Monthly Income')
-    expect(wrapper.find('.expense-card').text()).toContain('Monthly Expenses')
-    expect(wrapper.find('.net-card').text()).toContain('Net Monthly')
+    expect(wrapper.findAll('.summary-card')).toHaveLength(3)
+    expect(wrapper.find('.summary-card--income').text()).toContain('Monthly Income')
+    expect(wrapper.find('.summary-card--expense').text()).toContain('Monthly Expenses')
+    expect(wrapper.find('.summary-card--net').text()).toContain('Net Monthly')
   })
 
   it('shows $0.00 when no data', () => {
@@ -118,7 +118,7 @@ describe('DashboardView', () => {
     const store = useFinancesStore()
     store.addRecurringExpense({ amount: 10000, frequency: 'monthly', description: 'Big expense', notes: '', dueDate: null })
     const wrapper = mountView()
-    expect(wrapper.find('.net-card').classes()).toContain('negative')
+    expect(wrapper.find('.summary-card--net').classes()).toContain('summary-card--negative')
   })
 
   it('shows adhoc items as one-time', () => {

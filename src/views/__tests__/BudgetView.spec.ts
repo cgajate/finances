@@ -81,7 +81,7 @@ describe('BudgetView', () => {
     store.setBudget('Food', 500)
     const wrapper = mount(BudgetView, { global: { plugins: [pinia] } })
     await flushPromises()
-    expect(wrapper.find('.budget-card').exists()).toBe(true)
+    expect(wrapper.find('.budget-progress-row--full').exists()).toBe(true)
     expect(wrapper.text()).toContain('Food')
   })
 

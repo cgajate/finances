@@ -86,14 +86,14 @@ describe('SavingsGoalsView', () => {
     const wrapper = mountView()
     expect(wrapper.text()).toContain('Completed')
     expect(wrapper.text()).toContain('Done Goal')
-    expect(wrapper.find('.goal-card.completed').exists()).toBe(true)
+    expect(wrapper.find('.savings-goal-row--completed').exists()).toBe(true)
   })
 
   it('shows 100% meter for completed goals', () => {
     const store = useSavingsGoalsStore()
     store.addGoal({ name: 'Full', targetAmount: 200, deadline: '2026-12-31', savedAmount: 250 })
     const wrapper = mountView()
-    const fill = wrapper.find('.goal-card.completed .progress-fill')
+    const fill = wrapper.find('.savings-goal-row--completed .progress-fill')
     expect(fill.attributes('style')).toContain('width: 100%')
   })
 
@@ -205,7 +205,7 @@ describe('SavingsGoalsView', () => {
     store.addGoal({ name: 'Zero', targetAmount: 0, deadline: '2026-12-31' })
     const wrapper = mountView()
     // targetAmount 0 means savedAmount >= targetAmount, so it shows as completed
-    expect(wrapper.find('.goal-card.completed').exists()).toBe(true)
+    expect(wrapper.find('.savings-goal-row--completed').exists()).toBe(true)
   })
 
   it('does not show empty message when completed goals exist but no active', () => {
@@ -227,7 +227,7 @@ describe('SavingsGoalsView', () => {
     const store = useSavingsGoalsStore()
     store.addGoal({ name: 'Done', targetAmount: 100, deadline: '2026-12-31', savedAmount: 100 })
     const wrapper = mountView()
-    await wrapper.find('.goal-card.completed .btn-remove').trigger('click')
+    await wrapper.find('.savings-goal-row--completed .btn-remove').trigger('click')
     expect(store.goals).toHaveLength(0)
   })
 })

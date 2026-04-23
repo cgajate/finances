@@ -6,11 +6,10 @@ import { useDualSortFilter } from '@/composables/useDualSortFilter'
 import { useDeleteWithUndo } from '@/composables/useDeleteWithUndo'
 import { useSearchFilter } from '@/composables/useSearchFilter'
 import FilterSortBar from '@/components/FilterSortBar.vue'
+import FinanceListItem from '@/components/FinanceListItem.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import { formatDate, formatDateTime } from '@/lib/formatDate'
 import { formatCurrency } from '@/lib/formatCurrency'
-import { getNextDueDate } from '@/lib/dateUtils'
 import type { Income, Expense } from '@/types/finance'
 
 const route = useRoute()
@@ -85,32 +84,13 @@ const { searchQuery: expenseSearchQuery, filtered: filteredExpenses } = useSearc
     />
 
     <div v-if="filteredIncomes.length" class="list">
-      <div v-for="item in filteredIncomes" :key="item.id" class="list-item">
-        <div class="list-item-main">
-          <strong>{{ item.description }}</strong>
-          <span class="amount income-amount">{{ formatCurrency(item.amount) }}</span>
-        </div>
-        <div class="list-item-meta">
-          <span class="badge income-badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
-          <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
-          <span v-if="item.type === 'recurring' && item.notes" class="meta"><font-awesome-icon :icon="['fas', 'note-sticky']" /> {{ item.notes }}</span>
-        </div>
-        <div v-if="item.type === 'recurring' && item.date" class="list-item-date">
-          <font-awesome-icon :icon="['fas', 'calendar-day']" class="date-icon income-date-icon" />
-          Next: {{ formatDate(getNextDueDate(item.date, item.frequency)) }}
-        </div>
-        <div v-else-if="item.type === 'adhoc'" class="list-item-date">
-          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon income-date-icon" />
-          {{ formatDate(item.date) }}
-        </div>
-        <div class="list-item-created">
-          Created {{ formatDateTime(item.createdAt) }}
-        </div>
-        <div class="list-item-actions">
-          <RouterLink :to="`/finances/income/${item.id}/edit`" class="btn-edit" :aria-label="`Edit ${item.description}`">Edit</RouterLink>
-          <button class="btn-delete" :aria-label="`Remove ${item.description}`" @click="deleteIncome(item.id)">Remove</button>
-        </div>
-      </div>
+      <FinanceListItem
+        v-for="item in filteredIncomes"
+        :key="item.id"
+        :item="item"
+        kind="income"
+        @delete="deleteIncome"
+      />
     </div>
     <EmptyState v-else-if="store.incomes.length && incomeSearchQuery" :message="`No income matches &quot;${incomeSearchQuery}&quot;.`" />
     <EmptyState v-else-if="store.incomes.length" message="No income matches the current filter." />
@@ -151,34 +131,13 @@ const { searchQuery: expenseSearchQuery, filtered: filteredExpenses } = useSearc
     />
 
     <div v-if="filteredExpenses.length" class="list">
-      <div v-for="item in filteredExpenses" :key="item.id" class="list-item">
-        <div class="list-item-main">
-          <strong>{{ item.description }}</strong>
-          <span class="amount expense-amount">{{ formatCurrency(item.amount) }}</span>
-        </div>
-        <div class="list-item-meta">
-          <span class="badge expense-badge">{{ item.type === 'recurring' ? item.frequency : 'one-time' }}</span>
-          <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
-          <span v-if="item.assignedTo" class="badge assigned-badge"><font-awesome-icon :icon="['fas', 'user']" /> {{ item.assignedTo }}</span>
-          <span v-if="item.notes" class="meta"><font-awesome-icon :icon="['fas', 'note-sticky']" /> {{ item.notes }}</span>
-        </div>
-        <div v-if="item.type === 'recurring' && item.dueDate" class="list-item-date">
-          <font-awesome-icon :icon="['fas', 'calendar-day']" class="date-icon expense-date-icon" />
-          Next due: {{ formatDate(getNextDueDate(item.dueDate, item.frequency)) }}
-        </div>
-        <div v-else-if="item.dueDate" class="list-item-date">
-          <font-awesome-icon :icon="['fas', 'calendar']" class="date-icon expense-date-icon" />
-          Due: {{ formatDate(item.dueDate) }}
-        </div>
-        <div class="list-item-created">
-          Created {{ formatDateTime(item.createdAt) }}
-          <span v-if="item.assignedTo" class="created-by">by {{ item.assignedTo }}</span>
-        </div>
-        <div class="list-item-actions">
-          <RouterLink :to="`/finances/expenses/${item.id}/edit`" class="btn-edit" :aria-label="`Edit ${item.description}`">Edit</RouterLink>
-          <button class="btn-delete" :aria-label="`Remove ${item.description}`" @click="deleteExpense(item.id)">Remove</button>
-        </div>
-      </div>
+      <FinanceListItem
+        v-for="item in filteredExpenses"
+        :key="item.id"
+        :item="item"
+        kind="expense"
+        @delete="deleteExpense"
+      />
     </div>
     <EmptyState v-else-if="store.expenses.length && expenseSearchQuery" :message="`No expenses match &quot;${expenseSearchQuery}&quot;.`" />
     <EmptyState v-else-if="store.expenses.length" message="No expenses match the current filter." />

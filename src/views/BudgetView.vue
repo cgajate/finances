@@ -5,7 +5,7 @@ import { useSnackbar } from '@/composables/useSnackbar'
 import { formatCurrency } from '@/lib/formatCurrency'
 import type { ExpenseCategory } from '@/types/finance'
 import CurrencyInput from '@/components/CurrencyInput.vue'
-import ProgressBar from '@/components/ProgressBar.vue'
+import BudgetProgressRow from '@/components/BudgetProgressRow.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
 const budgetsStore = useBudgetsStore()
@@ -63,18 +63,12 @@ function removeBudget(category: ExpenseCategory) {
 
     <!-- Budget status list -->
     <div v-if="budgetsStore.budgetStatus.length" class="budget-list">
-      <div
+      <BudgetProgressRow
         v-for="bs in budgetsStore.budgetStatus"
         :key="bs.category"
-        class="budget-card"
+        :status="bs"
+        mode="full"
       >
-        <div class="budget-header">
-          <span class="budget-category">{{ bs.category }}</span>
-          <span class="budget-values" :class="`status-${bs.status}`">
-            {{ formatCurrency(bs.spent) }} / {{ formatCurrency(bs.limit) }}
-          </span>
-        </div>
-        <ProgressBar :percent="bs.percent" :variant="bs.status as 'ok' | 'warning' | 'over'" />
         <div class="budget-footer">
           <span class="budget-percent" :class="`status-${bs.status}`">
             {{ Math.round(bs.percent) }}%
@@ -83,7 +77,7 @@ function removeBudget(category: ExpenseCategory) {
           </span>
           <button class="btn-remove" :aria-label="`Remove ${bs.category} budget`" @click="removeBudget(bs.category)">Remove</button>
         </div>
-      </div>
+      </BudgetProgressRow>
     </div>
     <EmptyState v-else message="No budgets set yet. Add one above to start tracking." />
   </div>
@@ -97,13 +91,6 @@ function removeBudget(category: ExpenseCategory) {
 .all-set { color: var(--color-income); font-weight: 500; margin-bottom: 1.5rem; }
 
 .budget-list { display: flex; flex-direction: column; gap: 0.75rem; }
-.budget-card {
-  padding: 1rem; border: 1px solid var(--color-border); border-radius: 12px;
-  display: flex; flex-direction: column; gap: 0.5rem; background: var(--color-surface);
-}
-.budget-header { display: flex; justify-content: space-between; align-items: center; }
-.budget-category { font-weight: 700; font-size: 1rem; }
-.budget-values { font-weight: 600; font-size: 0.9rem; }
 
 .budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }

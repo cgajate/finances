@@ -6,9 +6,11 @@ import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 import { useDualSortFilter } from '@/composables/useDualSortFilter'
 import { useSearch } from '@/composables/useSearch'
 import FilterSortBar from '@/components/FilterSortBar.vue'
+import SummaryCard from '@/components/SummaryCard.vue'
+import BudgetProgressRow from '@/components/BudgetProgressRow.vue'
+import SavingsGoalRow from '@/components/SavingsGoalRow.vue'
 import { formatCurrency } from '@/lib/formatCurrency'
 import SearchBar from '@/components/SearchBar.vue'
-import ProgressBar from '@/components/ProgressBar.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
 const store = useFinancesStore()
@@ -63,18 +65,9 @@ const displayedExpenses = computed(() => {
 
     <template v-if="!searchQuery.trim()">
     <div class="summary-cards">
-      <div class="card income-card">
-        <span class="card-label">Monthly Income</span>
-        <span class="card-value">{{ formatCurrency(store.totalMonthlyIncome) }}</span>
-      </div>
-      <div class="card expense-card">
-        <span class="card-label">Monthly Expenses</span>
-        <span class="card-value">{{ formatCurrency(store.totalMonthlyExpenses) }}</span>
-      </div>
-      <div class="card net-card" :class="{ negative: store.netMonthly < 0 }">
-        <span class="card-label">Net Monthly</span>
-        <span class="card-value">{{ formatCurrency(store.netMonthly) }}</span>
-      </div>
+      <SummaryCard label="Monthly Income" :value="store.totalMonthlyIncome" variant="income" />
+      <SummaryCard label="Monthly Expenses" :value="store.totalMonthlyExpenses" variant="expense" />
+      <SummaryCard label="Net Monthly" :value="store.netMonthly" variant="net" :negative="store.netMonthly < 0" />
     </div>
 
     <div class="quick-lists">
@@ -173,26 +166,11 @@ const displayedExpenses = computed(() => {
     <section v-if="budgetsStore.budgetStatus.length" class="budget-section">
       <h2>Budget Progress</h2>
       <div class="budget-bars">
-        <div
+        <BudgetProgressRow
           v-for="bs in budgetsStore.budgetStatus"
           :key="bs.category"
-          class="budget-row"
-        >
-          <div class="budget-info">
-            <span class="budget-cat">{{ bs.category }}</span>
-            <span
-              class="budget-amt"
-              :class="{ 'budget-warning': bs.status === 'warning', 'budget-over': bs.status === 'over' }"
-            >
-              {{ formatCurrency(bs.spent) }} / {{ formatCurrency(bs.limit) }}
-            </span>
-          </div>
-          <ProgressBar
-            :percent="bs.percent"
-            :variant="bs.status as 'ok' | 'warning' | 'over'"
-            :height="8"
-          />
-        </div>
+          :status="bs"
+        />
       </div>
       <RouterLink to="/budgets" class="btn">Manage Budgets <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
     </section>
@@ -201,19 +179,11 @@ const displayedExpenses = computed(() => {
     <section v-if="savingsStore.activeGoals.length" class="savings-section">
       <h2><font-awesome-icon :icon="['fas', 'bullseye']" /> Savings Goals</h2>
       <div class="savings-goals">
-        <div v-for="goal in savingsStore.activeGoals" :key="goal.id" class="savings-goal-row">
-          <div class="savings-goal-info">
-            <span class="savings-goal-name">{{ goal.name }}</span>
-            <span class="savings-goal-amt">
-              {{ formatCurrency(goal.savedAmount) }} / {{ formatCurrency(goal.targetAmount) }}
-            </span>
-          </div>
-          <ProgressBar
-            :percent="Math.min(Math.round((goal.savedAmount / goal.targetAmount) * 100), 100)"
-            variant="primary"
-            :height="8"
-          />
-        </div>
+        <SavingsGoalRow
+          v-for="goal in savingsStore.activeGoals"
+          :key="goal.id"
+          :goal="goal"
+        />
       </div>
       <RouterLink to="/savings" class="btn">Manage Goals <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
     </section>
@@ -255,37 +225,21 @@ li strong { flex: 1; min-width: 120px; }
 .amount { font-weight: 600; color: var(--color-income); }
 .amount.expense { color: var(--color-expense); }
 
-.budget-section .btn { margin-top: 1rem; }
+.budget-section .btn,
+.savings-section .btn { margin-top: 1rem; }
 
 .btn-toggle:hover { background: var(--color-primary-light); }
 
-.budget-section {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  border-radius: 12px;
-  background: var(--color-bg-secondary);
-}
-
-.budget-bars { display: flex; flex-direction: column; gap: 0.75rem; }
-.budget-row { display: flex; flex-direction: column; gap: 0.25rem; }
-.budget-info { display: flex; justify-content: space-between; align-items: center; }
-.budget-cat { font-weight: 500; font-size: 0.9rem; }
-.budget-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-income); }
-.budget-warning { color: var(--color-warning); }
-.budget-over { color: var(--color-expense); }
-
+.budget-section,
 .savings-section {
   margin-top: 2rem;
   padding: 1.5rem;
   border-radius: 12px;
   background: var(--color-bg-secondary);
 }
+
+.budget-bars,
 .savings-goals { display: flex; flex-direction: column; gap: 0.75rem; }
-.savings-goal-row { display: flex; flex-direction: column; gap: 0.25rem; }
-.savings-goal-info { display: flex; justify-content: space-between; align-items: center; }
-.savings-goal-name { font-weight: 500; font-size: 0.9rem; }
-.savings-goal-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
-.savings-section .btn { margin-top: 1rem; }
 
 .search-results { margin-bottom: 2rem; }
 .search-list { display: flex; flex-direction: column; gap: 0.5rem; }
