@@ -42,7 +42,7 @@ async function handleVerify() {
 <template>
   <div v-if="!authenticated" class="pin-overlay">
     <div class="pin-card">
-      <div class="pin-logo">🔒</div>
+      <div class="pin-logo" aria-hidden="true">🔒</div>
       <h1>Family Finances</h1>
 
       <!-- Set PIN (first visit) -->
@@ -56,6 +56,7 @@ async function handleVerify() {
             inputmode="numeric"
             placeholder="Enter PIN"
             autocomplete="new-password"
+            aria-label="New PIN"
             autofocus
           />
         </div>
@@ -67,13 +68,14 @@ async function handleVerify() {
             inputmode="numeric"
             placeholder="Confirm PIN"
             autocomplete="new-password"
+            aria-label="Confirm PIN"
           />
         </div>
         <label class="remember-check">
           <input v-model="rememberDevice" type="checkbox" />
           Remember this device for 7 days
         </label>
-        <p v-if="error" class="pin-error">{{ error }}</p>
+        <p v-if="error" class="pin-error" role="alert" aria-live="assertive">{{ error }}</p>
         <button type="submit" class="pin-btn">Set PIN</button>
       </form>
 
@@ -87,6 +89,7 @@ async function handleVerify() {
             inputmode="numeric"
             placeholder="Enter PIN"
             autocomplete="current-password"
+            aria-label="PIN"
             autofocus
           />
         </div>
@@ -94,7 +97,7 @@ async function handleVerify() {
           <input v-model="rememberDevice" type="checkbox" />
           Remember this device for 7 days
         </label>
-        <p v-if="error" class="pin-error">{{ error }}</p>
+        <p v-if="error" class="pin-error" role="alert" aria-live="assertive">{{ error }}</p>
         <button type="submit" class="pin-btn">Unlock</button>
       </form>
     </div>
@@ -212,4 +215,3 @@ h1 {
   filter: brightness(0.9);
 }
 </style>
-

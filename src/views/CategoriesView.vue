@@ -104,14 +104,15 @@ function restore(id: string, name: string) {
             v-model="editingName"
             type="text"
             class="edit-input"
+            aria-label="Edit category name"
             @keyup.enter="saveEdit(cat.id)"
             @keyup.escape="cancelEdit"
           />
           <div class="item-actions">
-            <button class="action-btn save" @click="saveEdit(cat.id)" title="Save">
+            <button class="action-btn save" @click="saveEdit(cat.id)" :aria-label="`Save ${editingName}`" title="Save">
               <font-awesome-icon :icon="['fas', 'check']" />
             </button>
-            <button class="action-btn cancel" @click="cancelEdit" title="Cancel">
+            <button class="action-btn cancel" @click="cancelEdit" aria-label="Cancel editing" title="Cancel">
               <font-awesome-icon :icon="['fas', 'xmark']" />
             </button>
           </div>
@@ -124,10 +125,10 @@ function restore(id: string, name: string) {
             {{ cat.name }}
           </span>
           <div class="item-actions">
-            <button class="action-btn edit" @click="startEdit(cat.id, cat.name)" title="Edit">
+            <button class="action-btn edit" @click="startEdit(cat.id, cat.name)" :aria-label="`Edit ${cat.name}`" title="Edit">
               <font-awesome-icon :icon="['fas', 'pen']" />
             </button>
-            <button class="action-btn delete" @click="softDelete(cat.id, cat.name)" title="Remove">
+            <button class="action-btn delete" @click="softDelete(cat.id, cat.name)" :aria-label="`Remove ${cat.name}`" title="Remove">
               <font-awesome-icon :icon="['fas', 'trash']" />
             </button>
           </div>
@@ -286,4 +287,3 @@ h2 {
   margin-top: 0.5rem;
 }
 </style>
-

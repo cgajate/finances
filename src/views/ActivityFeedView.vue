@@ -26,7 +26,7 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
 <template>
   <div class="activity-feed">
     <div class="feed-header">
-      <h1>📋 Activity Feed</h1>
+      <h1><span aria-hidden="true">📋</span> Activity Feed</h1>
       <button v-if="hasActivities" class="btn-clear" @click="store.clearAll()">
         Clear All
       </button>
@@ -34,7 +34,7 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
 
     <EmptyState v-if="!hasActivities" message="No activity yet. Actions by household members will appear here." />
 
-    <ul v-else class="feed-list">
+    <ul v-else class="feed-list" role="menu">
       <li v-for="entry in store.sortedActivities" :key="entry.id" class="feed-item">
         <span class="feed-icon"><font-awesome-icon :icon="['fas', actionIcon[entry.action] ?? 'circle']" /></span>
         <div class="feed-body">
@@ -109,4 +109,3 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
   color: var(--color-text-muted);
 }
 </style>
-

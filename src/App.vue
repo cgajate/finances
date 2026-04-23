@@ -13,6 +13,7 @@ const syncModalOpen = ref(false)
 <template>
   <PinGate>
     <div class="app-shell">
+      <a href="#main-content" class="skip-link">Skip to content</a>
       <AppHeader
         :collapsed="menuOpen"
         @toggle-menu="menuOpen = !menuOpen"
@@ -22,7 +23,7 @@ const syncModalOpen = ref(false)
       <MobileSidebar :open="menuOpen" @close="menuOpen = false" />
 
       <HouseholdSetup :open="syncModalOpen" @close="syncModalOpen = false" />
-      <main class="app-main">
+      <main id="main-content" class="app-main">
         <RouterView />
       </main>
     </div>
@@ -31,6 +32,22 @@ const syncModalOpen = ref(false)
 </template>
 
 <style scoped>
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10001;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
 .app-shell {
   min-height: 100vh;
   display: flex;

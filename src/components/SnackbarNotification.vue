@@ -25,7 +25,8 @@ async function copyCode(text: string, id: number) {
         v-for="item in items"
         :key="item.id"
         class="snackbar"
-        role="alert"
+        role="status"
+        aria-live="polite"
       >
         <span class="snackbar-message">{{ item.message }}</span>
         <button

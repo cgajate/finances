@@ -47,12 +47,14 @@ const displayedExpenses = computed(() => {
     <SearchBar v-model="searchQuery" placeholder="Search all income & expenses..." />
 
     <!-- Search Results -->
-    <DashboardSearchResults
-      v-if="searchQuery.trim()"
-      :query="searchQuery"
-      :results="searchResults"
-      :count="resultCount"
-    />
+    <div aria-live="polite">
+      <DashboardSearchResults
+        v-if="searchQuery.trim()"
+        :query="searchQuery"
+        :results="searchResults"
+        :count="resultCount"
+      />
+    </div>
 
     <template v-if="!searchQuery.trim()">
     <div class="summary-cards">
@@ -198,11 +200,6 @@ h1 {
   gap: 1rem;
   margin-bottom: 2rem;
 }
-
-.income-card { background: var(--color-income-bg); color: var(--color-income); }
-.expense-card { background: var(--color-expense-bg); color: var(--color-expense); }
-.net-card { background: var(--color-primary-light); color: var(--color-primary-text); }
-.net-card.negative { background: var(--color-warning-bg); color: var(--color-warning); }
 
 .quick-lists section { margin-bottom: 2rem; }
 h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }

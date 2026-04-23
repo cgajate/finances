@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { useBudgetsStore } from '@/stores/budgets'
 import { useSnackbar } from '@/composables/useSnackbar'
-import { formatCurrency } from '@/lib/formatCurrency'
 import type { ExpenseCategory } from '@/types/finance'
 import CurrencyInput from '@/components/CurrencyInput.vue'
 import BudgetProgressRow from '@/components/BudgetProgressRow.vue'
@@ -59,7 +58,7 @@ function removeBudget(category: ExpenseCategory) {
         <button type="submit" class="btn-add">+ Add</button>
       </div>
     </form>
-    <p v-else class="all-set"><font-awesome-icon :icon="['fas', 'circle-check']" /> All categories have budgets set!</p>
+    <p v-else class="all-set"><font-awesome-icon :icon="['fas', 'circle-check']" aria-hidden="true" /> All categories have budgets set!</p>
 
     <!-- Budget status list -->
     <div v-if="budgetsStore.budgetStatus.length" class="budget-list">
@@ -72,8 +71,8 @@ function removeBudget(category: ExpenseCategory) {
         <div class="budget-footer">
           <span class="budget-percent" :class="`status-${bs.status}`">
             {{ Math.round(bs.percent) }}%
-            <span v-if="bs.status === 'over'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Over budget!</span>
-            <span v-else-if="bs.status === 'warning'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" /> Approaching limit</span>
+            <span v-if="bs.status === 'over'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" aria-hidden="true" /> Over budget!</span>
+            <span v-else-if="bs.status === 'warning'" class="status-label"><font-awesome-icon :icon="['fas', 'triangle-exclamation']" aria-hidden="true" /> Approaching limit</span>
           </span>
           <button class="btn-remove" :aria-label="`Remove ${bs.category} budget`" @click="removeBudget(bs.category)">Remove</button>
         </div>
