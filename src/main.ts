@@ -63,6 +63,10 @@ import './assets/main.css'
 import './assets/buttons.scss'
 import './assets/_layout.scss'
 import './assets/_forms.scss'
+import './assets/_badges.scss'
+import './assets/_cards.scss'
+import './assets/_list-items.scss'
+import './assets/_utilities.scss'
 
 library.add(
   faArrowDown,

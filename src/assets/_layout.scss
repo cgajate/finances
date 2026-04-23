@@ -31,3 +31,18 @@
   font-style: italic;
 }
 
+// ─── Section header (title + action button row) ───
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+// ─── Section actions (expand/collapse + manage links) ───
+.section-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}

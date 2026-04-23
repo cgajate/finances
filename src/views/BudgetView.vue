@@ -93,13 +93,7 @@ function removeBudget(category: ExpenseCategory) {
 .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
 .form { margin-bottom: 2rem; }
-.form-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
-.field { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 140px; }
-.field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
-.field input, .field select {
-  padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
-  background: var(--color-input-bg); color: var(--color-input-text);
-}
+.form-row .field { flex: 1; min-width: 140px; }
 .all-set { color: var(--color-income); font-weight: 500; margin-bottom: 1.5rem; }
 
 .budget-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -114,8 +108,4 @@ function removeBudget(category: ExpenseCategory) {
 .budget-footer { display: flex; justify-content: space-between; align-items: center; }
 .budget-percent { font-size: 0.85rem; font-weight: 600; }
 .status-label { font-weight: 500; }
-
-.status-ok { color: var(--color-income); }
-.status-warning { color: var(--color-warning); }
-.status-over { color: var(--color-expense); }
 </style>

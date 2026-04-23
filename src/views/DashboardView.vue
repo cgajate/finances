@@ -238,26 +238,6 @@ h1 {
   margin-bottom: 2rem;
 }
 
-.card {
-  padding: 1.25rem;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.card-label {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.8;
-}
-
-.card-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
 .income-card { background: var(--color-income-bg); color: var(--color-income); }
 .expense-card { background: var(--color-expense-bg); color: var(--color-expense); }
 .net-card { background: var(--color-primary-light); color: var(--color-primary-text); }
@@ -274,14 +254,7 @@ li {
 li strong { flex: 1; min-width: 120px; }
 .amount { font-weight: 600; color: var(--color-income); }
 .amount.expense { color: var(--color-expense); }
-.badge {
-  font-size: 0.75rem; background: var(--color-badge-bg); padding: 0.2rem 0.5rem;
-  border-radius: 4px; text-transform: capitalize; color: var(--color-badge-text);
-}
 
-.section-actions {
-  display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
-}
 .budget-section .btn { margin-top: 1rem; }
 
 .btn-toggle:hover { background: var(--color-primary-light); }
@@ -300,7 +273,6 @@ li strong { flex: 1; min-width: 120px; }
 .budget-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-income); }
 .budget-warning { color: var(--color-warning); }
 .budget-over { color: var(--color-expense); }
-.budget-section .btn { margin-top: 1rem; }
 
 .savings-section {
   margin-top: 2rem;
@@ -313,7 +285,9 @@ li strong { flex: 1; min-width: 120px; }
 .savings-goal-info { display: flex; justify-content: space-between; align-items: center; }
 .savings-goal-name { font-weight: 500; font-size: 0.9rem; }
 .savings-goal-amt { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
-.savings-section .btn { margin-top: 1rem; }.search-results { margin-bottom: 2rem; }
+.savings-section .btn { margin-top: 1rem; }
+
+.search-results { margin-bottom: 2rem; }
 .search-list { display: flex; flex-direction: column; gap: 0.5rem; }
 .search-item {
   padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px;
@@ -322,7 +296,4 @@ li strong { flex: 1; min-width: 120px; }
 .search-item-main { display: flex; align-items: center; gap: 0.5rem; }
 .search-item-main strong { flex: 1; }
 .search-item-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.badge-income { background: var(--color-income-bg); color: var(--color-income); }
-.badge-expense { background: var(--color-expense-bg); color: var(--color-expense); }
-.cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
 </style>

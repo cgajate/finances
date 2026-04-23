@@ -1,0 +1,78 @@
+// ─── Utility classes ───
+// Status colors, action button base, and shared helpers
+
+// ─── Status colors (ok/warning/over) ───
+.status-ok {
+  color: var(--color-income);
+}
+
+.status-warning {
+  color: var(--color-warning);
+}
+
+.status-over {
+  color: var(--color-expense);
+}
+
+// ─── Action button base (icon actions in lists) ───
+.action-btn {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: background 0.15s;
+
+  &.edit {
+    color: var(--color-primary);
+
+    &:hover {
+      background: var(--color-primary-light);
+    }
+  }
+
+  &.delete {
+    color: var(--color-expense);
+
+    &:hover {
+      background: var(--color-expense-bg);
+    }
+  }
+
+  &.save {
+    color: var(--color-income);
+
+    &:hover {
+      background: var(--color-income-bg);
+    }
+  }
+
+  &.cancel {
+    color: var(--color-text-muted);
+
+    &:hover {
+      background: var(--color-badge-bg);
+    }
+  }
+
+  &.restore {
+    color: var(--color-primary);
+    font-weight: 500;
+
+    &:hover {
+      background: var(--color-primary-light);
+    }
+  }
+}
+
+// ─── Item actions row ───
+.item-actions {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+

@@ -70,24 +70,6 @@ const hasActivities = computed(() => store.sortedActivities.length > 0)
 }
 
 
-
-.feed-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.feed-item {
-  display: flex;
-  gap: 0.75rem;
-  padding: 0.85rem 0;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.feed-item:last-child {
-  border-bottom: none;
-}
-
 .feed-icon {
   font-size: 1rem;
   flex-shrink: 0;

@@ -221,29 +221,6 @@ h2 {
   cursor: not-allowed;
 }
 
-/* Category list */
-.category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.category-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-surface);
-  gap: 0.5rem;
-}
-
-.category-item.deleted {
-  opacity: 0.6;
-  border-style: dashed;
-}
-
 .category-name {
   display: flex;
   align-items: center;
@@ -260,66 +237,6 @@ h2 {
 .tag-icon {
   color: var(--color-primary);
   font-size: 0.8rem;
-}
-
-.item-actions {
-  display: flex;
-  gap: 0.3rem;
-  flex-shrink: 0;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  padding: 0.3rem 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: background 0.15s;
-}
-
-.action-btn.edit {
-  color: var(--color-primary);
-}
-
-.action-btn.edit:hover {
-  background: var(--color-primary-light);
-}
-
-.action-btn.delete {
-  color: var(--color-expense);
-}
-
-.action-btn.delete:hover {
-  background: var(--color-expense-bg);
-}
-
-.action-btn.save {
-  color: var(--color-income);
-}
-
-.action-btn.save:hover {
-  background: var(--color-income-bg);
-}
-
-.action-btn.cancel {
-  color: var(--color-text-muted);
-}
-
-.action-btn.cancel:hover {
-  background: var(--color-badge-bg);
-}
-
-.action-btn.restore {
-  color: var(--color-primary);
-  font-weight: 500;
-}
-
-.action-btn.restore:hover {
-  background: var(--color-primary-light);
 }
 
 /* Edit input */

@@ -147,13 +147,7 @@ function meterVariant(percent: number): 'ok' | 'warning' | 'over' | 'primary' {
 h2 { margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 
 .form { margin-bottom: 1.5rem; }
-.form-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
-.field { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 140px; }
-.field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
-.field input {
-  padding: 0.6rem; border: 1px solid var(--color-input-border); border-radius: 8px; font-size: 1rem;
-  background: var(--color-input-bg); color: var(--color-input-text);
-}
+.form-row .field { flex: 1; min-width: 140px; }
 
 .goals-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .goal-card {

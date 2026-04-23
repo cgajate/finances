@@ -188,37 +188,5 @@ const { searchQuery: expenseSearchQuery, filtered: filteredExpenses } = useSearc
 
 <style scoped>
 h2 { margin: 0; font-size: 1.1rem; }
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.list { display: flex; flex-direction: column; gap: 0.5rem; }
-.list-item {
-  padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; display: flex;
-  flex-direction: column; gap: 0.4rem; background: var(--color-surface);
-}
-.list-item-main { display: flex; justify-content: space-between; align-items: center; }
-.list-item-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-.list-item-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
-.income-amount { font-weight: 700; color: var(--color-income); }
-.expense-amount { font-weight: 700; color: var(--color-expense); }
-.badge {
-  font-size: 0.75rem; padding: 0.15rem 0.5rem;
-  border-radius: 4px; text-transform: capitalize;
-}
-.income-badge { background: var(--color-income-bg); color: var(--color-income); }
-.expense-badge { background: var(--color-expense-bg); color: var(--color-expense); }
-.meta { font-size: 0.8rem; color: var(--color-text-muted); }
-.list-item-date { font-size: 0.85rem; color: var(--color-text); display: flex; align-items: center; gap: 0.4rem; }
-.income-date-icon { color: var(--color-income); font-size: 0.85rem; }
-.expense-date-icon { color: var(--color-expense); font-size: 0.85rem; }
-.list-item-created { font-size: 0.75rem; color: var(--color-text-muted); }
-.created-by { margin-left: 0.25rem; }
-.cat-badge { background: var(--color-cat-bg); color: var(--color-cat-text); }
-.assigned-badge { background: var(--color-assigned-bg); color: var(--color-assigned-text); }
 </style>
 

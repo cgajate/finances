@@ -1,0 +1,34 @@
+// ─── Badge styles ───
+// Shared across DashboardView, FinancesListView, and search results
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+}
+
+.income-badge,
+.badge-income {
+  background: var(--color-income-bg);
+  color: var(--color-income);
+}
+
+.expense-badge,
+.badge-expense {
+  background: var(--color-expense-bg);
+  color: var(--color-expense);
+}
+
+.cat-badge {
+  background: var(--color-cat-bg);
+  color: var(--color-cat-text);
+}
+
+.assigned-badge {
+  background: var(--color-assigned-bg);
+  color: var(--color-assigned-text);
+}
+

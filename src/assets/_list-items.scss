@@ -1,0 +1,127 @@
+// ─── List item styles ───
+// Shared across FinancesListView (.list-item), ActivityFeedView (.feed-item),
+// and CategoriesView (.category-item)
+
+// ─── Generic item list container ───
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// ─── Bordered list item (finances, categories) ───
+.list-item {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--color-surface);
+}
+
+.list-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-item-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.list-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.list-item-date {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.list-item-created {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+// ─── Amount display ───
+.income-amount {
+  font-weight: 700;
+  color: var(--color-income);
+}
+
+.expense-amount {
+  font-weight: 700;
+  color: var(--color-expense);
+}
+
+// ─── Date icons ───
+.income-date-icon {
+  color: var(--color-income);
+  font-size: 0.85rem;
+}
+
+.expense-date-icon {
+  color: var(--color-expense);
+  font-size: 0.85rem;
+}
+
+// ─── Metadata text ───
+.meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.created-by {
+  margin-left: 0.25rem;
+}
+
+// ─── Category item (CategoriesView) ───
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  gap: 0.5rem;
+
+  &.deleted {
+    opacity: 0.6;
+    border-style: dashed;
+  }
+}
+
+// ─── Feed item (ActivityFeedView) ───
+.feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feed-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--color-border-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
