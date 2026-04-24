@@ -186,13 +186,13 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
       <div class="admin-dropdown-wrapper">
         <button
           class="icon-btn"
-          :class="{ 'icon-btn--avatar': !!photoURL }"
+          :class="{ 'icon-btn--avatar': !!photoURL && !internalCollapsed }"
           title="Admin"
           aria-label="Admin menu"
           @click="adminMenuOpen = !adminMenuOpen"
         >
           <img
-            v-if="photoURL"
+            v-if="photoURL && !internalCollapsed"
             :src="photoURL"
             alt=""
             class="header-avatar"
@@ -219,7 +219,7 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
               <div class="admin-separator"></div>
             </template>
             <RouterLink to="/categories" class="admin-option" @click="adminMenuOpen = false">
-              <span>Categories</span>
+              <span>Manage Categories</span>
               <font-awesome-icon :icon="['fas', 'tags']" />
             </RouterLink>
             <RouterLink to="/approvals" class="admin-option" @click="adminMenuOpen = false">
@@ -232,7 +232,7 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
               <font-awesome-icon :icon="['fas', 'clipboard-check']" />
             </RouterLink>
             <RouterLink to="/import" class="admin-option" @click="adminMenuOpen = false">
-              <span>Import Statement</span>
+              <span>Import</span>
               <font-awesome-icon :icon="['fas', 'file-csv']" />
             </RouterLink>
             <div class="admin-separator"></div>
@@ -587,6 +587,9 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
 
 /* ─── Small screens ─── */
 @media (max-width: 480px) {
+  .admin-dropdown-wrapper {
+    display: none;
+  }
   .logo-text {
     display: none;
   }
