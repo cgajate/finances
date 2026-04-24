@@ -1,6 +1,7 @@
 import { computed, type Ref } from 'vue'
 import type { Income, Expense, Frequency } from '@/types/finance'
 import { advanceDate } from '@/lib/dateUtils'
+import { getEffectiveAmount } from '@/lib/overrides'
 
 export interface CalendarEvent {
   id: string
@@ -97,11 +98,12 @@ export function useBillCalendar(
       if (inc.type === 'recurring' && inc.date) {
         const dates = generateOccurrences(inc.date, inc.frequency, rangeStart, rangeEnd)
         for (const d of dates) {
+          const monthKey = d.substring(0, 7)
           const ev: CalendarEvent = {
             id: `${inc.id}-${d}`,
             date: d,
             description: inc.description,
-            amount: inc.amount,
+            amount: getEffectiveAmount(inc.amount, inc.overrides, monthKey),
             kind: 'income',
             frequency: inc.frequency,
             category: inc.category,
@@ -134,11 +136,12 @@ export function useBillCalendar(
       if (exp.type === 'recurring' && exp.dueDate) {
         const dates = generateOccurrences(exp.dueDate, exp.frequency, rangeStart, rangeEnd)
         for (const d of dates) {
+          const monthKey = d.substring(0, 7)
           const ev: CalendarEvent = {
             id: `${exp.id}-${d}`,
             date: d,
             description: exp.description,
-            amount: exp.amount,
+            amount: getEffectiveAmount(exp.amount, exp.overrides, monthKey),
             kind: 'expense',
             frequency: exp.frequency,
             category: exp.category,

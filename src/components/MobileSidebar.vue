@@ -36,6 +36,9 @@ const emit = defineEmits<{
       <RouterLink to="/analytics" class="sidebar-link" @click="emit('close')">
         <font-awesome-icon :icon="['fas', 'chart-line']" /> Analytics
       </RouterLink>
+      <RouterLink to="/approvals" class="sidebar-link" @click="emit('close')">
+        <font-awesome-icon :icon="['fas', 'clipboard-check']" /> Approvals
+      </RouterLink>
     </nav>
   </Transition>
 </template>

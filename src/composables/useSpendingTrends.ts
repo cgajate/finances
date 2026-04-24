@@ -1,6 +1,7 @@
 import { computed, type Ref } from 'vue'
 import type { Expense, Frequency, ExpenseCategory } from '@/types/finance'
 import { useCategoriesStore } from '@/stores/categories'
+import { getEffectiveAmount } from '@/lib/overrides'
 
 function monthlyEquivalent(amount: number, frequency: Frequency): number {
   switch (frequency) {
@@ -87,9 +88,10 @@ export function useSpendingTrends(
       if (!monthMap) continue
 
       if (exp.type === 'recurring') {
-        // Distribute recurring across all months
-        const monthlyAmt = monthlyEquivalent(exp.amount, exp.frequency)
+        // Distribute recurring across all months, respecting overrides
         for (const m of months) {
+          const amt = getEffectiveAmount(exp.amount, exp.overrides, m)
+          const monthlyAmt = monthlyEquivalent(amt, exp.frequency)
           const prev = monthMap.get(m) ?? 0
           monthMap.set(m, prev + monthlyAmt)
         }

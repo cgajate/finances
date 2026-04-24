@@ -6,6 +6,7 @@ import type {
   MonthlyBreakdown,
   ForecastLineItem,
 } from '@/types/finance'
+import { getEffectiveAmount } from '@/lib/overrides'
 
 /**
  * How many times a recurring item occurs in a single month.
@@ -107,10 +108,11 @@ export function useForecasting(
         if (inc.type === 'recurring') {
           const { hits, multiplier } = recurringHitsMonth(inc.frequency, inc.date, month)
           if (hits && multiplier > 0) {
+            const amt = getEffectiveAmount(inc.amount, inc.overrides, month)
             incomeItems.push({
               id: inc.id,
               description: inc.description,
-              amount: Math.round(inc.amount * multiplier * 100) / 100,
+              amount: Math.round(amt * multiplier * 100) / 100,
               source: 'recurring',
               frequency: inc.frequency,
             })
@@ -133,10 +135,11 @@ export function useForecasting(
         if (exp.type === 'recurring') {
           const { hits, multiplier } = recurringHitsMonth(exp.frequency, exp.dueDate, month)
           if (hits && multiplier > 0) {
+            const amt = getEffectiveAmount(exp.amount, exp.overrides, month)
             expenseItems.push({
               id: exp.id,
               description: exp.description,
-              amount: Math.round(exp.amount * multiplier * 100) / 100,
+              amount: Math.round(amt * multiplier * 100) / 100,
               source: 'recurring',
               frequency: exp.frequency,
             })

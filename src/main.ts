@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import {
   faArrowDown,
   faArrowDownAZ,
@@ -24,6 +25,7 @@ import {
   faCircleCheck,
   faCircleExclamation,
   faCircleHalfStroke,
+  faClipboardCheck,
   faClock,
   faCoins,
   faDesktop,
@@ -70,6 +72,7 @@ import './assets/_utilities.scss'
 import './assets/_bubble.scss'
 
 library.add(
+  faGoogle,
   faArrowDown,
   faArrowDownAZ,
   faArrowLeft,
@@ -91,6 +94,7 @@ library.add(
   faCircleCheck,
   faCircleExclamation,
   faCircleHalfStroke,
+  faClipboardCheck,
   faClock,
   faCoins,
   faDesktop,

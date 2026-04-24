@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MobileSidebar from '@/components/MobileSidebar.vue'
-import PinGate from '@/components/PinGate.vue'
+import AuthGate from '@/components/AuthGate.vue'
 import HouseholdSetup from '@/components/HouseholdSetup.vue'
 import SnackbarNotification from '@/components/SnackbarNotification.vue'
 
@@ -11,7 +11,7 @@ const syncModalOpen = ref(false)
 </script>
 
 <template>
-  <PinGate>
+  <AuthGate>
     <div class="app-shell">
       <a href="#main-content" class="skip-link">Skip to content</a>
       <AppHeader
@@ -27,7 +27,7 @@ const syncModalOpen = ref(false)
         <RouterView />
       </main>
     </div>
-  </PinGate>
+  </AuthGate>
   <SnackbarNotification />
 </template>
 

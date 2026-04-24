@@ -56,7 +56,7 @@ src/
     useForecasting.ts    # Monthly income/expense projections
     useBillCalendar.ts   # Bill due-date calendar logic
     useHousehold.ts      # Multi-user household management
-    usePin.ts            # PIN-based app lock
+    useAuth.ts           # Firebase Auth (Google + anonymous sign-in)
     useSnackbar.ts       # Toast notification helper
     useSpendingTrends.ts # Spending analytics
     useTheme.ts          # Dark/light theme toggle

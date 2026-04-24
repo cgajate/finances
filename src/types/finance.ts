@@ -32,6 +32,9 @@ export const INCOME_CATEGORIES = [
 
 export type IncomeCategory = (typeof INCOME_CATEGORIES)[number]
 
+/** Per-month amount overrides for recurring items. Key is YYYY-MM format. */
+export type MonthlyOverrides = Record<string, number>
+
 export interface RecurringIncome {
   id: string
   type: 'recurring'
@@ -39,9 +42,13 @@ export interface RecurringIncome {
   frequency: Frequency
   description: string
   notes: string
-  date: string | null // optional scheduled date
+  date: string | null
   category?: IncomeCategory
   createdAt: string
+  createdBy?: string
+  createdByPhoto?: string | null
+  /** Per-month amount overrides — key is YYYY-MM, value is the adjusted amount */
+  overrides?: MonthlyOverrides
 }
 
 export interface AdhocIncome {
@@ -52,6 +59,8 @@ export interface AdhocIncome {
   date: string
   category?: IncomeCategory
   createdAt: string
+  createdBy?: string
+  createdByPhoto?: string | null
 }
 
 export type Income = RecurringIncome | AdhocIncome
@@ -67,6 +76,10 @@ export interface RecurringExpense {
   category?: ExpenseCategory
   assignedTo?: string
   createdAt: string
+  createdBy?: string
+  createdByPhoto?: string | null
+  /** Per-month amount overrides — key is YYYY-MM, value is the adjusted amount */
+  overrides?: MonthlyOverrides
 }
 
 export interface AdhocExpense {
@@ -79,6 +92,8 @@ export interface AdhocExpense {
   category?: ExpenseCategory
   assignedTo?: string
   createdAt: string
+  createdBy?: string
+  createdByPhoto?: string | null
 }
 
 export type Expense = RecurringExpense | AdhocExpense

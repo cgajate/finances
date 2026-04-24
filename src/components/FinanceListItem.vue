@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { formatDate, formatDateTime } from '@/lib/formatDate'
 import { formatCurrency } from '@/lib/formatCurrency'
 import { getNextDueDate } from '@/lib/dateUtils'
-import type { Income, Expense } from '@/types/finance'
+import type { Income, Expense, RecurringIncome, RecurringExpense } from '@/types/finance'
 
 const props = defineProps<{
   /** The finance item to render */
@@ -31,6 +32,23 @@ function editRoute(): string {
     ? `/finances/income/${props.item.id}/edit`
     : `/finances/expenses/${props.item.id}/edit`
 }
+
+/** Current month in YYYY-MM format */
+const currentMonth = new Date().toISOString().slice(0, 7)
+
+/** Current-month override amount, if any */
+const currentOverride = computed(() => {
+  if (props.item.type !== 'recurring') return undefined
+  const rec = props.item as RecurringIncome | RecurringExpense
+  return rec.overrides?.[currentMonth]
+})
+
+/** Number of active overrides on this item */
+const overrideCount = computed(() => {
+  if (props.item.type !== 'recurring') return 0
+  const rec = props.item as RecurringIncome | RecurringExpense
+  return rec.overrides ? Object.keys(rec.overrides).length : 0
+})
 </script>
 
 <template>
@@ -39,7 +57,13 @@ function editRoute(): string {
     <div class="list-item-main">
       <strong>{{ item.description }}</strong>
       <span :class="kind === 'income' ? 'income-amount' : 'expense-amount'">
-        {{ formatCurrency(item.amount) }}
+        <template v-if="currentOverride !== undefined">
+          <span class="override-amount">{{ formatCurrency(currentOverride) }}</span>
+          <span class="override-base">({{ formatCurrency(item.amount) }})</span>
+        </template>
+        <template v-else>
+          {{ formatCurrency(item.amount) }}
+        </template>
       </span>
     </div>
 
@@ -52,6 +76,9 @@ function editRoute(): string {
         {{ item.type === 'recurring' ? item.frequency : 'one-time' }}
       </span>
       <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
+      <span v-if="overrideCount > 0" class="badge override-badge" :title="`${overrideCount} month adjustment${overrideCount > 1 ? 's' : ''}`">
+        <font-awesome-icon :icon="['fas', 'pen']" /> {{ overrideCount }} adj.
+      </span>
       <span
         v-if="kind === 'expense' && (item as Expense).assignedTo"
         class="badge assigned-badge"
@@ -86,11 +113,15 @@ function editRoute(): string {
     <!-- Created timestamp -->
     <div class="list-item-created">
       Created {{ formatDateTime(item.createdAt) }}
-      <span
-        v-if="kind === 'expense' && (item as Expense).assignedTo"
-        class="created-by"
-      >
-        by {{ (item as Expense).assignedTo }}
+      <span class="created-by">
+        by
+        <img
+          v-if="item.createdByPhoto"
+          :src="item.createdByPhoto"
+          alt=""
+          class="created-by__avatar"
+        />
+        {{ item.createdBy ?? 'Anonymous' }}
       </span>
     </div>
 
@@ -114,3 +145,35 @@ function editRoute(): string {
   </div>
 </template>
 
+<style scoped>
+.created-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.created-by__avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.override-amount {
+  font-weight: 700;
+}
+
+.override-base {
+  font-size: 0.8em;
+  text-decoration: line-through;
+  opacity: 0.6;
+  margin-left: 0.25rem;
+}
+
+.override-badge {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  font-size: 0.75rem;
+}
+</style>

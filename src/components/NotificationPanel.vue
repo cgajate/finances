@@ -15,6 +15,7 @@ function close() {
   open.value = false
 }
 
+defineExpose({ close })
 
 function dueLabel(days: number | null): string {
   if (days === null) return ''

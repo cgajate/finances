@@ -1,10 +1,12 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import type { Income, Expense, Frequency, IncomeCategory, ExpenseCategory } from '@/types/finance'
+import type { Income, Expense, Frequency, IncomeCategory, ExpenseCategory, RecurringIncome, RecurringExpense } from '@/types/finance'
 import { advanceDate, advanceToFuture } from '@/lib/dateUtils'
+import { getEffectiveAmount } from '@/lib/overrides'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 import { useActivityFeedStore } from '@/stores/activityFeed'
+import { useAuth } from '@/composables/useAuth'
 import { generateId } from '@/lib/id'
 import { loadFromStorage } from '@/lib/storage'
 
@@ -65,24 +67,30 @@ export const useFinancesStore = defineStore('finances', () => {
     category?: IncomeCategory
   }, userId = 'anonymous') {
     const id = generateId()
+    const { displayName, photoURL } = useAuth()
     incomes.value.push({
       id,
       type: 'recurring',
       category: data.category ?? 'Other',
       ...data,
       createdAt: new Date().toISOString(),
+      createdBy: displayName.value || userId,
+      createdByPhoto: photoURL.value,
     })
     useActivityFeedStore().logActivity(userId, 'add', 'income', id, `Added recurring income "${data.description}"`)
   }
 
   function addAdhocIncome(data: { amount: number; description: string; date: string; category?: IncomeCategory }, userId = 'anonymous') {
     const id = generateId()
+    const { displayName, photoURL } = useAuth()
     incomes.value.push({
       id,
       type: 'adhoc',
       category: data.category ?? 'Other',
       ...data,
       createdAt: new Date().toISOString(),
+      createdBy: displayName.value || userId,
+      createdByPhoto: photoURL.value,
     })
     useActivityFeedStore().logActivity(userId, 'add', 'income', id, `Added income "${data.description}"`)
   }
@@ -121,6 +129,7 @@ export const useFinancesStore = defineStore('finances', () => {
     assignedTo?: string
   }, userId = 'anonymous') {
     const id = generateId()
+    const { displayName, photoURL } = useAuth()
     expenses.value.push({
       id,
       type: 'recurring',
@@ -128,6 +137,8 @@ export const useFinancesStore = defineStore('finances', () => {
       assignedTo: data.assignedTo ?? '',
       ...data,
       createdAt: new Date().toISOString(),
+      createdBy: displayName.value || userId,
+      createdByPhoto: photoURL.value,
     })
     if (data.assignedTo) addFamilyMember(data.assignedTo)
     useActivityFeedStore().logActivity(userId, 'add', 'expense', id, `Added recurring expense "${data.description}"`)
@@ -142,6 +153,7 @@ export const useFinancesStore = defineStore('finances', () => {
     assignedTo?: string
   }, userId = 'anonymous') {
     const id = generateId()
+    const { displayName, photoURL } = useAuth()
     expenses.value.push({
       id,
       type: 'adhoc',
@@ -149,6 +161,8 @@ export const useFinancesStore = defineStore('finances', () => {
       assignedTo: data.assignedTo ?? '',
       ...data,
       createdAt: new Date().toISOString(),
+      createdBy: displayName.value || userId,
+      createdByPhoto: photoURL.value,
     })
     if (data.assignedTo) addFamilyMember(data.assignedTo)
     useActivityFeedStore().logActivity(userId, 'add', 'expense', id, `Added expense "${data.description}"`)
@@ -225,13 +239,57 @@ export const useFinancesStore = defineStore('finances', () => {
       }
       const prev = map.get(cat) ?? 0
       if (e.type === 'recurring') {
-        map.set(cat, prev + monthlyEquivalent(e.amount, e.frequency))
+        const amt = getEffectiveAmount(e.amount, e.overrides, currentMonth)
+        map.set(cat, prev + monthlyEquivalent(amt, e.frequency))
       } else {
         map.set(cat, prev + e.amount)
       }
     }
     return map
   })
+
+  // --- Monthly overrides ---
+
+  /** Set an amount override for a recurring income in a specific month */
+  function setIncomeOverride(id: string, month: string, amount: number) {
+    const item = incomes.value.find((i) => i.id === id)
+    if (!item || item.type !== 'recurring') return
+    const rec = item as RecurringIncome
+    if (!rec.overrides) rec.overrides = {}
+    rec.overrides[month] = amount
+  }
+
+  /** Remove an amount override for a recurring income in a specific month */
+  function removeIncomeOverride(id: string, month: string) {
+    const item = incomes.value.find((i) => i.id === id)
+    if (!item || item.type !== 'recurring') return
+    const rec = item as RecurringIncome
+    if (rec.overrides) {
+      delete rec.overrides[month]
+      // Clean up empty overrides object
+      if (Object.keys(rec.overrides).length === 0) rec.overrides = undefined
+    }
+  }
+
+  /** Set an amount override for a recurring expense in a specific month */
+  function setExpenseOverride(id: string, month: string, amount: number) {
+    const item = expenses.value.find((e) => e.id === id)
+    if (!item || item.type !== 'recurring') return
+    const rec = item as RecurringExpense
+    if (!rec.overrides) rec.overrides = {}
+    rec.overrides[month] = amount
+  }
+
+  /** Remove an amount override for a recurring expense in a specific month */
+  function removeExpenseOverride(id: string, month: string) {
+    const item = expenses.value.find((e) => e.id === id)
+    if (!item || item.type !== 'recurring') return
+    const rec = item as RecurringExpense
+    if (rec.overrides) {
+      delete rec.overrides[month]
+      if (Object.keys(rec.overrides).length === 0) rec.overrides = undefined
+    }
+  }
 
   // --- Family members ---
   function addFamilyMember(name: string) {
@@ -263,6 +321,10 @@ export const useFinancesStore = defineStore('finances', () => {
     totalMonthlyExpenses,
     netMonthly,
     spendingByCategory,
+    setIncomeOverride,
+    removeIncomeOverride,
+    setExpenseOverride,
+    removeExpenseOverride,
     addFamilyMember,
     removeFamilyMember,
     enableSync,

@@ -12,6 +12,11 @@ export default defineConfig({
     vueJsx(),
     vueDevTools(),
   ],
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

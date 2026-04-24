@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import NotificationPanel from '@/components/NotificationPanel.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useHousehold } from '@/composables/useHousehold'
+import { useAuth } from '@/composables/useAuth'
 
 const emit = defineEmits<{
   'toggle-menu': []
@@ -17,8 +18,10 @@ const themeMenuOpen = ref(false)
 const adminMenuOpen = ref(false)
 const headerRef = ref<HTMLElement | null>(null)
 const navRef = ref<HTMLElement | null>(null)
+const notificationPanelRef = ref<InstanceType<typeof NotificationPanel> | null>(null)
 const { isDark, mode, highContrast, setMode, toggleDark, toggleHighContrast } = useTheme()
 const { hasHousehold } = useHousehold()
+const { displayName, photoURL, isAnonymous, signOut } = useAuth()
 
 const internalCollapsed = ref(false)
 let checking = false
@@ -54,14 +57,29 @@ function checkOverflow() {
   checking = false
 }
 
+function closeAllMenus() {
+  themeMenuOpen.value = false
+  adminMenuOpen.value = false
+  notificationPanelRef.value?.close()
+}
+
+function onDocumentClick(e: MouseEvent) {
+  const target = e.target as HTMLElement
+  if (!headerRef.value?.contains(target)) {
+    closeAllMenus()
+  }
+}
+
 onMounted(async () => {
   await nextTick()
   checkOverflow()
   window.addEventListener('resize', checkOverflow)
+  document.addEventListener('click', onDocumentClick)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', checkOverflow)
+  document.removeEventListener('click', onDocumentClick)
 })
 
 defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
@@ -150,25 +168,42 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
       </div>
 
       <!-- Notifications -->
-      <NotificationPanel />
+      <NotificationPanel ref="notificationPanelRef" />
 
       <!-- Admin menu -->
       <div class="admin-dropdown-wrapper">
         <button
           class="icon-btn"
+          :class="{ 'icon-btn--avatar': !!photoURL }"
           title="Admin"
           aria-label="Admin menu"
           @click="adminMenuOpen = !adminMenuOpen"
         >
-          <font-awesome-icon :icon="['fas', 'gear']" />
+          <img v-if="photoURL" :src="photoURL" alt="" class="header-avatar" />
+          <font-awesome-icon v-else :icon="['fas', 'gear']" />
         </button>
         <div v-if="adminMenuOpen" class="admin-backdrop" @click="adminMenuOpen = false"></div>
         <Transition name="slide">
           <div v-if="adminMenuOpen" class="admin-bubble" role="dialog" aria-label="Admin menu" @keydown.escape="adminMenuOpen = false">
+            <template v-if="!isAnonymous">
+              <div class="admin-user">
+                <span class="admin-user-name">{{ displayName }}</span>
+              </div>
+              <div class="admin-separator"></div>
+            </template>
             <RouterLink to="/categories" class="admin-option" @click="adminMenuOpen = false">
               <span>Categories</span>
               <font-awesome-icon :icon="['fas', 'tags']" />
             </RouterLink>
+            <RouterLink to="/approvals" class="admin-option" @click="adminMenuOpen = false">
+              <span>Approvals</span>
+              <font-awesome-icon :icon="['fas', 'clipboard-check']" />
+            </RouterLink>
+            <div class="admin-separator"></div>
+            <button class="admin-option admin-option--danger" @click="signOut(); adminMenuOpen = false">
+              <span>Sign Out</span>
+              <font-awesome-icon :icon="['fas', 'right-from-bracket']" />
+            </button>
           </div>
         </Transition>
       </div>
@@ -372,6 +407,21 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
   position: relative;
 }
 
+.icon-btn--avatar {
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: none;
+}
+
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
 .admin-backdrop {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -411,6 +461,33 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
 .admin-option:hover {
   background: var(--color-primary-light);
   color: var(--color-primary-text);
+}
+
+.admin-option--danger:hover {
+  background: var(--color-expense-bg);
+  color: var(--color-expense);
+}
+
+/* ─── Admin user section ─── */
+.admin-user {
+  padding: 0.55rem 0.75rem;
+  text-align: center;
+}
+
+.admin-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.admin-separator {
+  height: 1px;
+  background: var(--color-border-light, var(--color-border));
+  margin: 0.25rem 0.5rem;
 }
 
 /* ─── Hamburger ─── */

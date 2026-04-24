@@ -33,6 +33,7 @@ const router = createRouter({
     { path: '/savings', redirect: '/goals/savings' },
     { path: '/calendar', name: 'calendar', component: () => import('@/views/BillCalendarView.vue') },
     { path: '/activity', name: 'activity', component: () => import('@/views/ActivityFeedView.vue') },
+    { path: '/approvals', name: 'approvals', component: () => import('@/views/ApprovalsView.vue') },
     { path: '/categories', name: 'categories', component: () => import('@/views/CategoriesView.vue') },
   ],
 })

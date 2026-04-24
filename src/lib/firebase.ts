@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
-import { getFirestore, enableMultiTabIndexedDbPersistence, type Firestore } from 'firebase/firestore'
+import { initializeFirestore, persistentMultipleTabManager, persistentLocalCache, type Firestore } from 'firebase/firestore'
 import { getAuth, signInAnonymously, type Auth } from 'firebase/auth'
 
 let app: FirebaseApp | null = null
@@ -23,14 +23,15 @@ function init() {
     appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
   })
 
-  db = getFirestore(app)
-  auth = getAuth(app)
-
-  // Enable offline persistence
-  enableMultiTabIndexedDbPersistence(db).catch((err) => {
-    console.warn('Firestore persistence failed:', err.code)
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
   })
+  auth = getAuth(app)
 }
+
+export { init }
 
 export function getDb(): Firestore | null {
   init()
