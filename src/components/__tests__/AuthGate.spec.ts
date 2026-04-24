@@ -13,6 +13,7 @@ vi.mock('@/composables/useAuth', () => ({
   useAuth: () => ({
     loading: mockLoading,
     authenticated: computed(() => mockAuthenticated.value),
+    lastError: ref(''),
     initAuth: mockInitAuth,
     signInWithGoogle: mockSignInWithGoogle,
     signInAnon: mockSignInAnon,

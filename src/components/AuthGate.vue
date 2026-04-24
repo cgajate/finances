@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 
-const { authenticated, loading, initAuth, signInWithGoogle, signInAnon } = useAuth()
+const { authenticated, loading, lastError: authError, initAuth, signInWithGoogle, signInAnon } = useAuth()
 
 const signingIn = ref(false)
 const error = ref('')
@@ -15,7 +15,7 @@ async function handleGoogle() {
   signingIn.value = true
   error.value = ''
   const ok = await signInWithGoogle()
-  if (!ok) error.value = 'Google sign-in failed. Please try again.'
+  if (!ok) error.value = authError.value || 'Google sign-in failed. Please try again.'
   signingIn.value = false
 }
 
@@ -69,7 +69,9 @@ async function handleAnonymous() {
         Continue without an account
       </button>
 
-      <p v-if="error" class="auth-error" role="alert" aria-live="assertive">{{ error }}</p>
+      <p v-if="error" class="auth-error" role="alert" aria-live="assertive">
+        {{ error }}
+      </p>
 
       <p class="auth-hint">
         Anonymous sessions are local to this device and cannot sync across devices.

@@ -3,15 +3,37 @@ import type { User, Auth } from 'firebase/auth'
 
 // Mock firebase/auth
 const mockSignInWithPopup = vi.fn()
+const mockSignInWithCredential = vi.fn()
 const mockSignInAnonymously = vi.fn()
 const mockOnAuthStateChanged = vi.fn()
-const mockGoogleAuthProvider = vi.fn()
+const mockGoogleAuthProvider: ReturnType<typeof vi.fn> & { credential: ReturnType<typeof vi.fn> } = Object.assign(vi.fn(), {
+  credential: vi.fn(),
+})
 
 vi.mock('firebase/auth', () => ({
   GoogleAuthProvider: mockGoogleAuthProvider,
   signInWithPopup: mockSignInWithPopup,
+  signInWithCredential: mockSignInWithCredential,
   signInAnonymously: mockSignInAnonymously,
   onAuthStateChanged: mockOnAuthStateChanged,
+}))
+
+// Mock Capacitor
+let mockIsNative = false
+vi.mock('@capacitor/core', () => ({
+  Capacitor: {
+    isNativePlatform: () => mockIsNative,
+  },
+}))
+
+// Mock @capgo/capacitor-social-login
+const mockSocialLoginInit = vi.fn()
+const mockSocialLoginLogin = vi.fn()
+vi.mock('@capgo/capacitor-social-login', () => ({
+  SocialLogin: {
+    initialize: (...args: unknown[]) => mockSocialLoginInit(...args),
+    login: (...args: unknown[]) => mockSocialLoginLogin(...args),
+  },
 }))
 
 // Mock firebase lib
@@ -29,6 +51,8 @@ let useAuth: typeof import('@/composables/useAuth').useAuth
 describe('useAuth', () => {
   beforeEach(async () => {
     vi.resetAllMocks()
+    mockIsNative = false
+    mockGoogleAuthProvider.credential = vi.fn()
     // Re-import to reset module-level refs
     vi.resetModules()
 
@@ -36,8 +60,20 @@ describe('useAuth', () => {
     vi.doMock('firebase/auth', () => ({
       GoogleAuthProvider: mockGoogleAuthProvider,
       signInWithPopup: mockSignInWithPopup,
+      signInWithCredential: mockSignInWithCredential,
       signInAnonymously: mockSignInAnonymously,
       onAuthStateChanged: mockOnAuthStateChanged,
+    }))
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: {
+        isNativePlatform: () => mockIsNative,
+      },
+    }))
+    vi.doMock('@capgo/capacitor-social-login', () => ({
+      SocialLogin: {
+        initialize: (...args: unknown[]) => mockSocialLoginInit(...args),
+        login: (...args: unknown[]) => mockSocialLoginLogin(...args),
+      },
     }))
     vi.doMock('@/lib/firebase', () => ({
       getFirebaseAuth: () => mockGetFirebaseAuth(),
@@ -149,35 +185,35 @@ describe('useAuth', () => {
   })
 
   // --- initAuth ---
-  it('initAuth sets loading false when no firebase auth configured', () => {
+  it('initAuth sets loading false when no firebase auth configured', async () => {
     mockGetFirebaseAuth.mockReturnValue(null)
     const { initAuth, loading } = useAuth()
-    initAuth()
+    await initAuth()
     expect(mockInit).toHaveBeenCalled()
     expect(loading.value).toBe(false)
   })
 
-  it('initAuth registers onAuthStateChanged when auth is available', () => {
+  it('initAuth registers onAuthStateChanged when auth is available', async () => {
     const fakeAuth = {} as Auth
     mockGetFirebaseAuth.mockReturnValue(fakeAuth)
     const { initAuth } = useAuth()
-    initAuth()
+    await initAuth()
     expect(mockOnAuthStateChanged).toHaveBeenCalledWith(fakeAuth, expect.any(Function))
   })
 
-  it('initAuth only initializes once', () => {
+  it('initAuth only initializes once', async () => {
     mockGetFirebaseAuth.mockReturnValue(null)
     const { initAuth } = useAuth()
-    initAuth()
-    initAuth()
+    await initAuth()
+    await initAuth()
     expect(mockInit).toHaveBeenCalledTimes(1)
   })
 
-  it('onAuthStateChanged callback updates firebaseUser and loading', () => {
+  it('onAuthStateChanged callback updates firebaseUser and loading', async () => {
     const fakeAuth = {} as Auth
     mockGetFirebaseAuth.mockReturnValue(fakeAuth)
     const { initAuth, firebaseUser, loading } = useAuth()
-    initAuth()
+    await initAuth()
 
     const callback = mockOnAuthStateChanged.mock.calls[0]![1] as (user: User | null) => void
     const fakeUser = { uid: 'u1', displayName: 'Test', providerData: [] } as unknown as User
@@ -187,6 +223,41 @@ describe('useAuth', () => {
     expect(loading.value).toBe(false)
   })
 
+  it('initAuth initializes SocialLogin on native', async () => {
+    mockIsNative = true
+    vi.resetModules()
+    vi.doMock('firebase/auth', () => ({
+      GoogleAuthProvider: mockGoogleAuthProvider,
+      signInWithPopup: mockSignInWithPopup,
+      signInWithCredential: mockSignInWithCredential,
+      signInAnonymously: mockSignInAnonymously,
+      onAuthStateChanged: mockOnAuthStateChanged,
+    }))
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: { isNativePlatform: () => mockIsNative },
+    }))
+    vi.doMock('@capgo/capacitor-social-login', () => ({
+      SocialLogin: {
+        initialize: (...args: unknown[]) => mockSocialLoginInit(...args),
+        login: (...args: unknown[]) => mockSocialLoginLogin(...args),
+      },
+    }))
+    vi.doMock('@/lib/firebase', () => ({
+      getFirebaseAuth: () => mockGetFirebaseAuth(),
+      init: () => mockInit(),
+    }))
+    const mod = await import('@/composables/useAuth')
+    const fakeAuth = {} as Auth
+    mockGetFirebaseAuth.mockReturnValue(fakeAuth)
+    mockSocialLoginInit.mockResolvedValue(undefined)
+    const { initAuth } = mod.useAuth()
+    await initAuth()
+    expect(mockSocialLoginInit).toHaveBeenCalledTimes(1)
+    const callArg = mockSocialLoginInit.mock.calls[0]![0] as Record<string, unknown>
+    expect(callArg).toHaveProperty('google')
+    expect(callArg.google).toHaveProperty('webClientId')
+  })
+
   // --- signInWithGoogle ---
   it('signInWithGoogle returns false when no auth', async () => {
     mockGetFirebaseAuth.mockReturnValue(null)
@@ -194,7 +265,7 @@ describe('useAuth', () => {
     expect(await signInWithGoogle()).toBe(false)
   })
 
-  it('signInWithGoogle returns true on success', async () => {
+  it('signInWithGoogle uses popup on web', async () => {
     const fakeAuth = {} as Auth
     mockGetFirebaseAuth.mockReturnValue(fakeAuth)
     mockSignInWithPopup.mockResolvedValue({})
@@ -203,7 +274,7 @@ describe('useAuth', () => {
     expect(mockSignInWithPopup).toHaveBeenCalled()
   })
 
-  it('signInWithGoogle returns false on error', async () => {
+  it('signInWithGoogle returns false on web error', async () => {
     const fakeAuth = {} as Auth
     mockGetFirebaseAuth.mockReturnValue(fakeAuth)
     mockSignInWithPopup.mockRejectedValue(new Error('popup blocked'))
@@ -211,6 +282,116 @@ describe('useAuth', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     expect(await signInWithGoogle()).toBe(false)
     expect(consoleSpy).toHaveBeenCalled()
+    consoleSpy.mockRestore()
+  })
+
+  it('signInWithGoogle uses native SocialLogin and signInWithCredential on native', async () => {
+    mockIsNative = true
+    vi.resetModules()
+    vi.doMock('firebase/auth', () => ({
+      GoogleAuthProvider: mockGoogleAuthProvider,
+      signInWithPopup: mockSignInWithPopup,
+      signInWithCredential: mockSignInWithCredential,
+      signInAnonymously: mockSignInAnonymously,
+      onAuthStateChanged: mockOnAuthStateChanged,
+    }))
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: { isNativePlatform: () => mockIsNative },
+    }))
+    vi.doMock('@capgo/capacitor-social-login', () => ({
+      SocialLogin: {
+        initialize: (...args: unknown[]) => mockSocialLoginInit(...args),
+        login: (...args: unknown[]) => mockSocialLoginLogin(...args),
+      },
+    }))
+    vi.doMock('@/lib/firebase', () => ({
+      getFirebaseAuth: () => mockGetFirebaseAuth(),
+      init: () => mockInit(),
+    }))
+    const mod = await import('@/composables/useAuth')
+    const fakeAuth = {} as Auth
+    mockGetFirebaseAuth.mockReturnValue(fakeAuth)
+    const fakeCred = { token: 'fake' }
+    mockGoogleAuthProvider.credential.mockReturnValue(fakeCred)
+    mockSignInWithCredential.mockResolvedValue({})
+    mockSocialLoginLogin.mockResolvedValue({
+      result: { responseType: 'online', idToken: 'native-id-token', profile: {} },
+    })
+    const { signInWithGoogle } = mod.useAuth()
+    expect(await signInWithGoogle()).toBe(true)
+    expect(mockSocialLoginLogin).toHaveBeenCalled()
+    expect(mockGoogleAuthProvider.credential).toHaveBeenCalledWith('native-id-token')
+    expect(mockSignInWithCredential).toHaveBeenCalledWith(fakeAuth, fakeCred)
+    expect(mockSignInWithPopup).not.toHaveBeenCalled()
+  })
+
+  it('signInWithGoogle returns false when native returns no idToken', async () => {
+    mockIsNative = true
+    vi.resetModules()
+    vi.doMock('firebase/auth', () => ({
+      GoogleAuthProvider: mockGoogleAuthProvider,
+      signInWithPopup: mockSignInWithPopup,
+      signInWithCredential: mockSignInWithCredential,
+      signInAnonymously: mockSignInAnonymously,
+      onAuthStateChanged: mockOnAuthStateChanged,
+    }))
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: { isNativePlatform: () => mockIsNative },
+    }))
+    vi.doMock('@capgo/capacitor-social-login', () => ({
+      SocialLogin: {
+        initialize: (...args: unknown[]) => mockSocialLoginInit(...args),
+        login: (...args: unknown[]) => mockSocialLoginLogin(...args),
+      },
+    }))
+    vi.doMock('@/lib/firebase', () => ({
+      getFirebaseAuth: () => mockGetFirebaseAuth(),
+      init: () => mockInit(),
+    }))
+    const mod = await import('@/composables/useAuth')
+    const fakeAuth = {} as Auth
+    mockGetFirebaseAuth.mockReturnValue(fakeAuth)
+    mockSocialLoginLogin.mockResolvedValue({
+      result: { responseType: 'online', idToken: null, profile: {} },
+    })
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { signInWithGoogle } = mod.useAuth()
+    expect(await signInWithGoogle()).toBe(false)
+    consoleSpy.mockRestore()
+  })
+
+  it('signInWithGoogle returns false when native returns offline response', async () => {
+    mockIsNative = true
+    vi.resetModules()
+    vi.doMock('firebase/auth', () => ({
+      GoogleAuthProvider: mockGoogleAuthProvider,
+      signInWithPopup: mockSignInWithPopup,
+      signInWithCredential: mockSignInWithCredential,
+      signInAnonymously: mockSignInAnonymously,
+      onAuthStateChanged: mockOnAuthStateChanged,
+    }))
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: { isNativePlatform: () => mockIsNative },
+    }))
+    vi.doMock('@capgo/capacitor-social-login', () => ({
+      SocialLogin: {
+        initialize: (...args: unknown[]) => mockSocialLoginInit(...args),
+        login: (...args: unknown[]) => mockSocialLoginLogin(...args),
+      },
+    }))
+    vi.doMock('@/lib/firebase', () => ({
+      getFirebaseAuth: () => mockGetFirebaseAuth(),
+      init: () => mockInit(),
+    }))
+    const mod = await import('@/composables/useAuth')
+    const fakeAuth = {} as Auth
+    mockGetFirebaseAuth.mockReturnValue(fakeAuth)
+    mockSocialLoginLogin.mockResolvedValue({
+      result: { responseType: 'offline', serverAuthCode: 'code' },
+    })
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { signInWithGoogle } = mod.useAuth()
+    expect(await signInWithGoogle()).toBe(false)
     consoleSpy.mockRestore()
   })
 

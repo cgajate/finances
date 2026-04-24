@@ -23,6 +23,16 @@ const { isDark, mode, highContrast, setMode, toggleDark, toggleHighContrast } = 
 const { hasHousehold } = useHousehold()
 const { displayName, photoURL, isAnonymous, signOut } = useAuth()
 
+/** Retry loading avatar once on error by appending a cache-busting param */
+let avatarRetried = false
+function handleAvatarError(e: Event) {
+  if (avatarRetried || !photoURL.value) return
+  avatarRetried = true
+  const img = e.target as HTMLImageElement
+  const separator = photoURL.value.includes('?') ? '&' : '?'
+  img.src = `${photoURL.value}${separator}t=${Date.now()}`
+}
+
 const internalCollapsed = ref(false)
 let checking = false
 let cachedNavWidth = 0
@@ -179,7 +189,15 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
           aria-label="Admin menu"
           @click="adminMenuOpen = !adminMenuOpen"
         >
-          <img v-if="photoURL" :src="photoURL" alt="" class="header-avatar" />
+          <img
+            v-if="photoURL"
+            :src="photoURL"
+            alt=""
+            class="header-avatar"
+            referrerpolicy="no-referrer"
+            crossorigin="anonymous"
+            @error="handleAvatarError"
+          />
           <font-awesome-icon v-else :icon="['fas', 'gear']" />
         </button>
         <div v-if="adminMenuOpen" class="admin-backdrop" @click="adminMenuOpen = false"></div>

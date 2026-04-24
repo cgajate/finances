@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import {
   getFirebaseAuth,
   init as initFirebase,
@@ -6,6 +7,7 @@ import {
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCredential,
   signInAnonymously,
   onAuthStateChanged,
   type User,
@@ -15,10 +17,24 @@ import {
 const firebaseUser = ref<User | null>(null)
 const loading = ref(true)
 const initialized = ref(false)
+const lastError = ref('')
+
+/** Whether the app is running on a native platform (Android/iOS) */
+const isNative = Capacitor.isNativePlatform()
+
+/** Lazy-load the SocialLogin plugin only on native platforms */
+async function getNativeSocialLogin() {
+  const { SocialLogin } = await import('@capgo/capacitor-social-login')
+  return SocialLogin
+}
 
 /**
  * Composable for Firebase Authentication with Google sign-in
- * and anonymous fallback. Replaces the old PIN-based gate.
+ * and anonymous fallback.
+ *
+ * On native (Android/iOS), uses `@capgo/capacitor-social-login` for native
+ * Google Sign-In, then bridges the ID token into Firebase via
+ * `signInWithCredential`. On web, uses Firebase's `signInWithPopup`.
  */
 export function useAuth() {
   const authenticated = computed(() => !!firebaseUser.value)
@@ -48,7 +64,7 @@ export function useAuth() {
   const isAnonymous = computed(() => firebaseUser.value?.isAnonymous ?? false)
 
   /** Bootstrap: listen for auth state once */
-  function initAuth() {
+  async function initAuth() {
     if (initialized.value) return
     initialized.value = true
 
@@ -64,18 +80,69 @@ export function useAuth() {
       firebaseUser.value = user
       loading.value = false
     })
+
+    // Initialize the native social login plugin on Android/iOS
+    if (isNative) {
+      try {
+        const SocialLogin = await getNativeSocialLogin()
+        await SocialLogin.initialize({
+          google: {
+            webClientId: import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string,
+          },
+        })
+      } catch (err) {
+        console.error('SocialLogin initialization failed:', err)
+      }
+    }
   }
 
-  /** Sign in with Google popup */
+  /**
+   * Sign in with Google.
+   * On native platforms, uses the device's native Google Sign-In (via
+   * `@capgo/capacitor-social-login`) to obtain an ID token, then signs
+   * into Firebase with that credential. This avoids the WebView
+   * "secure browsers" policy block.
+   * On web, uses Firebase's `signInWithPopup` directly.
+   */
   async function signInWithGoogle(): Promise<boolean> {
     const auth = getFirebaseAuth()
-    if (!auth) return false
+    lastError.value = ''
+    if (!auth) {
+      lastError.value = 'Firebase auth not available'
+      return false
+    }
 
     try {
-      const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
+      if (isNative) {
+        const SocialLogin = await getNativeSocialLogin()
+        const res = await SocialLogin.login({
+          provider: 'google',
+          options: {},
+        })
+
+        if (res.result.responseType !== 'online') {
+          lastError.value = 'Google returned offline response'
+          return false
+        }
+
+        const idToken = res.result.idToken
+        if (!idToken) {
+          lastError.value = 'No ID token returned from Google'
+          return false
+        }
+
+        // Bridge the native ID token into Firebase Auth
+        const credential = GoogleAuthProvider.credential(idToken)
+        await signInWithCredential(auth, credential)
+      } else {
+        const provider = new GoogleAuthProvider()
+        await signInWithPopup(auth, provider)
+      }
       return true
-    } catch (err) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      const code = (err as Record<string, unknown>)?.['code'] ?? ''
+      lastError.value = code ? `[${code}] ${msg}` : msg
       console.error('Google sign-in failed:', err)
       return false
     }
@@ -105,6 +172,7 @@ export function useAuth() {
   return {
     firebaseUser,
     loading,
+    lastError,
     authenticated,
     displayName,
     userId,
@@ -116,4 +184,3 @@ export function useAuth() {
     signOut,
   }
 }
-
