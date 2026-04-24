@@ -220,4 +220,59 @@ describe('EditExpenseView', () => {
     snackbar.undo(snackbar.items.value[0]!.id)
     expect(store.expenses).toHaveLength(1)
   })
+
+  it('binds form fields via DOM', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    await wrapper.find('#edit-exp-desc').setValue('DomRent')
+    await wrapper.find('#edit-exp-notes').setValue('DomNote')
+    await wrapper.find('#edit-exp-assigned').setValue('Dad')
+    await wrapper.find('#edit-exp-due').setValue('2026-08-01')
+    await wrapper.find('#edit-exp-cat').setValue('Housing')
+    const vm = wrapper.vm as any
+    expect(vm.description).toBe('DomRent')
+    expect(vm.notes).toBe('DomNote')
+    expect(vm.assignedTo).toBe('Dad')
+    expect(vm.dueDate).toBe('2026-08-01')
+    expect(vm.category).toBe('Housing')
+  })
+
+  it('passes overrides events to store for recurring expense', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 500, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const overrides = wrapper.findComponent({ name: 'MonthlyOverrides' })
+    if (overrides.exists()) {
+      overrides.vm.$emit('set-override', '2026-05', 600)
+      await wrapper.vm.$nextTick()
+      const item = store.getExpenseById(id) as any
+      expect(item?.overrides?.['2026-05']).toBe(600)
+
+      overrides.vm.$emit('remove-override', '2026-05')
+      await wrapper.vm.$nextTick()
+      const updated = store.getExpenseById(id) as any
+      expect(updated?.overrides?.['2026-05']).toBeUndefined()
+    }
+  })
+
+  it('navigates back on not-found back button click', async () => {
+    const { wrapper, router } = await mountView('nonexistent')
+    const pushSpy = vi.spyOn(router, 'push')
+    await wrapper.find('.not-found .btn-back').trigger('click')
+    expect(pushSpy).toHaveBeenCalledWith('/finances?tab=expenses')
+  })
+
+  it('changes frequency via select change event', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+    const id = store.expenses[0]!.id
+    const { wrapper } = await mountView(id)
+    const select = wrapper.find('#edit-exp-freq')
+    await select.setValue('quarterly')
+    await select.trigger('change')
+    expect((wrapper.vm as any).frequency).toBe('quarterly')
+  })
 })

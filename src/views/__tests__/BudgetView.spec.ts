@@ -4,8 +4,9 @@ import { createPinia, setActivePinia } from 'pinia'
 import BudgetView from '@/views/BudgetView.vue'
 import { useBudgetsStore } from '@/stores/budgets'
 
+const mockShow = vi.fn()
 vi.mock('@/composables/useSnackbar', () => ({
-  useSnackbar: () => ({ show: vi.fn() }),
+  useSnackbar: () => ({ show: mockShow }),
 }))
 
 vi.mock('@/lib/firebase', () => ({ getDb: () => null }))
@@ -74,6 +75,29 @@ describe('BudgetView', () => {
     expect(store.budgets.length).toBeGreaterThanOrEqual(0)
   })
 
+  it('does not add budget when category is empty', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useBudgetsStore()
+    const wrapper = mount(BudgetView, { global: { plugins: [pinia] } })
+    // Don't select category, set amount
+    const input = wrapper.find('input[type="text"]')
+    await input.setValue('300')
+    await wrapper.find('form').trigger('submit')
+    expect(store.budgets).toHaveLength(0)
+  })
+
+  it('does not add budget when amount is null', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useBudgetsStore()
+    const wrapper = mount(BudgetView, { global: { plugins: [pinia] } })
+    // Select category but don't set amount
+    await wrapper.find('select').setValue('Food')
+    await wrapper.find('form').trigger('submit')
+    expect(store.budgets).toHaveLength(0)
+  })
+
   it('shows budget cards when budgets exist', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
@@ -100,8 +124,26 @@ describe('BudgetView', () => {
     const store = useBudgetsStore()
     store.setBudget('Food', 500)
     const wrapper = mount(BudgetView, { global: { plugins: [pinia] } })
+    mockShow.mockClear()
     await wrapper.find('.btn-remove').trigger('click')
     expect(store.getBudgetForCategory('Food')).toBeUndefined()
+  })
+
+  it('undo restores removed budget', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useBudgetsStore()
+    store.setBudget('Food', 500)
+    const wrapper = mount(BudgetView, { global: { plugins: [pinia] } })
+    mockShow.mockClear()
+    await wrapper.find('.btn-remove').trigger('click')
+    expect(store.getBudgetForCategory('Food')).toBeUndefined()
+    // The second arg to show() is the undo callback
+    const undoFn = mockShow.mock.calls[0]?.[1] as (() => void) | undefined
+    expect(undoFn).toBeDefined()
+    undoFn!()
+    expect(store.getBudgetForCategory('Food')).toBeDefined()
+    expect(store.getBudgetForCategory('Food')!.limit).toBe(500)
   })
 
   it('shows all-set message when all categories have budgets', async () => {

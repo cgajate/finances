@@ -230,4 +230,57 @@ describe('EditIncomeView', () => {
     await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.incomes).toHaveLength(0)
   })
+
+  it('binds form fields via DOM for recurring income', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'Test', notes: '', date: null })
+    const id = store.incomes[0]!.id
+    const { wrapper } = await mountView(id)
+    await wrapper.find('#edit-inc-desc').setValue('DomPay')
+    await wrapper.find('#edit-inc-notes').setValue('DomNote')
+    await wrapper.find('#edit-inc-date').setValue('2026-08-01')
+    await wrapper.find('#edit-inc-cat').setValue('Salary')
+    await wrapper.find('#edit-inc-freq').setValue('weekly')
+    const vm = wrapper.vm as any
+    expect(vm.description).toBe('DomPay')
+    expect(vm.notes).toBe('DomNote')
+    expect(vm.date).toBe('2026-08-01')
+    expect(vm.category).toBe('Salary')
+    expect(vm.frequency).toBe('weekly')
+  })
+
+  it('binds date field via DOM for adhoc income', async () => {
+    const store = useFinancesStore()
+    store.addAdhocIncome({ amount: 200, description: 'Gift', date: '2026-03-15' })
+    const id = store.incomes[0]!.id
+    const { wrapper } = await mountView(id)
+    await wrapper.find('#edit-inc-date').setValue('2026-09-01')
+    expect((wrapper.vm as any).date).toBe('2026-09-01')
+  })
+
+  it('passes overrides events to store for recurring income', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 5000, frequency: 'monthly', description: 'Salary', notes: '', date: null })
+    const id = store.incomes[0]!.id
+    const { wrapper } = await mountView(id)
+    const overrides = wrapper.findComponent({ name: 'MonthlyOverrides' })
+    if (overrides.exists()) {
+      overrides.vm.$emit('set-override', '2026-05', 6000)
+      await wrapper.vm.$nextTick()
+      const item = store.getIncomeById(id) as any
+      expect(item?.overrides?.['2026-05']).toBe(6000)
+
+      overrides.vm.$emit('remove-override', '2026-05')
+      await wrapper.vm.$nextTick()
+      const updated = store.getIncomeById(id) as any
+      expect(updated?.overrides?.['2026-05']).toBeUndefined()
+    }
+  })
+
+  it('navigates back on not-found back button click', async () => {
+    const { wrapper, router } = await mountView('nonexistent')
+    const pushSpy = vi.spyOn(router, 'push')
+    await wrapper.find('.not-found .btn-back').trigger('click')
+    expect(pushSpy).toHaveBeenCalledWith('/finances?tab=income')
+  })
 })

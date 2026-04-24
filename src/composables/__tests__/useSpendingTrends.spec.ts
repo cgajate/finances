@@ -378,5 +378,69 @@ describe('useSpendingTrends', () => {
     const foodTrend = trends.value.categories.find((c) => c.category === 'Food')
     expect(foodTrend).toBeUndefined()
   })
-})
 
+  it('computes trend direction down when spending decreases', () => {
+    const now = new Date()
+    const expenses = ref<Expense[]>([])
+    // Add adhoc expenses: higher amounts in older months, lower in recent months
+    for (let i = 5; i >= 3; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 15)
+      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      expenses.value.push({
+        id: `down-${i}`,
+        type: 'adhoc',
+        amount: 300,
+        description: `Old ${i}`,
+        notes: '',
+        dueDate: `${ym}-15`,
+        category: 'Entertainment',
+        createdAt: '2026-01-01T00:00:00Z',
+      })
+    }
+    // Small amount in current month
+    const curMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    expenses.value.push({
+      id: 'down-now',
+      type: 'adhoc',
+      amount: 10,
+      description: 'Small recent',
+      notes: '',
+      dueDate: `${curMonth}-15`,
+      category: 'Entertainment',
+      createdAt: '2026-01-01T00:00:00Z',
+    })
+    const monthCount = ref(6)
+    const { trends } = useSpendingTrends(expenses, monthCount)
+    const ent = trends.value.categories.find((c) => c.category === 'Entertainment')
+    expect(ent).toBeDefined()
+    expect(ent!.direction).toBe('down')
+    expect(ent!.trend).toBeLessThan(-2)
+  })
+
+  it('handles recurring expense with overrides', () => {
+    const now = new Date()
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const prevYm = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`
+    const expenses = ref<Expense[]>([
+      {
+        id: 'ov1',
+        type: 'recurring',
+        amount: 100,
+        frequency: 'monthly',
+        description: 'Overridden',
+        notes: '',
+        dueDate: null,
+        category: 'Food',
+        createdAt: '2026-01-01T00:00:00Z',
+        overrides: { [prevYm]: 200 },
+      },
+    ])
+    const monthCount = ref(3)
+    const { trends } = useSpendingTrends(expenses, monthCount)
+    const food = trends.value.categories.find((c) => c.category === 'Food')
+    expect(food).toBeDefined()
+    const overriddenMonth = food!.months.find((m) => m.month === prevYm)
+    expect(overriddenMonth).toBeDefined()
+    expect(overriddenMonth!.amount).toBeCloseTo(200, 1)
+  })
+})

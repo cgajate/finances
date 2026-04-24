@@ -228,5 +228,74 @@ describe('AddIncomeView', () => {
     expect(vm.aDate).toBe('')
     expect(vm.aCategory).toBe('Other')
   })
-})
 
+  it('shows error snackbar when addRecurringIncome throws', async () => {
+    const store = useFinancesStore()
+    const original = store.addRecurringIncome.bind(store)
+    store.addRecurringIncome = () => { throw new Error('fail') }
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rDescription = 'Salary'
+    vm.rAmount = 5000
+    vm.rFrequency = 'monthly'
+    await wrapper.find('form').trigger('submit')
+    const snackbar = useSnackbar()
+    expect(snackbar.items.value.some((i: any) => i.message.includes('Failed'))).toBe(true)
+    store.addRecurringIncome = original
+  })
+
+  it('shows error snackbar when addAdhocIncome throws', async () => {
+    const store = useFinancesStore()
+    const original = store.addAdhocIncome.bind(store)
+    store.addAdhocIncome = () => { throw new Error('fail') }
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aDescription = 'Gift'
+    vm.aAmount = 200
+    vm.aDate = '2026-05-01'
+    await wrapper.find('form').trigger('submit')
+    const snackbar = useSnackbar()
+    expect(snackbar.items.value.some((i: any) => i.message.includes('Failed'))).toBe(true)
+    store.addAdhocIncome = original
+  })
+
+  it('does not submit adhoc form without amount', async () => {
+    const store = useFinancesStore()
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aDescription = 'Test'
+    vm.aAmount = null
+    vm.aDate = '2026-05-01'
+    await wrapper.find('form').trigger('submit')
+    expect(store.incomes).toHaveLength(0)
+  })
+
+  it('binds recurring form fields via DOM', async () => {
+    const wrapper = mountView()
+    await wrapper.find('#r-inc-desc').setValue('DomSalary')
+    await wrapper.find('#r-inc-date').setValue('2026-08-01')
+    await wrapper.find('#r-inc-notes').setValue('RNote')
+    await wrapper.find('#r-inc-cat').setValue('Salary')
+    await wrapper.find('#r-inc-freq').setValue('weekly')
+    const vm = wrapper.vm as any
+    expect(vm.rDescription).toBe('DomSalary')
+    expect(vm.rDate).toBe('2026-08-01')
+    expect(vm.rNotes).toBe('RNote')
+    expect(vm.rCategory).toBe('Salary')
+    expect(vm.rFrequency).toBe('weekly')
+  })
+
+  it('binds adhoc form fields via DOM', async () => {
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+    await wrapper.find('#a-inc-desc').setValue('DomGift')
+    await wrapper.find('#a-inc-date').setValue('2026-07-01')
+    await wrapper.find('#a-inc-cat').setValue('Gift')
+    const vm = wrapper.vm as any
+    expect(vm.aDescription).toBe('DomGift')
+    expect(vm.aDate).toBe('2026-07-01')
+    expect(vm.aCategory).toBe('Gift')
+  })
+})

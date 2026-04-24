@@ -234,5 +234,78 @@ describe('AddExpenseView', () => {
     expect(vm.aCategory).toBe('Other')
     expect(vm.aAssignedTo).toBe('')
   })
-})
 
+  it('shows error snackbar when addRecurring throws', async () => {
+    const store = useFinancesStore()
+    const original = store.addRecurringExpense.bind(store)
+    store.addRecurringExpense = () => { throw new Error('fail') }
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rDescription = 'Rent'
+    vm.rAmount = 1500
+    vm.rFrequency = 'monthly'
+    await wrapper.find('form').trigger('submit')
+    const snackbar = useSnackbar()
+    expect(snackbar.items.value.some((i: any) => i.message.includes('Failed'))).toBe(true)
+    store.addRecurringExpense = original
+  })
+
+  it('shows error snackbar when addAdhocExpense throws', async () => {
+    const store = useFinancesStore()
+    const original = store.addAdhocExpense.bind(store)
+    store.addAdhocExpense = () => { throw new Error('fail') }
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+    const vm = wrapper.vm as any
+    vm.aDescription = 'Fix'
+    vm.aAmount = 200
+    await wrapper.find('form').trigger('submit')
+    const snackbar = useSnackbar()
+    expect(snackbar.items.value.some((i: any) => i.message.includes('Failed'))).toBe(true)
+    store.addAdhocExpense = original
+  })
+
+  it('shows category selector in recurring form', () => {
+    const wrapper = mountView()
+    expect(wrapper.find('#r-exp-cat').exists()).toBe(true)
+  })
+
+  it('shows category selector in adhoc form', async () => {
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+    expect(wrapper.find('#a-exp-cat').exists()).toBe(true)
+  })
+
+  it('binds adhoc form fields via DOM', async () => {
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+    await wrapper.find('#a-exp-desc').setValue('DomTest')
+    await wrapper.find('#a-exp-due').setValue('2026-07-01')
+    await wrapper.find('#a-exp-notes').setValue('DomNote')
+    await wrapper.find('#a-exp-assigned').setValue('Dad')
+    await wrapper.find('#a-exp-cat').setValue('Food')
+    const vm = wrapper.vm as any
+    expect(vm.aDescription).toBe('DomTest')
+    expect(vm.aDueDate).toBe('2026-07-01')
+    expect(vm.aNotes).toBe('DomNote')
+    expect(vm.aAssignedTo).toBe('Dad')
+    expect(vm.aCategory).toBe('Food')
+  })
+
+  it('binds recurring form fields via DOM', async () => {
+    const wrapper = mountView()
+    await wrapper.find('#r-exp-desc').setValue('DomRent')
+    await wrapper.find('#r-exp-due').setValue('2026-08-01')
+    await wrapper.find('#r-exp-notes').setValue('RNote')
+    await wrapper.find('#r-exp-assigned').setValue('Mom')
+    await wrapper.find('#r-exp-cat').setValue('Housing')
+    await wrapper.find('#r-exp-freq').setValue('weekly')
+    const vm = wrapper.vm as any
+    expect(vm.rDescription).toBe('DomRent')
+    expect(vm.rDueDate).toBe('2026-08-01')
+    expect(vm.rNotes).toBe('RNote')
+    expect(vm.rAssignedTo).toBe('Mom')
+    expect(vm.rCategory).toBe('Housing')
+    expect(vm.rFrequency).toBe('weekly')
+  })
+})

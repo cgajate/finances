@@ -109,4 +109,124 @@ describe('router', () => {
   it('has 21 routes total', () => {
     expect(router.getRoutes()).toHaveLength(21)
   })
+
+  it('has an approvals route at /approvals', () => {
+    const route = router.resolve('/approvals')
+    expect(route.name).toBe('approvals')
+  })
+
+  it('lazy-loads finances view', async () => {
+    const route = router.resolve('/finances')
+    const parent = route.matched.find((m) => !m.name || m.children?.length)
+    expect(parent).toBeDefined()
+    const comp = parent!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads finances list view', async () => {
+    const route = router.resolve('/finances')
+    const matched = route.matched.find((m) => m.name === 'finances')
+    expect(matched).toBeDefined()
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads add-income view', async () => {
+    const route = router.resolve('/finances/income/add')
+    const matched = route.matched.find((m) => m.name === 'add-income')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads edit-income view', async () => {
+    const route = router.resolve('/finances/income/abc/edit')
+    const matched = route.matched.find((m) => m.name === 'edit-income')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads add-expense view', async () => {
+    const route = router.resolve('/finances/expenses/add')
+    const matched = route.matched.find((m) => m.name === 'add-expense')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads edit-expense view', async () => {
+    const route = router.resolve('/finances/expenses/abc/edit')
+    const matched = route.matched.find((m) => m.name === 'edit-expense')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads analytics view', async () => {
+    const route = router.resolve('/analytics')
+    const matched = route.matched.find((m) => m.name === 'analytics')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads goals view', async () => {
+    const route = router.resolve('/goals')
+    const parent = route.matched[0]
+    expect(parent).toBeDefined()
+    const comp = parent!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads budget view', async () => {
+    const route = router.resolve('/goals')
+    const matched = route.matched.find((m) => m.name === 'budgets')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads savings goals view', async () => {
+    const route = router.resolve('/goals/savings')
+    const matched = route.matched.find((m) => m.name === 'savings')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads calendar view', async () => {
+    const route = router.resolve('/calendar')
+    const matched = route.matched.find((m) => m.name === 'calendar')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads activity view', async () => {
+    const route = router.resolve('/activity')
+    const matched = route.matched.find((m) => m.name === 'activity')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads approvals view', async () => {
+    const route = router.resolve('/approvals')
+    const matched = route.matched.find((m) => m.name === 'approvals')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('lazy-loads categories view', async () => {
+    const route = router.resolve('/categories')
+    const matched = route.matched.find((m) => m.name === 'categories')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
 })

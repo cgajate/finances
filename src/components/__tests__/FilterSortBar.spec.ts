@@ -162,4 +162,145 @@ describe('FilterSortBar', () => {
     // Only filter bubble should be open
     expect(wrapper.text()).toContain('Frequency')
   })
+
+  it('opening sort closes filter', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    expect(wrapper.text()).toContain('Frequency')
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    expect(wrapper.text()).toContain('Sort By')
+    expect(wrapper.text()).not.toContain('Frequency')
+  })
+
+  it('closes filter panel when clicking filter trigger while open', async () => {
+    const wrapper = mountBar()
+    const filterBtn = wrapper.findAll('.trigger-btn')[0]!
+    await filterBtn.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    await filterBtn.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
+  })
+
+  it('closes sort panel when clicking sort trigger while open', async () => {
+    const wrapper = mountBar()
+    const sortBtn = wrapper.findAll('.trigger-btn')[1]!
+    await sortBtn.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    await sortBtn.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
+  })
+
+  it('uses income categories when type is income', async () => {
+    const wrapper = mountBar({ type: 'income' })
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    // Should open filter panel using income categories
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Category')
+  })
+
+  it('emits toggleFilter to remove previously active filters on submit', async () => {
+    const wrapper = mountBar({ activeFilters: ['weekly', 'monthly'] })
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    // Draft starts with ['weekly', 'monthly']; remove 'monthly' by toggling it
+    const pills = wrapper.findAll('.option-pill')
+    // Find and click the 'monthly' pill to deselect it
+    const monthlyPill = pills.find((p) => p.text().toLowerCase().includes('month'))
+    expect(monthlyPill).toBeTruthy()
+    await monthlyPill!.trigger('click')
+    await wrapper.find('.footer-btn.submit').trigger('click')
+    const toggleEvents = wrapper.emitted('toggleFilter') as string[][]
+    expect(toggleEvents).toBeTruthy()
+    expect(toggleEvents.some((ev) => ev[0] === 'monthly')).toBe(true)
+  })
+
+  it('emits toggleCategoryFilter to remove previously active category on submit', async () => {
+    const wrapper = mountBar({ activeCategoryFilters: ['Food'] })
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    // Draft starts with ['Food']; find and deselect it
+    const pills = wrapper.findAll('.option-pill')
+    const foodPill = pills.find((p) => p.text() === 'Food')
+    if (foodPill) {
+      await foodPill.trigger('click')
+    }
+    await wrapper.find('.footer-btn.submit').trigger('click')
+    const catEvents = wrapper.emitted('toggleCategoryFilter') as string[][]
+    expect(catEvents).toBeTruthy()
+    expect(catEvents.some((ev) => ev[0] === 'Food')).toBe(true)
+  })
+
+  it('toggles category pill on and off in filter draft', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    const allPills = wrapper.findAll('.option-pill')
+    // Category pills appear after the 5 frequency pills
+    const catPill = allPills[5]
+    expect(catPill).toBeTruthy()
+    // Select category
+    await catPill!.trigger('click')
+    expect(catPill!.classes()).toContain('selected')
+    // Deselect category (exercises draftToggleCat removal branch)
+    await catPill!.trigger('click')
+    expect(catPill!.classes()).not.toContain('selected')
+  })
+
+  it('adds new category filter and removes old one on submit', async () => {
+    // Start with 'Housing' active, switch to 'Food'
+    const wrapper = mountBar({ activeCategoryFilters: ['Housing'] })
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    const allPills = wrapper.findAll('.option-pill')
+    // Find Housing pill (should be selected) and Food pill
+    const housingPill = allPills.find((p) => p.text() === 'Housing')
+    const foodPill = allPills.find((p) => p.text() === 'Food')
+    expect(housingPill).toBeTruthy()
+    expect(foodPill).toBeTruthy()
+    // Deselect Housing, select Food
+    await housingPill!.trigger('click')
+    await foodPill!.trigger('click')
+    await wrapper.find('.footer-btn.submit').trigger('click')
+    const catEvents = wrapper.emitted('toggleCategoryFilter') as string[][]
+    expect(catEvents).toBeTruthy()
+    // Should have emitted for both Housing (remove) and Food (add)
+    expect(catEvents.some((ev) => ev[0] === 'Housing')).toBe(true)
+    expect(catEvents.some((ev) => ev[0] === 'Food')).toBe(true)
+  })
+
+  it('closes filter on backdrop click', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    await wrapper.find('.bubble-backdrop').trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
+  })
+
+  it('does not show badge when no filters active', () => {
+    const wrapper = mountBar()
+    expect(wrapper.find('.trigger-badge').exists()).toBe(false)
+  })
+
+  it('closes sort panel on cancel', async () => {
+    const wrapper = mountBar()
+    await wrapper.findAll('.trigger-btn')[1]!.trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(true)
+    await wrapper.find('.footer-btn.cancel').trigger('click')
+    expect(wrapper.find('.bubble').exists()).toBe(false)
+  })
+
+  it('applies has-count class to filter trigger when filters are active', () => {
+    const wrapper = mountBar({ activeFilters: ['weekly'] })
+    const filterBtn = wrapper.findAll('.trigger-btn')[0]!
+    expect(filterBtn.classes()).toContain('has-count')
+  })
+
+  it('emits toggleCategoryFilter for removed categories in submitFilter', async () => {
+    // Start with 'Food' active, then submit with empty draft (clearing it)
+    const wrapper = mountBar({ activeCategoryFilters: ['Food'] })
+    await wrapper.findAll('.trigger-btn')[0]!.trigger('click')
+    // Draft starts with ['Food']. Clear all draft selections.
+    await wrapper.find('.footer-btn.clear').trigger('click')
+    // Submit with empty draft — should emit toggleCategoryFilter('Food') to remove it
+    await wrapper.find('.footer-btn.submit').trigger('click')
+    const catEvents = wrapper.emitted('toggleCategoryFilter') as string[][]
+    expect(catEvents).toBeTruthy()
+    expect(catEvents[0]).toEqual(['Food'])
+  })
 })

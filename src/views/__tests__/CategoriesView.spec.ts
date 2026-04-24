@@ -4,8 +4,9 @@ import { createPinia, setActivePinia } from 'pinia'
 import CategoriesView from '@/views/CategoriesView.vue'
 import { useCategoriesStore } from '@/stores/categories'
 
+const mockShow = vi.fn()
 vi.mock('@/composables/useSnackbar', () => ({
-  useSnackbar: () => ({ show: vi.fn() }),
+  useSnackbar: () => ({ show: mockShow }),
 }))
 
 describe('CategoriesView', () => {
@@ -225,5 +226,21 @@ describe('CategoriesView', () => {
     const wrapper = mount(CategoriesView, { global: { plugins: [pinia] } })
     expect(wrapper.find('.deleted-count').text()).toContain('1')
   })
-})
 
+  it('undo restores soft-deleted category', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useCategoriesStore()
+    const wrapper = mount(CategoriesView, { global: { plugins: [pinia] } })
+    const catCount = store.activeExpenseCategories.length
+    const deleteBtns = wrapper.findAll('.action-btn.delete')
+    mockShow.mockClear()
+    await deleteBtns[0]!.trigger('click')
+    expect(store.activeExpenseCategories.length).toBe(catCount - 1)
+    // The undo callback is in the second arg { undoFn }
+    const opts = mockShow.mock.calls[0]?.[1] as { undoFn?: () => void } | undefined
+    expect(opts?.undoFn).toBeDefined()
+    opts!.undoFn!()
+    expect(store.activeExpenseCategories.length).toBe(catCount)
+  })
+})

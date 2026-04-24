@@ -57,6 +57,7 @@ function makeRouter() {
       { path: '/goals', component: { template: '<div>Goals</div>' } },
       { path: '/calendar', component: { template: '<div>Calendar</div>' } },
       { path: '/categories', component: { template: '<div>Categories</div>' } },
+      { path: '/approvals', component: { template: '<div>Approvals</div>' } },
     ],
   })
 }

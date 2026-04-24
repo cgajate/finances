@@ -20,9 +20,14 @@ vi.mock('firebase/firestore', () => ({
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
 type SnapshotCb = (snap: { exists: () => boolean; data: () => Record<string, unknown> }) => void
+type ErrorCb = (err: Error) => void
 
 function getSnapshotCb(): SnapshotCb {
   return (mockOnSnapshot.mock.calls[0] as unknown[])[1] as SnapshotCb
+}
+
+function getErrorCb(): ErrorCb {
+  return (mockOnSnapshot.mock.calls[0] as unknown[])[2] as ErrorCb
 }
 
 describe('useFirestoreSync', () => {
@@ -104,5 +109,98 @@ describe('useFirestoreSync', () => {
     vi.advanceTimersByTime(600)
     expect(mockUpdateDoc).toHaveBeenCalledTimes(1)
     expect(mockUpdateDoc).toHaveBeenCalledWith('mock-doc-ref', { incomes: ['new-item'] })
+  })
+
+  it('logs warning when onSnapshot error callback fires', () => {
+    const localRef = ref<string[]>([])
+    useFirestoreSync(fakeDb, 'households/ABC', 'incomes', localRef)
+
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const errCb = getErrorCb()
+    errCb(new Error('permission denied'))
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Firestore sync error'),
+      expect.any(Error),
+    )
+    consoleSpy.mockRestore()
+  })
+
+  it('logs warning when updateDoc fails', async () => {
+    const localRef = ref<string[]>([])
+    mockUpdateDoc.mockRejectedValueOnce(new Error('write failed'))
+    useFirestoreSync(fakeDb, 'households/ABC', 'incomes', localRef)
+
+    localRef.value = ['fail-item']
+    await nextTick()
+    vi.advanceTimersByTime(600)
+
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    // Flush the rejected promise
+    await vi.runAllTimersAsync()
+    await nextTick()
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Firestore write error'),
+      expect.any(Error),
+    )
+    consoleSpy.mockRestore()
+  })
+
+  it('does not update localRef when field is undefined in snapshot', () => {
+    const localRef = ref<string[]>(['keep'])
+    useFirestoreSync(fakeDb, 'households/ABC', 'incomes', localRef)
+
+    const snapshotCb = getSnapshotCb()
+    snapshotCb({
+      exists: () => true,
+      data: () => ({ otherField: 'value' }),
+    })
+
+    expect(localRef.value).toEqual(['keep'])
+  })
+
+  it('debounces multiple rapid local changes', async () => {
+    const localRef = ref<string[]>([])
+    useFirestoreSync(fakeDb, 'households/ABC', 'incomes', localRef)
+
+    localRef.value = ['first']
+    await nextTick()
+    vi.advanceTimersByTime(200)
+
+    localRef.value = ['second']
+    await nextTick()
+    vi.advanceTimersByTime(200)
+
+    localRef.value = ['third']
+    await nextTick()
+    vi.advanceTimersByTime(600)
+
+    // Should only write once with the final value
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1)
+    expect(mockUpdateDoc).toHaveBeenCalledWith('mock-doc-ref', { incomes: ['third'] })
+  })
+
+  it('resets skipWrite after timeout so subsequent local changes are written', async () => {
+    const localRef = ref<string[]>([])
+    useFirestoreSync(fakeDb, 'households/ABC', 'incomes', localRef)
+
+    // Simulate remote update
+    const snapshotCb = getSnapshotCb()
+    snapshotCb({
+      exists: () => true,
+      data: () => ({ incomes: ['remote'] }),
+    })
+    await nextTick()
+
+    // Advance past the 50ms skipWrite reset
+    vi.advanceTimersByTime(100)
+
+    // Now make a local change — should write
+    localRef.value = ['local-change']
+    await nextTick()
+    vi.advanceTimersByTime(600)
+
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1)
   })
 })

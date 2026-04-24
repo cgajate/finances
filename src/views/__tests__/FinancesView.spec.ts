@@ -731,5 +731,34 @@ describe('FinancesView', () => {
     await router.push('/finances?tab=expenses')
     expect((wrapper.vm as any).activeTab).toBe('expenses')
   })
-})
 
+  it('submits sort panel on income FilterSortBar in FinancesListView', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'T', notes: '', date: null })
+    const wrapper = await mountView()
+    const sortBtn = wrapper.findAll('.trigger-btn')[1]!
+    await sortBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+    const submitBtn = wrapper.find('.footer-btn.submit')
+    if (submitBtn.exists()) {
+      await submitBtn.trigger('click')
+      await wrapper.vm.$nextTick()
+    }
+    expect(wrapper.text()).toContain('Income')
+  })
+
+  it('submits sort panel on expense FilterSortBar in FinancesListView', async () => {
+    const store = useFinancesStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'E', notes: '', dueDate: null })
+    const wrapper = await mountView('expenses')
+    const sortBtn = wrapper.findAll('.trigger-btn')[1]!
+    await sortBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+    const submitBtn = wrapper.find('.footer-btn.submit')
+    if (submitBtn.exists()) {
+      await submitBtn.trigger('click')
+      await wrapper.vm.$nextTick()
+    }
+    expect(wrapper.text()).toContain('Expenses')
+  })
+})

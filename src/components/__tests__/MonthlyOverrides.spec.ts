@@ -5,6 +5,12 @@ import MonthlyOverrides from '@/components/MonthlyOverrides.vue'
 // Stub font-awesome-icon globally
 const faStub = { template: '<i />' }
 
+const CurrencyInputStub = {
+  name: 'CurrencyInput',
+  template: '<input />',
+  props: ['modelValue'],
+}
+
 function mountComponent(props: {
   baseAmount: number
   overrides?: Record<string, number>
@@ -12,7 +18,7 @@ function mountComponent(props: {
   return mount(MonthlyOverrides, {
     props,
     global: {
-      stubs: { 'font-awesome-icon': faStub, CurrencyInput: { template: '<input />', props: ['modelValue'] } },
+      stubs: { 'font-awesome-icon': faStub, CurrencyInput: CurrencyInputStub },
     },
   })
 }
@@ -112,5 +118,84 @@ describe('MonthlyOverrides', () => {
     const addBtn = wrapper.find('.btn-fund')
     expect((addBtn.element as HTMLButtonElement).disabled).toBe(true)
   })
-})
 
+  it('emits set-override with YYYY-MM when date and amount are provided', async () => {
+    const wrapper = mountComponent({ baseAmount: 300 })
+    await wrapper.find('.overrides__toggle').trigger('click')
+
+    // Set date
+    await wrapper.find('#override-month').setValue('2026-06-15')
+    // Set amount via the CurrencyInput stub — trigger update:modelValue
+    const currencyInput = wrapper.findComponent({ name: 'CurrencyInput' })
+    currencyInput.vm.$emit('update:modelValue', 150)
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('.btn-fund').trigger('click')
+    expect(wrapper.emitted('set-override')).toEqual([['2026-06', 150]])
+  })
+
+  it('resets date and amount fields after adding an override', async () => {
+    const wrapper = mountComponent({ baseAmount: 300 })
+    await wrapper.find('.overrides__toggle').trigger('click')
+
+    await wrapper.find('#override-month').setValue('2026-07-01')
+    const currencyInput = wrapper.findComponent({ name: 'CurrencyInput' })
+    currencyInput.vm.$emit('update:modelValue', 100)
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('.btn-fund').trigger('click')
+
+    // Date input should be cleared
+    expect((wrapper.find('#override-month').element as HTMLInputElement).value).toBe('')
+  })
+
+  it('does not emit set-override when date is empty', async () => {
+    const wrapper = mountComponent({ baseAmount: 300 })
+    await wrapper.find('.overrides__toggle').trigger('click')
+
+    // Only set amount, leave date empty
+    const currencyInput = wrapper.findComponent({ name: 'CurrencyInput' })
+    currencyInput.vm.$emit('update:modelValue', 100)
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('.btn-fund').trigger('click')
+    expect(wrapper.emitted('set-override')).toBeUndefined()
+  })
+
+  it('does not emit set-override when amount is null', async () => {
+    const wrapper = mountComponent({ baseAmount: 300 })
+    await wrapper.find('.overrides__toggle').trigger('click')
+
+    await wrapper.find('#override-month').setValue('2026-08-01')
+    // Don't set amount
+
+    await wrapper.find('.btn-fund').trigger('click')
+    expect(wrapper.emitted('set-override')).toBeUndefined()
+  })
+
+  it('collapses when toggle is clicked again', async () => {
+    const wrapper = mountComponent({ baseAmount: 300 })
+    await wrapper.find('.overrides__toggle').trigger('click')
+    expect(wrapper.find('.overrides__body').exists()).toBe(true)
+    await wrapper.find('.overrides__toggle').trigger('click')
+    expect(wrapper.find('.overrides__body').exists()).toBe(false)
+  })
+
+  it('returns empty overrideEntries when overrides prop is undefined', async () => {
+    const wrapper = mountComponent({ baseAmount: 300 })
+    await wrapper.find('.overrides__toggle').trigger('click')
+    expect(wrapper.findAll('.overrides__entry')).toHaveLength(0)
+  })
+
+  it('handles malformed month keys in overrides gracefully', async () => {
+    const wrapper = mountComponent({
+      baseAmount: 300,
+      overrides: { '': 100 },
+    })
+    await wrapper.find('.overrides__toggle').trigger('click')
+    const entries = wrapper.findAll('.overrides__entry')
+    expect(entries).toHaveLength(1)
+    // Should still render without crashing, using fallback values
+    expect(entries[0]!.find('.overrides__month').text()).toBeTruthy()
+  })
+})

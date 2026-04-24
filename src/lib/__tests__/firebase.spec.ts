@@ -107,6 +107,7 @@ describe('firebase lib', () => {
   })
 
   it('ensureAuth returns null when sign-in fails', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.stubEnv('VITE_FIREBASE_API_KEY', 'test-key')
     vi.stubEnv('VITE_FIREBASE_AUTH_DOMAIN', 'test.firebaseapp.com')
     vi.stubEnv('VITE_FIREBASE_PROJECT_ID', 'test-project')
@@ -118,6 +119,7 @@ describe('firebase lib', () => {
     const { ensureAuth } = await import('@/lib/firebase')
     const result = await ensureAuth()
     expect(result).toBeNull()
+    warnSpy.mockRestore()
     vi.unstubAllEnvs()
   })
 

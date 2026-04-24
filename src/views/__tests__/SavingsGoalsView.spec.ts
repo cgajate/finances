@@ -230,4 +230,29 @@ describe('SavingsGoalsView', () => {
     await wrapper.find('.savings-goal-row--completed .btn-remove').trigger('click')
     expect(store.goals).toHaveLength(0)
   })
+
+  it('updates goalName via input', async () => {
+    const wrapper = mountView()
+    await wrapper.find('#goal-name').setValue('TestGoal')
+    expect((wrapper.vm as any).goalName).toBe('TestGoal')
+  })
+
+  it('updates deadline via input', async () => {
+    const wrapper = mountView()
+    await wrapper.find('#goal-deadline').setValue('2027-06-01')
+    expect((wrapper.vm as any).deadline).toBe('2027-06-01')
+  })
+
+  it('updates addAmount via CurrencyInput in savings form', async () => {
+    const store = useSavingsGoalsStore()
+    store.addGoal({ name: 'Vacation', targetAmount: 3000, deadline: '2026-12-31' })
+    const wrapper = mountView()
+    await wrapper.find('.btn-fund').trigger('click')
+    // Find the CurrencyInput inside the savings form (second one on the page)
+    const currencyInputs = wrapper.findAllComponents({ name: 'CurrencyInput' })
+    const savingsCurrencyInput = currencyInputs[currencyInputs.length - 1]!
+    savingsCurrencyInput.vm.$emit('update:modelValue', 200)
+    await wrapper.vm.$nextTick()
+    expect((wrapper.vm as any).addAmount).toBe(200)
+  })
 })

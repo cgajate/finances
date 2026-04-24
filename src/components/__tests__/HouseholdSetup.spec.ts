@@ -27,6 +27,16 @@ vi.mock('@/composables/useSnackbar', () => ({
   }),
 }))
 
+vi.mock('@/lib/firebase', () => ({
+  getDb: vi.fn(),
+  ensureAuth: vi.fn(),
+  isConfigured: vi.fn(() => false),
+}))
+
+vi.mock('@/composables/useFirestoreSync', () => ({
+  useFirestoreSync: vi.fn(),
+}))
+
 describe('HouseholdSetup', () => {
   let pinia: ReturnType<typeof createPinia>
 

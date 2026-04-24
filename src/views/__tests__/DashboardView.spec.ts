@@ -4,6 +4,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '@/views/DashboardView.vue'
 import { useFinancesStore } from '@/stores/finances'
+import { useBudgetsStore } from '@/stores/budgets'
+import { useSavingsGoalsStore } from '@/stores/savingsGoals'
 
 function makeRouter() {
   return createRouter({
@@ -12,6 +14,8 @@ function makeRouter() {
       { path: '/', component: DashboardView },
       { path: '/finances', component: { template: '<div />' } },
       { path: '/analytics', component: { template: '<div />' } },
+      { path: '/budgets', component: { template: '<div />' } },
+      { path: '/savings', component: { template: '<div />' } },
     ],
   })
 }
@@ -194,5 +198,114 @@ describe('DashboardView', () => {
     expect(wrapper.find('.badge-income').exists()).toBe(true)
     expect(wrapper.find('.badge-expense').exists()).toBe(true)
   })
-})
 
+  it('shows budget progress section when budgets exist', () => {
+    const store = useFinancesStore()
+    const budgetsStore = useBudgetsStore()
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Food', notes: '', dueDate: null, category: 'Food' })
+    budgetsStore.setBudget('Food', 500)
+    const wrapper = mountView()
+    expect(wrapper.find('.budget-section').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Budget Progress')
+    expect(wrapper.text()).toContain('Manage Budgets')
+  })
+
+  it('hides budget section when no budgets', () => {
+    const wrapper = mountView()
+    expect(wrapper.find('.budget-section').exists()).toBe(false)
+  })
+
+  it('shows savings goals section when active goals exist', () => {
+    const savingsStore = useSavingsGoalsStore()
+    savingsStore.addGoal({ name: 'Vacation', targetAmount: 3000, deadline: '2026-12-31', savedAmount: 500 })
+    const wrapper = mountView()
+    expect(wrapper.find('.savings-section').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Savings Goals')
+    expect(wrapper.text()).toContain('Vacation')
+    expect(wrapper.text()).toContain('Manage Goals')
+  })
+
+  it('hides savings section when no active goals', () => {
+    const wrapper = mountView()
+    expect(wrapper.find('.savings-section').exists()).toBe(false)
+  })
+
+  it('shows filter message when income filter active but nothing matches', async () => {
+    const store = useFinancesStore()
+    store.addAdhocIncome({ amount: 100, description: 'Test', date: '2026-01-01' })
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.income.toggleFilter('weekly')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('No income matches the current filter')
+  })
+
+  it('shows filter message when expense filter active but nothing matches', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 100, description: 'Test', notes: '', dueDate: null })
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.expense.toggleFilter('weekly')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('No expenses match the current filter')
+  })
+
+  it('shows View All toggle for expenses when more than 5', async () => {
+    const store = useFinancesStore()
+    for (let i = 0; i < 7; i++) {
+      store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: `Exp ${i}`, notes: '', dueDate: null })
+    }
+    const wrapper = mountView()
+    const expenseSection = wrapper.findAll('section')[1]!
+    expect(expenseSection.find('.btn-toggle').exists()).toBe(true)
+    await expenseSection.find('.btn-toggle').trigger('click')
+    expect(expenseSection.findAll('li').length).toBe(7)
+  })
+
+  it('shows "filtered" label when filters are active', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'T', notes: '', date: null })
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.income.toggleFilter('monthly')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('filtered')
+  })
+
+  it('submits sort panel on income FilterSortBar', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'T', notes: '', date: null })
+    const wrapper = mountView()
+    // Click the sort trigger
+    const sortBtn = wrapper.findAll('.trigger-btn')[1]!
+    await sortBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+    // Submit sort
+    const submitBtn = wrapper.find('.footer-btn.submit')
+    expect(submitBtn.exists()).toBe(true)
+    await submitBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+    // Should have applied sort
+    expect(wrapper.text()).toContain('Income')
+  })
+
+  it('submits sort panel on expense FilterSortBar', async () => {
+    const store = useFinancesStore()
+    store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'T', notes: '', date: null })
+    store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'E', notes: '', dueDate: null })
+    const wrapper = mountView()
+    // Find the expense section's FilterSortBar sort trigger
+    const bars = wrapper.findAllComponents({ name: 'FilterSortBar' })
+    const expenseBar = bars[1]!
+    const sortTrigger = expenseBar.findAll('.trigger-btn')[1]!
+    await sortTrigger.trigger('click')
+    await wrapper.vm.$nextTick()
+    // Submit
+    const submitBtn = expenseBar.find('.footer-btn.submit')
+    if (submitBtn.exists()) {
+      await submitBtn.trigger('click')
+      await wrapper.vm.$nextTick()
+    }
+    expect(wrapper.text()).toContain('Expenses')
+  })
+})

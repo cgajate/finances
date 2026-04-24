@@ -283,5 +283,27 @@ describe('AnalyticsView', () => {
       expect(wrapper.find('.yr-card.net').classes()).toContain('negative')
     })
   })
-})
 
+  it('switches to spending trends tab', async () => {
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[2]!.trigger('click')
+    expect(wrapper.find('.trends-tab').exists()).toBe(true)
+    expect(wrapper.find('.timeline').exists()).toBe(false)
+  })
+
+  it('updates monthsBefore when AnalyticsTimeline emits update:months-before', async () => {
+    const wrapper = mountView()
+    const timeline = wrapper.findComponent({ name: 'AnalyticsTimeline' })
+    timeline.vm.$emit('update:monthsBefore', 3)
+    await wrapper.vm.$nextTick()
+    expect((wrapper.vm as any).monthsBefore).toBe(3)
+  })
+
+  it('updates monthsAfter when AnalyticsTimeline emits update:months-after', async () => {
+    const wrapper = mountView()
+    const timeline = wrapper.findComponent({ name: 'AnalyticsTimeline' })
+    timeline.vm.$emit('update:monthsAfter', 6)
+    await wrapper.vm.$nextTick()
+    expect((wrapper.vm as any).monthsAfter).toBe(6)
+  })
+})

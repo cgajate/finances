@@ -117,5 +117,90 @@ describe('BillCalendarView', () => {
     expect(wrapper.text()).toContain('Income')
     expect(wrapper.text()).toContain('Expense')
   })
-})
 
+  it('wraps from December to January on next month', async () => {
+    const wrapper = mountView()
+    // Navigate to December
+    for (let i = 0; i < 8; i++) { // April + 8 = December
+      await wrapper.findAll('.nav-btn')[1]!.trigger('click')
+    }
+    expect(wrapper.text()).toContain('December')
+    // One more → January next year
+    await wrapper.findAll('.nav-btn')[1]!.trigger('click')
+    expect(wrapper.text()).toContain('January')
+    expect(wrapper.text()).toContain('2027')
+  })
+
+  it('wraps from January to December on prev month', async () => {
+    const wrapper = mountView()
+    // Navigate to January
+    for (let i = 0; i < 3; i++) { // April - 3 = January
+      await wrapper.findAll('.nav-btn')[0]!.trigger('click')
+    }
+    expect(wrapper.text()).toContain('January')
+    // One more → December prev year
+    await wrapper.findAll('.nav-btn')[0]!.trigger('click')
+    expect(wrapper.text()).toContain('December')
+    expect(wrapper.text()).toContain('2025')
+  })
+
+  it('Today button resets to current month', async () => {
+    const wrapper = mountView()
+    await wrapper.findAll('.nav-btn')[1]!.trigger('click')
+    expect(wrapper.text()).toContain('May')
+    await wrapper.find('.today-btn').trigger('click')
+    expect(wrapper.text()).toContain('April')
+  })
+
+  it('toggles day detail when clicking same day twice', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 500, description: 'Fix', notes: '', dueDate: '2026-04-15' })
+    const wrapper = mountView()
+    const dayCells = wrapper.findAll('.day-cell.has-events')
+    await dayCells[0]!.trigger('click')
+    expect(wrapper.find('.day-detail').exists()).toBe(true)
+    await dayCells[0]!.trigger('click')
+    expect(wrapper.find('.day-detail').exists()).toBe(false)
+  })
+
+  it('opens day detail via Enter key', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 500, description: 'Fix', notes: '', dueDate: '2026-04-15' })
+    const wrapper = mountView()
+    const dayCells = wrapper.findAll('.day-cell.has-events')
+    await dayCells[0]!.trigger('keydown.enter')
+    expect(wrapper.find('.day-detail').exists()).toBe(true)
+  })
+
+  it('opens day detail via Space key', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 500, description: 'Fix', notes: '', dueDate: '2026-04-15' })
+    const wrapper = mountView()
+    const dayCells = wrapper.findAll('.day-cell.has-events')
+    await dayCells[0]!.trigger('keydown.space')
+    expect(wrapper.find('.day-detail').exists()).toBe(true)
+  })
+
+  it('shows negative class on net when expenses exceed income', () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 5000, description: 'Big', notes: '', dueDate: '2026-04-10' })
+    const wrapper = mountView()
+    expect(wrapper.find('.summary-net.negative').exists()).toBe(true)
+  })
+
+  it('shows category in detail panel', async () => {
+    const store = useFinancesStore()
+    store.addAdhocExpense({ amount: 500, description: 'Fix', notes: '', dueDate: '2026-04-15', category: 'Housing' })
+    const wrapper = mountView()
+    const dayCells = wrapper.findAll('.day-cell.has-events')
+    await dayCells[0]!.trigger('click')
+    expect(wrapper.text()).toContain('Housing')
+  })
+
+  it('shows income dot for day with income event', () => {
+    const store = useFinancesStore()
+    store.addAdhocIncome({ amount: 1000, description: 'Pay', date: '2026-04-10' })
+    const wrapper = mountView()
+    expect(wrapper.findAll('.dot-income').length).toBeGreaterThanOrEqual(1)
+  })
+})

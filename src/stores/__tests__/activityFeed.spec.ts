@@ -1,7 +1,18 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { nextTick } from 'vue'
 import { useActivityFeedStore } from '@/stores/activityFeed'
+
+vi.mock('@/lib/firebase', () => ({
+  getDb: vi.fn(() => null),
+}))
+
+vi.mock('@/composables/useFirestoreSync', () => ({
+  useFirestoreSync: vi.fn(),
+}))
+
+import { getDb } from '@/lib/firebase'
+import { useFirestoreSync } from '@/composables/useFirestoreSync'
 
 describe('activityFeed store', () => {
   beforeEach(() => {
@@ -81,5 +92,24 @@ describe('activityFeed store', () => {
     expect(store.activities).toHaveLength(1)
     expect(store.activities[0]!.description).toBe('Saved')
   })
-})
 
+  it('enableSync does nothing when db is null', () => {
+    vi.mocked(getDb).mockReturnValue(null)
+    const store = useActivityFeedStore()
+    store.enableSync('household-1')
+    expect(useFirestoreSync).not.toHaveBeenCalled()
+  })
+
+  it('enableSync calls useFirestoreSync when db is available', () => {
+    const fakeDb = {} as any
+    vi.mocked(getDb).mockReturnValue(fakeDb)
+    const store = useActivityFeedStore()
+    store.enableSync('household-1')
+    expect(useFirestoreSync).toHaveBeenCalledWith(
+      fakeDb,
+      'households/household-1',
+      'activityFeed',
+      expect.anything(),
+    )
+  })
+})
