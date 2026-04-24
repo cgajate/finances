@@ -231,6 +231,10 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
               </span>
               <font-awesome-icon :icon="['fas', 'clipboard-check']" />
             </RouterLink>
+            <RouterLink to="/import" class="admin-option" @click="adminMenuOpen = false">
+              <span>Import Statement</span>
+              <font-awesome-icon :icon="['fas', 'file-csv']" />
+            </RouterLink>
             <div class="admin-separator"></div>
             <button class="admin-option admin-option--danger" @click="signOut(); adminMenuOpen = false">
               <span>Sign Out</span>

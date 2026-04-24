@@ -106,8 +106,8 @@ describe('router', () => {
     expect(route.name).toBe('categories')
   })
 
-  it('has 21 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(21)
+  it('has 22 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(22)
   })
 
   it('has an approvals route at /approvals', () => {
@@ -225,6 +225,19 @@ describe('router', () => {
   it('lazy-loads categories view', async () => {
     const route = router.resolve('/categories')
     const matched = route.matched.find((m) => m.name === 'categories')
+    const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
+    const mod = await comp?.()
+    expect(mod).toBeDefined()
+  })
+
+  it('has an import route at /import', () => {
+    const route = router.resolve('/import')
+    expect(route.name).toBe('import')
+  })
+
+  it('lazy-loads import view', async () => {
+    const route = router.resolve('/import')
+    const matched = route.matched.find((m) => m.name === 'import')
     const comp = matched!.components?.default as (() => Promise<unknown>) | undefined
     const mod = await comp?.()
     expect(mod).toBeDefined()

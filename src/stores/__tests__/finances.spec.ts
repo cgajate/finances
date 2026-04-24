@@ -210,10 +210,17 @@ describe('finances store', () => {
       expect(store.totalMonthlyIncome).toBeCloseTo(1000)
     })
 
-    it('totalMonthlyIncome includes adhoc at face value', () => {
+    it('totalMonthlyIncome includes adhoc in current month', () => {
       const store = useFinancesStore()
-      store.addAdhocIncome({ amount: 500, description: 'Gift', date: '2026-01-01' })
+      const curMonth = new Date().toISOString().slice(0, 7)
+      store.addAdhocIncome({ amount: 500, description: 'Gift', date: `${curMonth}-10` })
       expect(store.totalMonthlyIncome).toBe(500)
+    })
+
+    it('totalMonthlyIncome excludes adhoc from other months', () => {
+      const store = useFinancesStore()
+      store.addAdhocIncome({ amount: 500, description: 'Old Gift', date: '2025-01-01' })
+      expect(store.totalMonthlyIncome).toBe(0)
     })
 
     it('totalMonthlyExpenses for recurring', () => {
@@ -225,6 +232,19 @@ describe('finances store', () => {
     it('totalMonthlyExpenses includes adhoc', () => {
       const store = useFinancesStore()
       store.addAdhocExpense({ amount: 200, description: 'Fix', notes: '', dueDate: null })
+      expect(store.totalMonthlyExpenses).toBe(200)
+    })
+
+    it('totalMonthlyExpenses excludes adhoc from other months', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 200, description: 'Old Fix', notes: '', dueDate: '2025-01-15' })
+      expect(store.totalMonthlyExpenses).toBe(0)
+    })
+
+    it('totalMonthlyExpenses includes adhoc in current month by dueDate', () => {
+      const store = useFinancesStore()
+      const curMonth = new Date().toISOString().slice(0, 7)
+      store.addAdhocExpense({ amount: 200, description: 'Fix', notes: '', dueDate: `${curMonth}-15` })
       expect(store.totalMonthlyExpenses).toBe(200)
     })
 

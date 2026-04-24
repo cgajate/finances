@@ -166,3 +166,13 @@ export interface ApprovalRequest {
   createdAt: string
   resolvedAt: string | null
 }
+
+export type NetWorthEntryKind = 'asset' | 'liability'
+
+export interface NetWorthEntry {
+  id: string
+  kind: NetWorthEntryKind
+  name: string
+  amount: number
+  createdAt: string
+}

@@ -215,19 +215,27 @@ export const useFinancesStore = defineStore('finances', () => {
   )
 
   const totalMonthlyIncome = computed(() => {
+    const currentMonth = new Date().toISOString().slice(0, 7)
     return incomes.value.reduce((sum, i) => {
       if (i.type === 'recurring') {
         return sum + monthlyEquivalent(i.amount, i.frequency)
       }
+      // Adhoc: only count if its date falls in the current month
+      const adhocDate = i.date ?? i.createdAt?.split('T')[0] ?? ''
+      if (adhocDate && !adhocDate.startsWith(currentMonth)) return sum
       return sum + i.amount
     }, 0)
   })
 
   const totalMonthlyExpenses = computed(() => {
+    const currentMonth = new Date().toISOString().slice(0, 7)
     return activeExpenses.value.reduce((sum, e) => {
       if (e.type === 'recurring') {
         return sum + monthlyEquivalent(e.amount, e.frequency)
       }
+      // Adhoc: only count if its date falls in the current month
+      const adhocDate = e.dueDate ?? e.createdAt?.split('T')[0] ?? ''
+      if (adhocDate && !adhocDate.startsWith(currentMonth)) return sum
       return sum + e.amount
     }, 0)
   })

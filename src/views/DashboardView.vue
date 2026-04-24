@@ -13,6 +13,7 @@ import DashboardSearchResults from '@/components/DashboardSearchResults.vue'
 import { formatCurrency } from '@/lib/formatCurrency'
 import SearchBar from '@/components/SearchBar.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import NetWorthWidget from '@/components/NetWorthWidget.vue'
 
 const store = useFinancesStore()
 const budgetsStore = useBudgetsStore()
@@ -37,7 +38,8 @@ const displayedIncomes = computed(() => {
 const displayedExpenses = computed(() => {
   if (expenseExpanded.value) return expense.filtered
   return expense.filtered.slice(0, 5)
-})</script>
+})
+</script>
 
 <template>
   <div class="dashboard">
@@ -180,6 +182,10 @@ const displayedExpenses = computed(() => {
       </div>
       <RouterLink to="/savings" class="btn">Manage Goals <font-awesome-icon :icon="['fas', 'arrow-right']" /></RouterLink>
     </section>
+
+    <!-- Net Worth -->
+    <NetWorthWidget />
+
     </template>
   </div>
 </template>
