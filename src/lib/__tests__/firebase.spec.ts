@@ -2,18 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock firebase modules before importing
 const mockInitializeApp = vi.fn().mockReturnValue({})
-const mockGetFirestore = vi.fn().mockReturnValue({})
+const mockInitializeFirestore = vi.fn().mockReturnValue({})
 const mockGetAuth = vi.fn().mockReturnValue({ currentUser: null })
 const mockSignInAnonymously = vi.fn()
-const mockEnablePersistence = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('firebase/app', () => ({
   initializeApp: mockInitializeApp,
 }))
 
 vi.mock('firebase/firestore', () => ({
-  getFirestore: mockGetFirestore,
-  enableMultiTabIndexedDbPersistence: mockEnablePersistence,
+  initializeFirestore: mockInitializeFirestore,
+  persistentLocalCache: vi.fn((opts) => opts),
+  persistentMultipleTabManager: vi.fn(() => ({})),
 }))
 
 vi.mock('firebase/auth', () => ({
@@ -45,7 +45,7 @@ describe('firebase lib', () => {
     const { getDb } = await import('@/lib/firebase')
     const result = getDb()
     expect(mockInitializeApp).toHaveBeenCalled()
-    expect(mockGetFirestore).toHaveBeenCalled()
+    expect(mockInitializeFirestore).toHaveBeenCalled()
     expect(result).toBeDefined()
     vi.unstubAllEnvs()
   })
@@ -149,21 +149,19 @@ describe('firebase lib', () => {
     vi.unstubAllEnvs()
   })
 
-  it('handles persistence failure gracefully', async () => {
+  it('configures persistence via initializeFirestore', async () => {
     vi.stubEnv('VITE_FIREBASE_API_KEY', 'test-key')
     vi.stubEnv('VITE_FIREBASE_AUTH_DOMAIN', 'test.firebaseapp.com')
     vi.stubEnv('VITE_FIREBASE_PROJECT_ID', 'test-project')
     vi.stubEnv('VITE_FIREBASE_STORAGE_BUCKET', 'test.appspot.com')
     vi.stubEnv('VITE_FIREBASE_MESSAGING_SENDER_ID', '123')
     vi.stubEnv('VITE_FIREBASE_APP_ID', 'app-id')
-    mockEnablePersistence.mockRejectedValue({ code: 'failed-precondition' })
-    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { getDb } = await import('@/lib/firebase')
     getDb()
-    // Wait for the promise rejection to be handled
-    await new Promise((r) => setTimeout(r, 10))
-    expect(consoleWarn).toHaveBeenCalled()
-    consoleWarn.mockRestore()
+    expect(mockInitializeFirestore).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ localCache: expect.anything() }),
+    )
     vi.unstubAllEnvs()
   })
 })

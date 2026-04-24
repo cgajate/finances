@@ -106,7 +106,7 @@ describe('router', () => {
     expect(route.name).toBe('categories')
   })
 
-  it('has 20 routes total', () => {
-    expect(router.getRoutes()).toHaveLength(20)
+  it('has 21 routes total', () => {
+    expect(router.getRoutes()).toHaveLength(21)
   })
 })

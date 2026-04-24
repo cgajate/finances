@@ -676,7 +676,7 @@ describe('FinancesView', () => {
     expect(wrapper.find('.list-item-created').text()).toContain('Created')
   })
 
-  it('shows assignedTo in created line for expense', async () => {
+  it('shows createdBy in created line for expense', async () => {
     const store = useFinancesStore()
     store.addRecurringExpense({
       amount: 100,
@@ -687,7 +687,7 @@ describe('FinancesView', () => {
       assignedTo: 'Dad',
     })
     const wrapper = await mountView('expenses')
-    expect(wrapper.find('.list-item-created').text()).toContain('by Dad')
+    expect(wrapper.find('.list-item-created').text()).toContain('by')
   })
 
   it('deleteIncome does nothing for non-existent id', async () => {

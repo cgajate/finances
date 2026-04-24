@@ -5,12 +5,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { nextTick, ref } from 'vue'
 import App from '../App.vue'
 
-vi.mock('@/components/PinGate.vue', () => ({
-  default: { name: 'PinGate', template: '<slot />' },
+vi.mock('@/components/AuthGate.vue', () => ({
+  default: { name: 'AuthGate', template: '<slot />' },
 }))
 
 vi.mock('@/components/NotificationPanel.vue', () => ({
-  default: { name: 'NotificationPanel', template: '<div class="notification-panel-mock" />' },
+  default: { name: 'NotificationPanel', template: '<div class="notification-panel-mock" />', methods: { close() {} } },
 }))
 
 vi.mock('@/components/HouseholdSetup.vue', () => ({
@@ -29,6 +29,22 @@ vi.mock('@/components/SnackbarNotification.vue', () => ({
 const hasHouseholdRef = ref(false)
 vi.mock('@/composables/useHousehold', () => ({
   useHousehold: () => ({ hasHousehold: hasHouseholdRef }),
+}))
+
+vi.mock('@/composables/useAuth', () => ({
+  useAuth: () => ({
+    displayName: ref('Test User'),
+    photoURL: ref(null),
+    isAnonymous: ref(false),
+    authenticated: ref(true),
+    userId: ref('test-uid'),
+    firebaseUser: ref(null),
+    loading: ref(false),
+    initAuth: () => {},
+    signInWithGoogle: async () => true,
+    signInAnon: async () => true,
+    signOut: async () => {},
+  }),
 }))
 
 function makeRouter() {
@@ -322,7 +338,7 @@ describe('App', () => {
     await nextTick()
     await wrapper.find('.menu-toggle').trigger('click')
     const links = wrapper.findAll('.sidebar-link')
-    expect(links.length).toBe(5)
+    expect(links.length).toBe(6)
     expect(wrapper.find('.mobile-sidebar').text()).toContain('Dashboard')
     expect(wrapper.find('.mobile-sidebar').text()).toContain('Finances')
     expect(wrapper.find('.mobile-sidebar').text()).toContain('Analytics')

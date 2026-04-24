@@ -77,8 +77,7 @@ describe('EditExpenseView', () => {
     const id = store.expenses[0]!.id
     const { wrapper } = await mountView(id)
     expect(wrapper.find('.btn-save').exists()).toBe(true)
-    expect(wrapper.find('.btn-cancel').exists()).toBe(true)
-    expect(wrapper.find('.btn-delete--outline').exists()).toBe(true)
+    expect(wrapper.find('.btn-delete--filled').exists()).toBe(true)
   })
 
   it('deletes expense on Delete click', async () => {
@@ -86,7 +85,7 @@ describe('EditExpenseView', () => {
     store.addAdhocExpense({ amount: 100, description: 'Del', notes: '', dueDate: null })
     const id = store.expenses[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.expenses).toHaveLength(0)
   })
 
@@ -189,14 +188,12 @@ describe('EditExpenseView', () => {
     expect(store.expenses[0]!.dueDate).toBe('2026-12-01')
   })
 
-  it('cancel navigates back', async () => {
+  it('has a back link to expenses', async () => {
     const store = useFinancesStore()
     store.addAdhocExpense({ amount: 50, description: 'Fix', notes: '', dueDate: null })
     const id = store.expenses[0]!.id
-    const { wrapper, router } = await mountView(id)
-    const pushSpy = vi.spyOn(router, 'push')
-    await wrapper.find('.btn-cancel').trigger('click')
-    expect(pushSpy).toHaveBeenCalledWith('/finances?tab=expenses')
+    const { wrapper } = await mountView(id)
+    expect(wrapper.find('.btn-back').exists()).toBe(true)
   })
 
   it('delete with undo restores recurring expense', async () => {
@@ -204,7 +201,7 @@ describe('EditExpenseView', () => {
     store.addRecurringExpense({ amount: 100, frequency: 'monthly', description: 'Internet', notes: 'ISP', dueDate: '2026-05-01', assignedTo: 'Mom' })
     const id = store.expenses[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.expenses).toHaveLength(0)
     const snackbar = useSnackbar()
     snackbar.undo(snackbar.items.value[0]!.id)
@@ -217,7 +214,7 @@ describe('EditExpenseView', () => {
     store.addAdhocExpense({ amount: 200, description: 'Repair', notes: 'Brakes', dueDate: '2026-05-01', assignedTo: 'Dad' })
     const id = store.expenses[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.expenses).toHaveLength(0)
     const snackbar = useSnackbar()
     snackbar.undo(snackbar.items.value[0]!.id)

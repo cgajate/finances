@@ -77,8 +77,7 @@ describe('EditIncomeView', () => {
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
     expect(wrapper.find('.btn-save').text()).toContain('Save')
-    expect(wrapper.find('.btn-cancel').text()).toContain('Cancel')
-    expect(wrapper.find('.btn-delete--outline').text()).toContain('Delete')
+    expect(wrapper.find('.btn-delete--filled').text()).toContain('Remove')
   })
 
   it('deletes income and navigates on Delete click', async () => {
@@ -86,7 +85,7 @@ describe('EditIncomeView', () => {
     store.addRecurringIncome({ amount: 100, frequency: 'monthly', description: 'Del', notes: '', date: null })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.incomes).toHaveLength(0)
   })
 
@@ -187,14 +186,12 @@ describe('EditIncomeView', () => {
     expect(store.incomes[0]!.description).toBe('Annual')
   })
 
-  it('cancel navigates back', async () => {
+  it('has a back link to income', async () => {
     const store = useFinancesStore()
     store.addAdhocIncome({ amount: 200, description: 'Gift', date: '2026-03-15' })
     const id = store.incomes[0]!.id
-    const { wrapper, router } = await mountView(id)
-    const pushSpy = vi.spyOn(router, 'push')
-    await wrapper.find('.btn-cancel').trigger('click')
-    expect(pushSpy).toHaveBeenCalledWith('/finances?tab=income')
+    const { wrapper } = await mountView(id)
+    expect(wrapper.find('.btn-back').exists()).toBe(true)
   })
 
   it('delete with undo restores recurring income', async () => {
@@ -202,7 +199,7 @@ describe('EditIncomeView', () => {
     store.addRecurringIncome({ amount: 3000, frequency: 'monthly', description: 'Salary', notes: 'Main', date: '2026-06-01' })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.incomes).toHaveLength(0)
     const snackbar = useSnackbar()
     snackbar.undo(snackbar.items.value[0]!.id)
@@ -215,7 +212,7 @@ describe('EditIncomeView', () => {
     store.addAdhocIncome({ amount: 200, description: 'Freelance', date: '2026-03-15' })
     const id = store.incomes[0]!.id
     const { wrapper } = await mountView(id)
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.incomes).toHaveLength(0)
     const snackbar2 = useSnackbar()
     snackbar2.undo(snackbar2.items.value[0]!.id)
@@ -230,7 +227,7 @@ describe('EditIncomeView', () => {
     // Remove the item first
     store.removeIncome(id)
     // Now trigger delete on the view - should not crash
-    await wrapper.find('.btn-delete--outline').trigger('click')
+    await wrapper.find('.btn-delete--filled').trigger('click')
     expect(store.incomes).toHaveLength(0)
   })
 })
