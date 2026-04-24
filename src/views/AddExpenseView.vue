@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
+import { useApprovalsStore } from '@/stores/approvals'
+import { useAuth } from '@/composables/useAuth'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency, ExpenseCategory } from '@/types/finance'
@@ -12,6 +13,8 @@ import PageHeader from '@/components/PageHeader.vue'
 import CurrencyInput from '@/components/CurrencyInput.vue'
 
 const store = useFinancesStore()
+const approvalsStore = useApprovalsStore()
+const { userId } = useAuth()
 const snackbar = useSnackbar()
 const categoriesStore = useCategoriesStore()
 const { activeExpenseCategories } = storeToRefs(categoriesStore)
@@ -43,7 +46,7 @@ function addRecurring() {
   if (!rAmount.value || !rDescription.value) return
   if (rFrequency.value === 'yearly' && !rDueDate.value) return
   try {
-    store.addRecurringExpense({
+    const expenseId = store.addRecurringExpense({
       amount: rAmount.value,
       frequency: rFrequency.value,
       description: rDescription.value,
@@ -52,7 +55,20 @@ function addRecurring() {
       category: rCategory.value,
       assignedTo: rAssignedTo.value,
     })
-    snackbar.show(`Added recurring expense "${rDescription.value}"`, { duration: 8000 })
+
+    if (approvalsStore.requiresApproval(rAmount.value)) {
+      approvalsStore.submitForApproval({
+        expenseId,
+        amount: rAmount.value,
+        description: rDescription.value,
+        requestedBy: userId.value || 'anonymous',
+      })
+      store.updateExpenseApprovalStatus(expenseId, 'pending')
+      snackbar.show(`Expense "${rDescription.value}" submitted for approval`, { duration: 8000 })
+    } else {
+      snackbar.show(`Added recurring expense "${rDescription.value}"`, { duration: 8000 })
+    }
+
     rAmount.value = null
     rDescription.value = ''
     rNotes.value = ''
@@ -68,7 +84,7 @@ function addRecurring() {
 function addAdhoc() {
   if (!aAmount.value || !aDescription.value) return
   try {
-    store.addAdhocExpense({
+    const expenseId = store.addAdhocExpense({
       amount: aAmount.value,
       description: aDescription.value,
       notes: aNotes.value,
@@ -76,7 +92,20 @@ function addAdhoc() {
       category: aCategory.value,
       assignedTo: aAssignedTo.value,
     })
-    snackbar.show(`Added expense "${aDescription.value}"`, { duration: 8000 })
+
+    if (approvalsStore.requiresApproval(aAmount.value)) {
+      approvalsStore.submitForApproval({
+        expenseId,
+        amount: aAmount.value,
+        description: aDescription.value,
+        requestedBy: userId.value || 'anonymous',
+      })
+      store.updateExpenseApprovalStatus(expenseId, 'pending')
+      snackbar.show(`Expense "${aDescription.value}" submitted for approval`, { duration: 8000 })
+    } else {
+      snackbar.show(`Added expense "${aDescription.value}"`, { duration: 8000 })
+    }
+
     aAmount.value = null
     aDescription.value = ''
     aNotes.value = ''

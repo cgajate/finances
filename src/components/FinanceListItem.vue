@@ -17,6 +17,13 @@ defineEmits<{
   (e: 'delete', id: string): void
 }>()
 
+
+/** Approval status for this expense, if any */
+const approvalStatus = computed(() => {
+  if (props.kind !== 'expense') return undefined
+  return (props.item as Expense).approvalStatus
+})
+
 /** Get the date field — income uses `date`, expense uses `dueDate` */
 function getDateValue(): string | null {
   if (props.kind === 'income') {
@@ -76,6 +83,24 @@ const overrideCount = computed(() => {
         {{ item.type === 'recurring' ? item.frequency : 'one-time' }}
       </span>
       <span class="badge cat-badge">{{ item.category ?? 'Other' }}</span>
+      <span
+        v-if="approvalStatus === 'pending'"
+        class="badge approval-badge approval-badge--pending"
+      >
+        <font-awesome-icon :icon="['fas', 'clock']" /> Pending Approval
+      </span>
+      <span
+        v-else-if="approvalStatus === 'approved'"
+        class="badge approval-badge approval-badge--approved"
+      >
+        <font-awesome-icon :icon="['fas', 'circle-check']" /> Approved
+      </span>
+      <span
+        v-else-if="approvalStatus === 'rejected'"
+        class="badge approval-badge approval-badge--rejected"
+      >
+        <font-awesome-icon :icon="['fas', 'circle-xmark']" /> Rejected
+      </span>
       <span v-if="overrideCount > 0" class="badge override-badge" :title="`${overrideCount} month adjustment${overrideCount > 1 ? 's' : ''}`">
         <font-awesome-icon :icon="['fas', 'pen']" /> {{ overrideCount }} adj.
       </span>
@@ -120,6 +145,8 @@ const overrideCount = computed(() => {
           :src="item.createdByPhoto"
           alt=""
           class="created-by__avatar"
+          referrerpolicy="no-referrer"
+          crossorigin="anonymous"
         />
         {{ item.createdBy ?? 'Anonymous' }}
       </span>
@@ -175,5 +202,25 @@ const overrideCount = computed(() => {
   background: var(--color-warning-bg);
   color: var(--color-warning);
   font-size: 0.75rem;
+}
+
+.approval-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.approval-badge--pending {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.approval-badge--approved {
+  background: var(--color-income-bg);
+  color: var(--color-income);
+}
+
+.approval-badge--rejected {
+  background: var(--color-expense-bg);
+  color: var(--color-expense);
 }
 </style>

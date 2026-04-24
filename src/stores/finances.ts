@@ -127,7 +127,7 @@ export const useFinancesStore = defineStore('finances', () => {
     dueDate: string | null
     category?: ExpenseCategory
     assignedTo?: string
-  }, userId = 'anonymous') {
+  }, userId = 'anonymous'): string {
     const id = generateId()
     const { displayName, photoURL } = useAuth()
     expenses.value.push({
@@ -142,6 +142,7 @@ export const useFinancesStore = defineStore('finances', () => {
     })
     if (data.assignedTo) addFamilyMember(data.assignedTo)
     useActivityFeedStore().logActivity(userId, 'add', 'expense', id, `Added recurring expense "${data.description}"`)
+    return id
   }
 
   function addAdhocExpense(data: {
@@ -151,7 +152,7 @@ export const useFinancesStore = defineStore('finances', () => {
     dueDate: string | null
     category?: ExpenseCategory
     assignedTo?: string
-  }, userId = 'anonymous') {
+  }, userId = 'anonymous'): string {
     const id = generateId()
     const { displayName, photoURL } = useAuth()
     expenses.value.push({
@@ -166,6 +167,7 @@ export const useFinancesStore = defineStore('finances', () => {
     })
     if (data.assignedTo) addFamilyMember(data.assignedTo)
     useActivityFeedStore().logActivity(userId, 'add', 'expense', id, `Added expense "${data.description}"`)
+    return id
   }
 
   function removeExpense(id: string, userId = 'anonymous') {
@@ -207,6 +209,11 @@ export const useFinancesStore = defineStore('finances', () => {
     }
   }
 
+  /** Expenses that count toward financial calculations (excludes pending/rejected) */
+  const activeExpenses = computed(() =>
+    expenses.value.filter((e) => !e.approvalStatus || e.approvalStatus === 'approved'),
+  )
+
   const totalMonthlyIncome = computed(() => {
     return incomes.value.reduce((sum, i) => {
       if (i.type === 'recurring') {
@@ -217,7 +224,7 @@ export const useFinancesStore = defineStore('finances', () => {
   })
 
   const totalMonthlyExpenses = computed(() => {
-    return expenses.value.reduce((sum, e) => {
+    return activeExpenses.value.reduce((sum, e) => {
       if (e.type === 'recurring') {
         return sum + monthlyEquivalent(e.amount, e.frequency)
       }
@@ -231,11 +238,12 @@ export const useFinancesStore = defineStore('finances', () => {
   const spendingByCategory = computed(() => {
     const currentMonth = new Date().toISOString().slice(0, 7)
     const map = new Map<ExpenseCategory, number>()
-    for (const e of expenses.value) {
+    for (const e of activeExpenses.value) {
       const cat: ExpenseCategory = e.category ?? 'Other'
       if (e.type === 'adhoc') {
-        // Include adhoc if dueDate is in current month or no dueDate
-        if (e.dueDate && !e.dueDate.startsWith(currentMonth)) continue
+        // Include adhoc if its date is in current month or no date at all
+        const adhocDate = e.dueDate ?? e.createdAt.split('T')[0]
+        if (adhocDate && !adhocDate.startsWith(currentMonth)) continue
       }
       const prev = map.get(cat) ?? 0
       if (e.type === 'recurring') {
@@ -303,9 +311,21 @@ export const useFinancesStore = defineStore('finances', () => {
     familyMembers.value = familyMembers.value.filter((m) => m !== name)
   }
 
+  /** Update the approval status on an expense */
+  function updateExpenseApprovalStatus(expenseId: string, status: 'pending' | 'approved' | 'rejected') {
+    const index = expenses.value.findIndex((e) => e.id === expenseId)
+    if (index !== -1) {
+      const existing = expenses.value[index]
+      if (existing) {
+        expenses.value.splice(index, 1, { ...existing, approvalStatus: status })
+      }
+    }
+  }
+
   return {
     incomes,
     expenses,
+    activeExpenses,
     familyMembers,
     addRecurringIncome,
     addAdhocIncome,
@@ -327,6 +347,7 @@ export const useFinancesStore = defineStore('finances', () => {
     removeExpenseOverride,
     addFamilyMember,
     removeFamilyMember,
+    updateExpenseApprovalStatus,
     enableSync,
   }
 })

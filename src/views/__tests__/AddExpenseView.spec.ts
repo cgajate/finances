@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import AddExpenseView from '@/views/AddExpenseView.vue'
 import { useFinancesStore } from '@/stores/finances'
+import { useApprovalsStore } from '@/stores/approvals'
 import { useSnackbar } from '@/composables/useSnackbar'
 
 function makeRouter() {
@@ -307,5 +308,72 @@ describe('AddExpenseView', () => {
     expect(vm.rAssignedTo).toBe('Mom')
     expect(vm.rCategory).toBe('Housing')
     expect(vm.rFrequency).toBe('weekly')
+  })
+
+  // --- Approval integration ---
+
+  it('submits adhoc expense for approval when above threshold', async () => {
+    const approvals = useApprovalsStore()
+    approvals.setEnabled(true)
+    approvals.setThreshold(100)
+
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+
+    const vm = wrapper.vm as any
+    vm.aAmount = 150
+    vm.aDescription = 'Big purchase'
+    await wrapper.find('form').trigger('submit')
+
+    expect(approvals.requests.length).toBe(1)
+    expect(approvals.requests[0]!.amount).toBe(150)
+    expect(approvals.requests[0]!.status).toBe('pending')
+  })
+
+  it('does not submit for approval when below threshold', async () => {
+    const approvals = useApprovalsStore()
+    approvals.setEnabled(true)
+    approvals.setThreshold(100)
+
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+
+    const vm = wrapper.vm as any
+    vm.aAmount = 50
+    vm.aDescription = 'Small purchase'
+    await wrapper.find('form').trigger('submit')
+
+    expect(approvals.requests.length).toBe(0)
+  })
+
+  it('does not submit for approval when approvals are disabled', async () => {
+    const approvals = useApprovalsStore()
+    approvals.setEnabled(false)
+
+    const wrapper = mountView()
+    await wrapper.findAll('.tab-bar button')[1]!.trigger('click')
+
+    const vm = wrapper.vm as any
+    vm.aAmount = 1000
+    vm.aDescription = 'Expensive item'
+    await wrapper.find('form').trigger('submit')
+
+    expect(approvals.requests.length).toBe(0)
+  })
+
+  it('submits recurring expense for approval when above threshold', async () => {
+    const approvals = useApprovalsStore()
+    approvals.setEnabled(true)
+    approvals.setThreshold(200)
+
+    const wrapper = mountView()
+    const vm = wrapper.vm as any
+    vm.rAmount = 500
+    vm.rDescription = 'High rent'
+    await wrapper.find('form').trigger('submit')
+
+    expect(approvals.requests.length).toBe(1)
+    expect(approvals.requests[0]!.description).toBe('High rent')
+    expect(approvals.requests[0]!.status).toBe('pending')
   })
 })

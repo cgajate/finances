@@ -15,7 +15,7 @@ const monthsAfter = ref(12)
 
 const { breakdown, yearProjection } = useForecasting(
   store.incomes,
-  store.expenses,
+  store.activeExpenses,
   monthsBefore,
   monthsAfter,
 )

@@ -80,6 +80,8 @@ export interface RecurringExpense {
   createdByPhoto?: string | null
   /** Per-month amount overrides — key is YYYY-MM, value is the adjusted amount */
   overrides?: MonthlyOverrides
+  /** Approval workflow status — only set when approval is required */
+  approvalStatus?: ApprovalStatus
 }
 
 export interface AdhocExpense {
@@ -94,6 +96,8 @@ export interface AdhocExpense {
   createdAt: string
   createdBy?: string
   createdByPhoto?: string | null
+  /** Approval workflow status — only set when approval is required */
+  approvalStatus?: ApprovalStatus
 }
 
 export type Expense = RecurringExpense | AdhocExpense

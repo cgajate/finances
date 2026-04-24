@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useApprovalsStore } from '@/stores/approvals'
+import { useFinancesStore } from '@/stores/finances'
 
 describe('approvals store', () => {
   beforeEach(() => {
@@ -234,6 +235,77 @@ describe('approvals store', () => {
       setActivePinia(createPinia())
       const store = useApprovalsStore()
       expect(store.requests).toEqual([])
+    })
+  })
+
+  describe('approval status syncs to expense', () => {
+    it('approveRequest sets expense approvalStatus to approved', () => {
+      const financesStore = useFinancesStore()
+      const expenseId = financesStore.addAdhocExpense({ amount: 600, description: 'Laptop', notes: '', dueDate: null })
+      financesStore.updateExpenseApprovalStatus(expenseId, 'pending')
+
+      const store = useApprovalsStore()
+      const reqId = store.submitForApproval({
+        expenseId,
+        amount: 600,
+        description: 'Laptop',
+        requestedBy: 'Alice',
+      })
+      store.approveRequest(reqId, 'Bob')
+
+      const expense = financesStore.getExpenseById(expenseId)
+      expect(expense?.approvalStatus).toBe('approved')
+    })
+
+    it('rejectRequest sets expense approvalStatus to rejected', () => {
+      const financesStore = useFinancesStore()
+      const expenseId = financesStore.addAdhocExpense({ amount: 600, description: 'Laptop', notes: '', dueDate: null })
+      financesStore.updateExpenseApprovalStatus(expenseId, 'pending')
+
+      const store = useApprovalsStore()
+      const reqId = store.submitForApproval({
+        expenseId,
+        amount: 600,
+        description: 'Laptop',
+        requestedBy: 'Alice',
+      })
+      store.rejectRequest(reqId, 'Bob')
+
+      const expense = financesStore.getExpenseById(expenseId)
+      expect(expense?.approvalStatus).toBe('rejected')
+    })
+
+    it('approved expense is included in activeExpenses', () => {
+      const financesStore = useFinancesStore()
+      const expenseId = financesStore.addAdhocExpense({ amount: 600, description: 'Laptop', notes: '', dueDate: null })
+      financesStore.updateExpenseApprovalStatus(expenseId, 'pending')
+      expect(financesStore.activeExpenses).toHaveLength(0)
+
+      const store = useApprovalsStore()
+      const reqId = store.submitForApproval({
+        expenseId,
+        amount: 600,
+        description: 'Laptop',
+        requestedBy: 'Alice',
+      })
+      store.approveRequest(reqId, 'Bob')
+      expect(financesStore.activeExpenses).toHaveLength(1)
+    })
+
+    it('rejected expense is excluded from activeExpenses', () => {
+      const financesStore = useFinancesStore()
+      const expenseId = financesStore.addAdhocExpense({ amount: 600, description: 'Laptop', notes: '', dueDate: null })
+      financesStore.updateExpenseApprovalStatus(expenseId, 'pending')
+
+      const store = useApprovalsStore()
+      const reqId = store.submitForApproval({
+        expenseId,
+        amount: 600,
+        description: 'Laptop',
+        requestedBy: 'Alice',
+      })
+      store.rejectRequest(reqId, 'Bob')
+      expect(financesStore.activeExpenses).toHaveLength(0)
     })
   })
 })

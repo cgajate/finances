@@ -144,5 +144,77 @@ describe('useBillCalendar', () => {
     monthRef.value = 4 // May
     expect(calendar.value.label).toContain('May')
   })
+
+  it('excludes pending approval expenses from calendar', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'adhoc', amount: 500, description: 'Pending', notes: '', dueDate: '2026-04-15', createdAt: '2026-04-01T00:00:00Z', approvalStatus: 'pending' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const day15 = allDays.find((d) => d.date === '2026-04-15')
+    expect(day15!.events).toHaveLength(0)
+  })
+
+  it('excludes rejected approval expenses from calendar', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'adhoc', amount: 500, description: 'Rejected', notes: '', dueDate: '2026-04-15', createdAt: '2026-04-01T00:00:00Z', approvalStatus: 'rejected' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const day15 = allDays.find((d) => d.date === '2026-04-15')
+    expect(day15!.events).toHaveLength(0)
+  })
+
+  it('includes approved expenses in calendar', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'adhoc', amount: 500, description: 'Approved', notes: '', dueDate: '2026-04-15', createdAt: '2026-04-01T00:00:00Z', approvalStatus: 'approved' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const day15 = allDays.find((d) => d.date === '2026-04-15')
+    expect(day15!.events).toHaveLength(1)
+    expect(day15!.events[0]!.amount).toBe(500)
+  })
+
+  it('includes expenses without approvalStatus in calendar', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'adhoc', amount: 200, description: 'Normal', notes: '', dueDate: '2026-04-10', createdAt: '2026-04-01T00:00:00Z' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const day10 = allDays.find((d) => d.date === '2026-04-10')
+    expect(day10!.events).toHaveLength(1)
+  })
+
+  it('excludes pending recurring expenses from calendar', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'recurring', amount: 1500, frequency: 'monthly', description: 'Pending Rent', notes: '', dueDate: '2026-01-01', createdAt: '2026-01-01T00:00:00Z', approvalStatus: 'pending' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const withEvents = allDays.filter((d) => d.events.length > 0)
+    expect(withEvents).toHaveLength(0)
+  })
+
+  it('uses createdAt as fallback for adhoc expense without dueDate', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'adhoc', amount: 300, description: 'No due date', notes: '', dueDate: null, createdAt: '2026-04-20T10:00:00Z' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const day20 = allDays.find((d) => d.date === '2026-04-20')
+    expect(day20!.events).toHaveLength(1)
+    expect(day20!.events[0]!.amount).toBe(300)
+  })
+
+  it('does not show adhoc expense without dueDate if createdAt is outside range', () => {
+    const { calendar } = makeCal(
+      [],
+      [{ id: 'e1', type: 'adhoc', amount: 300, description: 'Old', notes: '', dueDate: null, createdAt: '2025-01-15T10:00:00Z' }],
+    )
+    const allDays = calendar.value.weeks.flat()
+    const withEvents = allDays.filter((d) => d.events.length > 0)
+    expect(withEvents).toHaveLength(0)
+  })
 })
 

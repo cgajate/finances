@@ -115,34 +115,34 @@ describe('ApprovalsView', () => {
     expect(wrapper.text()).toContain('No pending requests')
   })
 
-  it('shows pending request in list', () => {
+  it('shows pending request in table', () => {
     seedPending()
     const wrapper = mountView()
-    expect(wrapper.find('.approvals__item').exists()).toBe(true)
+    expect(wrapper.find('.approvals__table').exists()).toBe(true)
     expect(wrapper.text()).toContain('Office Supplies')
     expect(wrapper.text()).toContain('$600.00')
   })
 
-  it('shows approve and reject buttons for pending requests', () => {
+  it('shows approve and reject icon buttons for pending requests', () => {
     seedPending()
     const wrapper = mountView()
-    expect(wrapper.find('.btn--success').exists()).toBe(true)
-    expect(wrapper.find('.btn--danger').exists()).toBe(true)
+    expect(wrapper.find('.approvals__action-btn--approve').exists()).toBe(true)
+    expect(wrapper.find('.approvals__action-btn--reject').exists()).toBe(true)
   })
 
-  it('approves request on Approve click', async () => {
+  it('approves request on approve icon click', async () => {
     seedPending()
     const store = useApprovalsStore()
     const wrapper = mountView()
-    await wrapper.find('.btn--success').trigger('click')
+    await wrapper.find('.approvals__action-btn--approve').trigger('click')
     expect(store.requests[0]!.status).toBe('approved')
   })
 
-  it('rejects request on Reject click', async () => {
+  it('rejects request on reject icon click', async () => {
     seedPending()
     const store = useApprovalsStore()
     const wrapper = mountView()
-    await wrapper.find('.btn--danger').trigger('click')
+    await wrapper.find('.approvals__action-btn--reject').trigger('click')
     expect(store.requests[0]!.status).toBe('rejected')
   })
 
@@ -152,7 +152,7 @@ describe('ApprovalsView', () => {
     const tabs = wrapper.findAll('.approvals__tab')
     await tabs[1]!.trigger('click')
     expect(wrapper.text()).toContain('Server Costs')
-    expect(wrapper.text()).toContain('Reviewed by')
+    expect(wrapper.text()).toContain('admin')
   })
 
   it('shows rejected request on Rejected tab', async () => {
@@ -168,7 +168,7 @@ describe('ApprovalsView', () => {
     const wrapper = mountView()
     const tabs = wrapper.findAll('.approvals__tab')
     await tabs[1]!.trigger('click')
-    expect(wrapper.find('.approvals__actions').exists()).toBe(false)
+    expect(wrapper.find('.approvals__action-btn').exists()).toBe(false)
   })
 
   it('shows pending count badge', () => {
@@ -183,25 +183,18 @@ describe('ApprovalsView', () => {
     expect(wrapper.find('.approvals__count').exists()).toBe(false)
   })
 
-  it('shows requestedBy in metadata', () => {
+  it('shows requestedBy in table row', () => {
     seedPending()
     const wrapper = mountView()
     expect(wrapper.text()).toContain('alice')
   })
 
-  it('shows status badge', () => {
-    seedPending()
-    const wrapper = mountView()
-    expect(wrapper.find('.badge').exists()).toBe(true)
-    expect(wrapper.find('.badge--warning').exists()).toBe(true)
-  })
-
-  it('shows resolvedAt and reviewedBy for resolved requests', async () => {
+  it('shows reviewedBy for resolved requests', async () => {
     seedApproved()
     const wrapper = mountView()
     const tabs = wrapper.findAll('.approvals__tab')
     await tabs[1]!.trigger('click')
-    expect(wrapper.text()).toContain('Reviewed by admin')
+    expect(wrapper.text()).toContain('admin')
   })
 
   it('tabs have proper aria attributes', () => {

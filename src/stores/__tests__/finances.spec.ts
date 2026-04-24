@@ -438,4 +438,115 @@ describe('finances store', () => {
       expect(store.expenses).toHaveLength(1)
     })
   })
+
+  describe('approval status and activeExpenses', () => {
+    it('activeExpenses includes expenses without approvalStatus', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Normal', notes: '', dueDate: null })
+      expect(store.activeExpenses).toHaveLength(1)
+    })
+
+    it('activeExpenses excludes pending expenses', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Pending', notes: '', dueDate: null })
+      const id = store.expenses[0]!.id
+      store.updateExpenseApprovalStatus(id, 'pending')
+      expect(store.activeExpenses).toHaveLength(0)
+    })
+
+    it('activeExpenses excludes rejected expenses', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Rejected', notes: '', dueDate: null })
+      const id = store.expenses[0]!.id
+      store.updateExpenseApprovalStatus(id, 'rejected')
+      expect(store.activeExpenses).toHaveLength(0)
+    })
+
+    it('activeExpenses includes approved expenses', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Approved', notes: '', dueDate: null })
+      const id = store.expenses[0]!.id
+      store.updateExpenseApprovalStatus(id, 'approved')
+      expect(store.activeExpenses).toHaveLength(1)
+    })
+
+    it('updateExpenseApprovalStatus sets status on expense', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Test', notes: '', dueDate: null })
+      const id = store.expenses[0]!.id
+      store.updateExpenseApprovalStatus(id, 'pending')
+      expect(store.expenses[0]!.approvalStatus).toBe('pending')
+    })
+
+    it('updateExpenseApprovalStatus with non-existent id does nothing', () => {
+      const store = useFinancesStore()
+      store.addAdhocExpense({ amount: 100, description: 'Test', notes: '', dueDate: null })
+      store.updateExpenseApprovalStatus('non-existent', 'pending')
+      expect(store.expenses[0]!.approvalStatus).toBeUndefined()
+    })
+
+    it('totalMonthlyExpenses excludes pending expenses', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 1000, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+      store.addAdhocExpense({ amount: 500, description: 'Big purchase', notes: '', dueDate: null })
+      const bigId = store.expenses[1]!.id
+      store.updateExpenseApprovalStatus(bigId, 'pending')
+      expect(store.totalMonthlyExpenses).toBe(1000)
+    })
+
+    it('totalMonthlyExpenses excludes rejected expenses', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 1000, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+      store.addAdhocExpense({ amount: 500, description: 'Big purchase', notes: '', dueDate: null })
+      const bigId = store.expenses[1]!.id
+      store.updateExpenseApprovalStatus(bigId, 'rejected')
+      expect(store.totalMonthlyExpenses).toBe(1000)
+    })
+
+    it('totalMonthlyExpenses includes approved expenses', () => {
+      const store = useFinancesStore()
+      store.addRecurringExpense({ amount: 1000, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+      store.addAdhocExpense({ amount: 500, description: 'Approved purchase', notes: '', dueDate: null })
+      const bigId = store.expenses[1]!.id
+      store.updateExpenseApprovalStatus(bigId, 'approved')
+      expect(store.totalMonthlyExpenses).toBe(1500)
+    })
+
+    it('netMonthly reflects approval status correctly', () => {
+      const store = useFinancesStore()
+      store.addRecurringIncome({ amount: 5000, frequency: 'monthly', description: 'Salary', notes: '', date: null })
+      store.addRecurringExpense({ amount: 2000, frequency: 'monthly', description: 'Rent', notes: '', dueDate: null })
+      store.addAdhocExpense({ amount: 1000, description: 'Pending', notes: '', dueDate: null })
+      const pendingId = store.expenses[1]!.id
+      store.updateExpenseApprovalStatus(pendingId, 'pending')
+      expect(store.netMonthly).toBe(3000) // 5000 - 2000, pending excluded
+    })
+
+    it('spendingByCategory excludes pending expenses', () => {
+      const store = useFinancesStore()
+      const curMonth = new Date().toISOString().slice(0, 7)
+      store.addAdhocExpense({ amount: 100, description: 'Active', notes: '', dueDate: `${curMonth}-15`, category: 'Food' })
+      store.addAdhocExpense({ amount: 200, description: 'Pending', notes: '', dueDate: `${curMonth}-16`, category: 'Food' })
+      const pendingId = store.expenses[1]!.id
+      store.updateExpenseApprovalStatus(pendingId, 'pending')
+      expect(store.spendingByCategory.get('Food')).toBe(100)
+    })
+
+    it('spendingByCategory excludes rejected expenses', () => {
+      const store = useFinancesStore()
+      const curMonth = new Date().toISOString().slice(0, 7)
+      store.addAdhocExpense({ amount: 100, description: 'Active', notes: '', dueDate: `${curMonth}-15`, category: 'Food' })
+      store.addAdhocExpense({ amount: 200, description: 'Rejected', notes: '', dueDate: `${curMonth}-16`, category: 'Food' })
+      const rejectedId = store.expenses[1]!.id
+      store.updateExpenseApprovalStatus(rejectedId, 'rejected')
+      expect(store.spendingByCategory.get('Food')).toBe(100)
+    })
+
+    it('spendingByCategory uses createdAt as fallback for adhoc without dueDate', () => {
+      const store = useFinancesStore()
+      // Expense with no dueDate — createdAt is set automatically to now, which is current month
+      store.addAdhocExpense({ amount: 75, description: 'NoDue', notes: '', dueDate: null, category: 'Food' })
+      expect(store.spendingByCategory.get('Food')).toBe(75)
+    })
+  })
 })

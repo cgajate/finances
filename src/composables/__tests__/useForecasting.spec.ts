@@ -256,7 +256,7 @@ describe('useForecasting', () => {
     expect(breakdown.value.find((m) => m.month === '2026-03')!.totalExpenses).toBe(0)
   })
 
-  it('adhoc expense without dueDate is not placed', () => {
+  it('adhoc expense without dueDate uses createdAt as fallback', () => {
     const incomes = ref<Income[]>([])
     const expenses = ref<Expense[]>([
       {
@@ -266,7 +266,26 @@ describe('useForecasting', () => {
         description: 'Fix',
         notes: '',
         dueDate: null,
-        createdAt: '2026-01-01',
+        createdAt: '2026-04-15T10:00:00Z',
+      },
+    ])
+    const before = ref(0)
+    const after = ref(0)
+    const { breakdown } = useForecasting(incomes, expenses, before, after)
+    expect(breakdown.value[0]!.totalExpenses).toBe(200)
+  })
+
+  it('adhoc expense without dueDate and createdAt outside range is not placed', () => {
+    const incomes = ref<Income[]>([])
+    const expenses = ref<Expense[]>([
+      {
+        id: '1',
+        type: 'adhoc',
+        amount: 200,
+        description: 'Fix',
+        notes: '',
+        dueDate: null,
+        createdAt: '2025-01-01T00:00:00Z',
       },
     ])
     const before = ref(0)

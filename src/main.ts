@@ -57,6 +57,7 @@ import {
   faUsers,
   faVolumeXmark,
   faXmark,
+  faCircleXmark,
 } from '@fortawesome/free-solid-svg-icons'
 
 import App from './App.vue'
@@ -126,6 +127,7 @@ library.add(
   faUsers,
   faVolumeXmark,
   faXmark,
+  faCircleXmark,
 )
 
 const app = createApp(App)

@@ -4,6 +4,7 @@ import type { ApprovalRequest } from '@/types/finance'
 import { getDb } from '@/lib/firebase'
 import { useFirestoreSync } from '@/composables/useFirestoreSync'
 import { loadFromStorage } from '@/lib/storage'
+import { useFinancesStore } from '@/stores/finances'
 
 /** Default threshold in dollars — expenses at or above this need approval */
 const DEFAULT_THRESHOLD = 500
@@ -58,6 +59,7 @@ export const useApprovalsStore = defineStore('approvals', () => {
     req.status = 'approved'
     req.reviewedBy = reviewedBy
     req.resolvedAt = new Date().toISOString()
+    useFinancesStore().updateExpenseApprovalStatus(req.expenseId, 'approved')
     return true
   }
 
@@ -68,6 +70,7 @@ export const useApprovalsStore = defineStore('approvals', () => {
     req.status = 'rejected'
     req.reviewedBy = reviewedBy
     req.resolvedAt = new Date().toISOString()
+    useFinancesStore().updateExpenseApprovalStatus(req.expenseId, 'rejected')
     return true
   }
 

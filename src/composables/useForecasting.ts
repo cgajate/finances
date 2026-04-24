@@ -145,8 +145,9 @@ export function useForecasting(
             })
           }
         } else {
-          // Adhoc expense — place in its specific month if it has a date
-          if (exp.dueDate && toYearMonth(exp.dueDate) === month) {
+          // Adhoc expense — place in its specific month (fall back to createdAt if no dueDate)
+          const expDate = exp.dueDate ?? exp.createdAt.split('T')[0]
+          if (expDate && toYearMonth(expDate) === month) {
             expenseItems.push({
               id: exp.id,
               description: exp.description,

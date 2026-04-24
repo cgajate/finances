@@ -131,8 +131,9 @@ export function useBillCalendar(
       }
     }
 
-    // Process expenses
+    // Process expenses (exclude pending/rejected approval expenses)
     for (const exp of expensesVal.value) {
+      if (exp.approvalStatus && exp.approvalStatus !== 'approved') continue
       if (exp.type === 'recurring' && exp.dueDate) {
         const dates = generateOccurrences(exp.dueDate, exp.frequency, rangeStart, rangeEnd)
         for (const d of dates) {
@@ -150,9 +151,9 @@ export function useBillCalendar(
           list.push(ev)
           eventsByDate.set(d, list)
         }
-      } else if (exp.type === 'adhoc' && exp.dueDate) {
-        const d = exp.dueDate
-        if (d >= rangeStart && d <= rangeEnd) {
+      } else if (exp.type === 'adhoc') {
+        const d = exp.dueDate ?? exp.createdAt.split('T')[0] ?? ''
+        if (d && d >= rangeStart && d <= rangeEnd) {
           const ev: CalendarEvent = {
             id: exp.id,
             date: d,

@@ -7,7 +7,7 @@ import EmptyState from '@/components/EmptyState.vue'
 
 const store = useFinancesStore()
 const selectedYear = ref(new Date().getFullYear())
-const { review, availableYears } = useYearReview(store.incomes, store.expenses, selectedYear)
+const { review, availableYears } = useYearReview(store.incomes, store.activeExpenses, selectedYear)
 </script>
 
 <template>

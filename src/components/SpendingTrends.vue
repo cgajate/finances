@@ -7,7 +7,7 @@ import EmptyState from '@/components/EmptyState.vue'
 
 const store = useFinancesStore()
 const trendMonths = ref(6)
-const { trends } = useSpendingTrends(store.expenses, trendMonths)
+const { trends } = useSpendingTrends(store.activeExpenses, trendMonths)
 const expandedCategory = ref<string | null>(null)
 </script>
 

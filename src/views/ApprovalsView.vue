@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useApprovalsStore } from '@/stores/approvals'
+import { useAuth } from '@/composables/useAuth'
 import { formatRelativeTime } from '@/lib/formatRelativeTime'
 import EmptyState from '@/components/EmptyState.vue'
 import CurrencyInput from '@/components/CurrencyInput.vue'
 
 const store = useApprovalsStore()
-const reviewerId = ref('me')
+const { userId } = useAuth()
 
 const tabs = ['pending', 'approved', 'rejected'] as const
 type Tab = (typeof tabs)[number]
@@ -24,18 +25,12 @@ const statusIcon: Record<string, string> = {
   rejected: 'xmark',
 }
 
-const statusClass: Record<string, string> = {
-  pending: 'badge--warning',
-  approved: 'badge--success',
-  rejected: 'badge--danger',
-}
-
 function handleApprove(id: string) {
-  store.approveRequest(id, reviewerId.value)
+  store.approveRequest(id, userId.value || 'me')
 }
 
 function handleReject(id: string) {
-  store.rejectRequest(id, reviewerId.value)
+  store.rejectRequest(id, userId.value || 'me')
 }
 
 function formatCurrency(amount: number): string {
@@ -44,15 +39,23 @@ function formatCurrency(amount: number): string {
     currency: 'USD',
   }).format(amount)
 }
+
+function formatTimestamp(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <template>
   <div class="approvals">
     <div class="approvals__header">
-      <h1>
-        <font-awesome-icon :icon="['fas', 'clipboard-check']" aria-hidden="true" />
-        Approvals
-      </h1>
+      <h1>Approvals</h1>
       <div class="approvals__settings">
         <label class="approvals__toggle">
           <input
@@ -108,57 +111,68 @@ function formatCurrency(amount: number): string {
         :message="`No ${activeTab} requests.`"
       />
 
-      <ul v-else class="approvals__list">
-        <li
-          v-for="req in filteredRequests"
-          :key="req.id"
-          class="approvals__item card"
-        >
-          <div class="approvals__item-main">
-            <div class="approvals__item-top">
-              <span class="approvals__description">{{ req.description }}</span>
-              <span class="approvals__amount">{{ formatCurrency(req.amount) }}</span>
-            </div>
-            <div class="approvals__item-meta">
-              <span class="badge" :class="statusClass[req.status]">
-                <font-awesome-icon :icon="['fas', statusIcon[req.status] ?? 'circle']" aria-hidden="true" />
-                {{ req.status }}
-              </span>
-              <span class="approvals__by">by {{ req.requestedBy }}</span>
-              <time :datetime="req.createdAt">{{ formatRelativeTime(req.createdAt) }}</time>
-              <template v-if="req.resolvedAt">
-                <span class="approvals__dot">·</span>
-                <span>Reviewed by {{ req.reviewedBy }}</span>
+      <!-- Table layout -->
+      <div v-else class="approvals__table-wrap">
+        <table class="approvals__table">
+          <thead>
+            <tr>
+              <th>Expense</th>
+              <th>Amount</th>
+              <th>Submitted by</th>
+              <th>Date &amp; Time</th>
+              <template v-if="activeTab === 'pending'">
+                <th class="approvals__th-actions">Actions</th>
               </template>
-            </div>
-          </div>
-          <div v-if="req.status === 'pending'" class="approvals__actions">
-            <button
-              class="btn btn--success btn--sm"
-              aria-label="Approve request"
-              @click="handleApprove(req.id)"
-            >
-              <font-awesome-icon :icon="['fas', 'check']" aria-hidden="true" />
-              Approve
-            </button>
-            <button
-              class="btn btn--danger btn--sm"
-              aria-label="Reject request"
-              @click="handleReject(req.id)"
-            >
-              <font-awesome-icon :icon="['fas', 'xmark']" aria-hidden="true" />
-              Reject
-            </button>
-          </div>
-        </li>
-      </ul>
+              <template v-else>
+                <th>{{ activeTab === 'approved' ? 'Approved' : 'Rejected' }} by</th>
+                <th>Resolved</th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="req in filteredRequests" :key="req.id">
+              <td class="approvals__cell-desc">{{ req.description }}</td>
+              <td class="approvals__cell-amount">{{ formatCurrency(req.amount) }}</td>
+              <td>{{ req.requestedBy }}</td>
+              <td>
+                <time :datetime="req.createdAt">{{ formatTimestamp(req.createdAt) }}</time>
+              </td>
+              <template v-if="activeTab === 'pending'">
+                <td class="approvals__cell-actions">
+                  <button
+                    class="approvals__action-btn approvals__action-btn--approve"
+                    aria-label="Approve request"
+                    @click="handleApprove(req.id)"
+                  >
+                    <font-awesome-icon :icon="['fas', 'circle-check']" />
+                  </button>
+                  <button
+                    class="approvals__action-btn approvals__action-btn--reject"
+                    aria-label="Reject request"
+                    @click="handleReject(req.id)"
+                  >
+                    <font-awesome-icon :icon="['fas', 'circle-xmark']" />
+                  </button>
+                </td>
+              </template>
+              <template v-else>
+                <td>{{ req.reviewedBy ?? '—' }}</td>
+                <td>
+                  <time v-if="req.resolvedAt" :datetime="req.resolvedAt">{{ formatTimestamp(req.resolvedAt) }}</time>
+                  <span v-else>—</span>
+                </td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .approvals {
-  max-width: 750px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -173,9 +187,6 @@ function formatCurrency(amount: number): string {
 
 .approvals__header h1 {
   margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .approvals__settings {
@@ -243,97 +254,112 @@ function formatCurrency(amount: number): string {
   text-align: center;
 }
 
-/* ─── List ─── */
-.approvals__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+/* ─── Table ─── */
+.approvals__table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
 }
 
-.approvals__item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+.approvals__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
 }
 
-.approvals__item-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.approvals__item-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 0.3rem;
-}
-
-.approvals__description {
+.approvals__table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
   font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.approvals__amount {
-  font-weight: 700;
-  font-size: 1rem;
-  white-space: nowrap;
-  color: var(--color-expense);
-}
-
-.approvals__item-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--color-surface) 85%, var(--color-text));
 }
 
-.approvals__by {
-  font-weight: 500;
+.approvals__table th:first-child {
+  border-radius: 12px 0 0 0;
 }
 
-.approvals__dot {
-  color: var(--color-border);
+.approvals__table th:last-child {
+  border-radius: 0 12px 0 0;
 }
 
-.approvals__actions {
+.approvals__table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+  color: var(--color-text);
+}
+
+.approvals__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.approvals__table tbody tr:hover {
+  background: var(--color-icon-bg);
+}
+
+.approvals__cell-desc {
+  font-weight: 600;
+}
+
+.approvals__cell-amount {
+  font-weight: 700;
+  color: var(--color-expense);
+  white-space: nowrap;
+}
+
+.approvals__table th.approvals__th-actions {
+  text-align: right;
+}
+
+.approvals__cell-actions {
   display: flex;
   gap: 0.5rem;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  text-align: right;
 }
 
-/* ─── Badges ─── */
-.badge {
+.approvals__action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.1s, filter 0.15s;
+  background: none;
 }
 
-.badge--warning {
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
+.approvals__action-btn:hover {
+  transform: scale(1.15);
 }
 
-.badge--success {
-  background: var(--color-income-bg);
+.approvals__action-btn--approve {
   color: var(--color-income);
 }
 
-.badge--danger {
-  background: var(--color-expense-bg);
+.approvals__action-btn--approve:hover {
+  filter: brightness(0.85);
+}
+
+.approvals__action-btn--reject {
   color: var(--color-expense);
+}
+
+.approvals__action-btn--reject:hover {
+  filter: brightness(0.85);
 }
 
 /* ─── Responsive ─── */
@@ -342,17 +368,13 @@ function formatCurrency(amount: number): string {
     flex-direction: column;
   }
 
-  .approvals__item {
-    flex-direction: column;
-    align-items: flex-start;
+  .approvals__table {
+    font-size: 0.82rem;
   }
 
-  .approvals__actions {
-    width: 100%;
-  }
-
-  .approvals__actions .btn {
-    flex: 1;
+  .approvals__table th,
+  .approvals__table td {
+    padding: 0.5rem 0.5rem;
   }
 }
 </style>

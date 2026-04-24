@@ -4,6 +4,7 @@ import NotificationPanel from '@/components/NotificationPanel.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useHousehold } from '@/composables/useHousehold'
 import { useAuth } from '@/composables/useAuth'
+import { useApprovalsStore } from '@/stores/approvals'
 
 const emit = defineEmits<{
   'toggle-menu': []
@@ -22,6 +23,7 @@ const notificationPanelRef = ref<InstanceType<typeof NotificationPanel> | null>(
 const { isDark, mode, highContrast, setMode, toggleDark, toggleHighContrast } = useTheme()
 const { hasHousehold } = useHousehold()
 const { displayName, photoURL, isAnonymous, signOut } = useAuth()
+const approvalsStore = useApprovalsStore()
 
 /** Retry loading avatar once on error by appending a cache-busting param */
 let avatarRetried = false
@@ -199,6 +201,13 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
             @error="handleAvatarError"
           />
           <font-awesome-icon v-else :icon="['fas', 'gear']" />
+          <span
+            v-if="approvalsStore.pendingCount > 0"
+            class="admin-badge"
+            aria-label="Pending approvals"
+          >
+            <font-awesome-icon :icon="['fas', 'circle-exclamation']" />
+          </span>
         </button>
         <div v-if="adminMenuOpen" class="admin-backdrop" @click="adminMenuOpen = false"></div>
         <Transition name="slide">
@@ -214,7 +223,12 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
               <font-awesome-icon :icon="['fas', 'tags']" />
             </RouterLink>
             <RouterLink to="/approvals" class="admin-option" @click="adminMenuOpen = false">
-              <span>Approvals</span>
+              <span>
+                Approvals
+                <span v-if="approvalsStore.pendingCount > 0" class="admin-option-count">
+                  {{ approvalsStore.pendingCount }}
+                </span>
+              </span>
               <font-awesome-icon :icon="['fas', 'clipboard-check']" />
             </RouterLink>
             <div class="admin-separator"></div>
@@ -425,11 +439,43 @@ defineExpose({ internalCollapsed, headerRef, navRef, checkOverflow })
   position: relative;
 }
 
+.admin-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.65rem;
+  color: var(--color-expense);
+  background: var(--color-surface);
+  border-radius: 50%;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.admin-option-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-expense);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  min-width: 1.1rem;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
 .icon-btn--avatar {
   padding: 0;
   border-radius: 50%;
-  overflow: hidden;
+  overflow: visible;
   background: none;
+}
+
+.icon-btn--avatar .header-avatar {
+  overflow: hidden;
+  border-radius: 50%;
 }
 
 .header-avatar {
