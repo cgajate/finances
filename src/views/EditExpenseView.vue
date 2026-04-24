@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinancesStore } from '@/stores/finances'
 import { useDeleteWithUndo } from '@/composables/useDeleteWithUndo'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Frequency } from '@/types/finance'
-import type { ExpenseCategory } from '@/types/finance'
+import type { ExpenseCategory, RecurringExpense } from '@/types/finance'
 import { FREQUENCY_OPTIONS } from '@/types/finance'
 import PageHeader from '@/components/PageHeader.vue'
 import CurrencyInput from '@/components/CurrencyInput.vue'
+import MonthlyOverrides from '@/components/MonthlyOverrides.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -73,16 +74,18 @@ function save() {
   router.push('/finances?tab=expenses')
 }
 
-function cancel() {
-  router.push('/finances?tab=expenses')
-}
-
 function remove() {
   deleteExpense(id)
   router.push('/finances?tab=expenses')
 }
 
 const frequencies = FREQUENCY_OPTIONS
+
+const currentOverrides = computed(() => {
+  const item = store.getExpenseById(id)
+  if (!item || item.type !== 'recurring') return undefined
+  return (item as RecurringExpense).overrides
+})
 </script>
 
 <template>
@@ -131,12 +134,18 @@ const frequencies = FREQUENCY_OPTIONS
         </datalist>
       </div>
 
-      <div class="actions">
-        <button type="submit" class="btn-save">Save Changes</button>
-        <button type="button" class="btn-cancel" @click="cancel">Cancel</button>
-      </div>
+      <MonthlyOverrides
+        v-if="itemType === 'recurring' && amount"
+        :base-amount="amount"
+        :overrides="currentOverrides"
+        @set-override="(month, amt) => store.setExpenseOverride(id, month, amt)"
+        @remove-override="(month) => store.removeExpenseOverride(id, month)"
+      />
 
-      <button type="button" class="btn-delete--outline" @click="remove">Delete This Expense</button>
+      <div class="actions">
+        <button type="submit" class="btn-save">Save</button>
+        <button type="button" class="btn-delete--filled" @click="remove">Remove</button>
+      </div>
     </form>
   </div>
 </template>

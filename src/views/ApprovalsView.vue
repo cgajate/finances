@@ -62,7 +62,7 @@ function formatCurrency(amount: number): string {
           />
           <span>Require Approval</span>
         </label>
-        <div v-if="store.approvalEnabled" class="approvals__threshold">
+        <div v-if="store.approvalEnabled" class="field approvals__threshold-field">
           <label for="threshold-input">Threshold</label>
           <CurrencyInput
             id="threshold-input"
@@ -193,16 +193,8 @@ function formatCurrency(amount: number): string {
   cursor: pointer;
 }
 
-.approvals__threshold {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.9rem;
-}
-
-.approvals__threshold label {
-  white-space: nowrap;
-  font-weight: 500;
+.approvals__threshold-field {
+  min-width: 8rem;
 }
 
 /* ─── Tabs ─── */

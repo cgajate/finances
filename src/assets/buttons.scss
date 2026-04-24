@@ -90,8 +90,7 @@
 // ─── Save (edit forms, primary action) ───
 .btn-save {
   @extend %btn-base;
-  flex: 1;
-  padding: 0.75rem;
+  padding: 0.75rem 1.5rem;
   background: var(--color-income);
   color: white;
   font-size: 1rem;
@@ -100,8 +99,7 @@
 // ─── Cancel (edit forms, secondary action) ───
 .btn-cancel {
   @extend %btn-base;
-  flex: 1;
-  padding: 0.75rem;
+  padding: 0.75rem 1.5rem;
   background: var(--color-text-muted);
   color: white;
   font-size: 1rem;
@@ -146,6 +144,19 @@
 
   &:hover {
     background: var(--color-expense-bg);
+  }
+}
+
+// ─── Delete — filled (edit pages, inline with save/cancel) ───
+.btn-delete--filled {
+  @extend %btn-base;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-btn-delete);
+  color: white;
+  font-size: 1rem;
+
+  &:hover {
+    filter: brightness(0.85);
   }
 }
 
